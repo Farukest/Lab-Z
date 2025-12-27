@@ -1,7 +1,14 @@
 {
-  "name": "@labz/core",
+  "name": "@0xflydev/labz-core",
   "version": "1.0.0",
   "description": "Lab-Z Core - Template engine, registry, generator, and validation",
+  "author": "0xflydev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Farukest/Lab-Z.git"
+  },
+  "homepage": "https://github.com/Farukest/Lab-Z",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

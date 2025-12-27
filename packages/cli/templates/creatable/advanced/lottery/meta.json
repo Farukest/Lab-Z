@@ -1,0 +1,18 @@
+{
+  "id": "lottery",
+  "name": "Private Lottery",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["lottery", "gambling", "random", "privacy", "fairness"],
+  "description": "Fair lottery with encrypted ticket purchases and verifiable randomness",
+  "longDescription": "A lottery system where ticket purchases are encrypted - no one knows who bought how many tickets. Uses encrypted random number generation for winner selection. Demonstrates fair randomness with FHE and private participation amounts.",
+  "files": [
+    { "path": "contracts/Lottery.sol", "source": "Lottery.sol" },
+    { "path": "test/Lottery.test.ts", "source": "Lottery.test.ts" }
+  ],
+  "fheOperations": ["add", "mod", "eq", "allowThis", "allow", "fromExternal", "makePubliclyDecryptable"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["dice-game", "mystery-box"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["dice-game"]
+}

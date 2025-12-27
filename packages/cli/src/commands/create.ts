@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import * as path from 'path';
 import { input, select, confirm } from '@inquirer/prompts';
-import { createHub, type Category, CATEGORIES } from '@labz/core';
+import { createHub, type Category, CATEGORIES } from '@0xflydev/labz-core';
 import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner } from '../utils';
 
 export const createCommand = new Command('create')

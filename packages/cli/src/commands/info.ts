@@ -7,7 +7,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import boxen from 'boxen';
-import { createHub, CATEGORIES, DIFFICULTY_INFO } from '@labz/core';
+import { createHub, CATEGORIES, DIFFICULTY_INFO } from '@0xflydev/labz-core';
 import { getTemplatesDir, formatInfo, formatError, printBanner } from '../utils';
 
 export const infoCommand = new Command('info')

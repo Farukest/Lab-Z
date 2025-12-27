@@ -1,0 +1,18 @@
+{
+  "id": "auction",
+  "name": "Blind Auction",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["auction", "bidding", "nft", "privacy"],
+  "description": "Blind auction where bids remain encrypted until reveal",
+  "longDescription": "A blind auction system where all bids are encrypted during the bidding phase. Uses FHE.gt for encrypted comparisons to track the highest bid without revealing actual values. Winner determination uses public decryption flow. Perfect for NFT auctions and fair price discovery.",
+  "files": [
+    { "path": "contracts/Auction.sol", "source": "Auction.sol" },
+    { "path": "test/Auction.test.ts", "source": "Auction.test.ts" }
+  ],
+  "fheOperations": ["gt", "max", "select", "allowThis", "allow", "fromExternal", "makePubliclyDecryptable"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["sealed-tender", "prediction-market"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["sealed-tender"]
+}

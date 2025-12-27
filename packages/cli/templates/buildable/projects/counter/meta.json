@@ -1,0 +1,170 @@
+{
+  "name": "counter",
+  "version": "1.0.0",
+  "description": "Simple encrypted counter with increment/decrement operations",
+  "author": "Lab-Z",
+
+  "slots": [
+    {
+      "name": "LICENSE",
+      "description": "SPDX license identifier",
+      "mode": "replace",
+      "required": false,
+      "defaultContent": "// SPDX-License-Identifier: BSD-3-Clause-Clear"
+    },
+    {
+      "name": "IMPORTS",
+      "description": "Import statements",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "INHERITS",
+      "description": "Contract inheritance list",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "STATE_VARIABLES",
+      "description": "State variable declarations",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "ERRORS",
+      "description": "Custom error definitions",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "EVENTS",
+      "description": "Event definitions",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "MODIFIERS",
+      "description": "Modifier definitions",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "CONSTRUCTOR_PARAMS",
+      "description": "Constructor parameters",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "CONSTRUCTOR_BODY",
+      "description": "Constructor body",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "INCREMENT_MODIFIERS",
+      "description": "Modifiers for increment function",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "PRE_INCREMENT",
+      "description": "Code before increment operation",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "POST_INCREMENT",
+      "description": "Code after increment operation",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "ACL_INCREMENT",
+      "description": "Additional ACL for increment",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "EMIT_INCREMENT",
+      "description": "Event emission after increment",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "DECREMENT_MODIFIERS",
+      "description": "Modifiers for decrement function",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "PRE_DECREMENT",
+      "description": "Code before decrement operation",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "POST_DECREMENT",
+      "description": "Code after decrement operation",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "ACL_DECREMENT",
+      "description": "Additional ACL for decrement",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "EMIT_DECREMENT",
+      "description": "Event emission after decrement",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "INTERNAL_FUNCTIONS",
+      "description": "Internal helper functions",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "EXTERNAL_FUNCTIONS",
+      "description": "Additional external functions",
+      "mode": "append",
+      "required": false
+    },
+    {
+      "name": "VIEW_FUNCTIONS",
+      "description": "Additional view functions",
+      "mode": "append",
+      "required": false
+    }
+  ],
+
+  "typeParams": {
+    "COUNTER_TYPE": {
+      "type": "euint",
+      "options": ["euint8", "euint16", "euint32", "euint64"],
+      "default": "euint32",
+      "description": "Encrypted unsigned integer type for counter"
+    },
+    "EXTERNAL_TYPE": {
+      "type": "external",
+      "options": ["externalEuint8", "externalEuint16", "externalEuint32", "externalEuint64"],
+      "default": "externalEuint32",
+      "description": "External encrypted type for inputs"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_count"],
+    "functions": ["increment", "decrement", "getCount"],
+    "events": []
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+
+  "imports": [
+    "import { FHE, [[COUNTER_TYPE]], [[EXTERNAL_TYPE]] } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "functions/encrypted-mul",
+  "version": "1.0.0",
+  "description": "Add encryptedMul(a,b) function that performs FHE.mul on two encrypted values",
+  "author": "Lab-Z",
+  "category": "functions",
+  "tags": ["fhe", "arithmetic", "multiply"],
+
+  "compatibleWith": ["token", "counter", "voting", "auction"],
+  "incompatibleWith": [],
+  "requires": [],
+
+  "requiresSlots": ["EXTERNAL_FUNCTIONS", "EVENTS"],
+
+  "provides": {
+    "functions": ["encryptedMul"],
+    "events": ["EncryptedMulResult"],
+    "modifiers": [],
+    "stateVariables": []
+  },
+
+  "exclusive": false,
+
+  "injections": {
+    "EVENTS": {
+      "content": "file:inject/events.sol",
+      "mode": "append",
+      "order": 101
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 101
+    }
+  }
+}

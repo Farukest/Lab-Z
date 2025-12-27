@@ -1,0 +1,46 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  const feeRate = 100; // 1% fee
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Fee Rate:", feeRate / 100, "%");
+  console.log("  Fee Recipient:", deployer.address);
+
+  const EscrowFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const escrow = await EscrowFactory.deploy(feeRate, deployer.address);
+
+  await escrow.waitForDeployment();
+
+  const address = await escrow.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nEscrow Flow:");
+  console.log("  1. Create: createEscrow(seller, arbiter, encAmount, desc, deadline)");
+  console.log("  2. Fund: fundEscrow(escrowId, encAmount)");
+  console.log("  3a. Release: releaseFunds(escrowId) - buyer confirms delivery");
+  console.log("  3b. Refund: refund(escrowId) - seller cancels or deadline passed");
+  console.log("  3c. Dispute: dispute(escrowId) + resolveDispute(escrowId, decision)");
+  console.log("\nEscrow States:");
+  console.log("  Created -> Funded -> Released/Refunded");
+  console.log("                    -> Disputed -> Released/Refunded");
+  console.log("\nPrivacy Features:");
+  console.log("  - Escrow amount is encrypted");
+  console.log("  - Only parties can see the amount");
+  console.log("  - Blockchain observers see nothing");
+  console.log("\nUse Cases:");
+  console.log("  - Freelance payments");
+  console.log("  - P2P crypto trades");
+  console.log("  - Real estate deposits");
+  console.log("  - Domain/asset transfers");
+  console.log("\nFHE Operations Used:");
+  console.log("  - add: Accumulate funding");
+  console.log("  - gte: Check fully funded");
+  console.log("  - allow: Grant access to parties");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

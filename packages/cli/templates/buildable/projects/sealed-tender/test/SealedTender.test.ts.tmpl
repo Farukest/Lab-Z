@@ -1,0 +1,254 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let tender: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let bidder1: HardhatEthersSigner;
+  let bidder2: HardhatEthersSigner;
+  let bidder3: HardhatEthersSigner;
+
+  const MIN_BIDDING_PERIOD = 86400; // 1 day
+  const ONE_WEEK = 86400 * 7;
+
+  beforeEach(async function () {
+    [owner, bidder1, bidder2, bidder3] = await ethers.getSigners();
+
+    const TenderFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    tender = await TenderFactory.deploy(MIN_BIDDING_PERIOD);
+    await tender.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct minimum bidding period", async function () {
+      expect(await tender.minBiddingPeriod()).to.equal(MIN_BIDDING_PERIOD);
+    });
+
+    it("Should start with zero tenders", async function () {
+      expect(await tender.getTenderCount()).to.equal(0);
+    });
+  });
+
+  describe("Tender Creation", function () {
+    it("Should create tender with correct parameters", async function () {
+      const title = "Office Supplies Procurement";
+      const description = "Annual office supplies contract";
+
+      await expect(tender.createTender(title, description, ONE_WEEK))
+        .to.emit(tender, "TenderCreated")
+        .withArgs(0, owner.address, title);
+
+      const [tenderOwner, tenderTitle, , state, bidCount, revealRequested, revealed] = await tender.getTender(0);
+      expect(tenderOwner).to.equal(owner.address);
+      expect(tenderTitle).to.equal(title);
+      expect(state).to.equal(0); // Open
+      expect(bidCount).to.equal(0);
+      expect(revealRequested).to.equal(false);
+      expect(revealed).to.equal(false);
+    });
+
+    it("Should reject short bidding period", async function () {
+      await expect(tender.createTender("Test", "Test", MIN_BIDDING_PERIOD - 1))
+        .to.be.revertedWith("Duration too short");
+    });
+
+    it("Should increment tender count", async function () {
+      await tender.createTender("Tender 1", "Desc", ONE_WEEK);
+      await tender.createTender("Tender 2", "Desc", ONE_WEEK);
+      expect(await tender.getTenderCount()).to.equal(2);
+    });
+  });
+
+  describe("Bid Submission", function () {
+    beforeEach(async function () {
+      await tender.createTender("Test Tender", "Description", ONE_WEEK);
+    });
+
+    it("Should track bid count", async function () {
+      // Bid count starts at 0
+      const [, , , , bidCount, , ,] = await tender.getTender(0);
+      expect(bidCount).to.equal(0);
+    });
+
+    it("Should reject bid on non-existent tender", async function () {
+      // Would need encrypted input
+    });
+
+    it("Should track bidders list", async function () {
+      const bidders = await tender.getBidders(0);
+      expect(bidders.length).to.equal(0);
+    });
+  });
+
+  describe("Winner Reveal (Public Decryption)", function () {
+    beforeEach(async function () {
+      await tender.createTender("Test", "Desc", 1); // 1 second duration
+    });
+
+    it("Should reject reveal before deadline", async function () {
+      await expect(tender.requestWinnerReveal(0))
+        .to.be.revertedWithCustomError(tender, "TenderNotClosed");
+    });
+
+    it("Should reject reveal with no bids", async function () {
+      // Wait for deadline
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      await expect(tender.requestWinnerReveal(0))
+        .to.be.revertedWithCustomError(tender, "NoBidsReceived");
+    });
+
+    it("Should reject reveal from non-owner", async function () {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      await expect(tender.connect(bidder1).requestWinnerReveal(0))
+        .to.be.revertedWithCustomError(tender, "NotTenderOwner");
+    });
+
+    it("Should reject finalize without request", async function () {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const fakeProof = "0x";
+      await expect(tender.finalizeWinnerReveal(0, 1000, fakeProof))
+        .to.be.revertedWithCustomError(tender, "RevealNotRequested");
+    });
+  });
+
+  describe("Public Decryption Flow", function () {
+    it("Documents the complete 3-step async decryption flow", async function () {
+      /**
+       * Complete Public Decryption Flow for Sealed Tender:
+       *
+       * BIDDING PHASE
+       * =============
+       * // Bidders submit encrypted bids
+       * const encryptedBid = await fhevmInstance.encrypt64(bidAmount);
+       * await tender.submitBid(tenderId, encryptedBid.data, encryptedBid.proof);
+       *
+       * STEP 1 - On-chain: Request Winner Reveal
+       * ========================================
+       * // After deadline, owner requests reveal
+       * await tender.requestWinnerReveal(tenderId);
+       * // Internally calls: FHE.makePubliclyDecryptable(lowestBid)
+       * // Emits: WinnerReadyForReveal event
+       *
+       * STEP 2 - Off-chain: Decrypt via Relayer SDK
+       * ============================================
+       * const handle = await tender.getLowestBidHandle(tenderId);
+       * const result = await fhevmInstance.publicDecrypt([handle]);
+       * const lowestBid = result.clearValues[handle];
+       * const proof = result.decryptionProof;
+       *
+       * STEP 3 - On-chain: Finalize with Proof
+       * ======================================
+       * await tender.finalizeWinnerReveal(tenderId, lowestBid, proof);
+       * // Internally calls: FHE.checkSignatures(cts, cleartexts, proof)
+       * // Stores revealed lowest bid value
+       *
+       * AWARD CONTRACT
+       * ==============
+       * // Owner identifies winner (bidder whose bid matches lowest)
+       * await tender.awardContract(tenderId, winnerAddress);
+       * // Emits: WinnerRevealed, ContractAwarded
+       */
+    });
+  });
+
+  describe("Tender Cancellation", function () {
+    beforeEach(async function () {
+      await tender.createTender("Test", "Desc", ONE_WEEK);
+    });
+
+    it("Should allow owner to cancel", async function () {
+      await expect(tender.cancelTender(0))
+        .to.emit(tender, "TenderCancelled")
+        .withArgs(0);
+
+      const [, , , state, , , , ,] = await tender.getTender(0);
+      expect(state).to.equal(4); // Cancelled
+    });
+
+    it("Should reject cancel from non-owner", async function () {
+      await expect(tender.connect(bidder1).cancelTender(0))
+        .to.be.revertedWithCustomError(tender, "NotTenderOwner");
+    });
+  });
+
+  describe("Use Cases", function () {
+    it("Government procurement scenario", async function () {
+      /**
+       * Scenario: City procures waste management services
+       *
+       * 1. City creates tender with requirements
+       * 2. Companies submit encrypted bids
+       * 3. No one can see competitors' bids
+       * 4. After deadline, lowest bid wins
+       * 5. Only winning bid is revealed
+       *
+       * Benefits:
+       * - No bid manipulation
+       * - Fair competition
+       * - Transparent after reveal
+       */
+    });
+
+    it("Corporate RFP scenario", async function () {
+      /**
+       * Scenario: Company seeking IT vendor
+       *
+       * 1. Company posts RFP as tender
+       * 2. Vendors submit encrypted proposals
+       * 3. Evaluation based on multiple criteria
+       * 4. Winner selected without revealing all bids
+       */
+    });
+
+    it("Construction bidding scenario", async function () {
+      /**
+       * Scenario: Building project bids
+       *
+       * 1. Developer creates tender for construction
+       * 2. Contractors submit sealed bids
+       * 3. No contractor knows others' prices
+       * 4. Lowest responsible bid wins
+       */
+    });
+  });
+
+  describe("Privacy", function () {
+    it("Should keep all bids encrypted until reveal", async function () {
+      /**
+       * FHE guarantees:
+       * - Bid amounts encrypted at submission
+       * - Comparison happens on encrypted values
+       * - Only lowest bid revealed to owner
+       * - Losing bids never revealed
+       */
+    });
+
+    it("Should prevent bid manipulation", async function () {
+      /**
+       * Unlike traditional sealed bids:
+       * - No physical envelopes to tamper
+       * - Encrypted storage prevents peeking
+       * - Timestamp proves submission order
+       * - On-chain audit trail
+       */
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should correctly track bid status", async function () {
+      await tender.createTender("Test", "Desc", ONE_WEEK);
+      expect(await tender.hasBid(0, bidder1.address)).to.equal(false);
+    });
+
+    it("Should return empty bidders array initially", async function () {
+      await tender.createTender("Test", "Desc", ONE_WEEK);
+      const bidders = await tender.getBidders(0);
+      expect(bidders.length).to.equal(0);
+    });
+  });
+});

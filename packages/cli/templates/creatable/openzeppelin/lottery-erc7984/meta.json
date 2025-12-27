@@ -1,0 +1,41 @@
+{
+  "id": "lottery-erc7984",
+  "name": "Lottery with ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["lottery", "random", "ERC7984", "gaming", "prize", "OpenZeppelin"],
+  "description": "A fair lottery system using ERC7984 tokens for ticket purchases and prizes",
+  "longDescription": "This example demonstrates a lottery contract that uses ERC7984 tokens for ticket purchases. The ticket price is paid in confidential tokens, hiding how much each participant has wagered. Winner selection uses encrypted randomness, and the prize pool remains confidential until claimed.",
+  "blocks": [
+    {
+      "id": "enter",
+      "type": "function",
+      "lines": [30, 50],
+      "explanation": "Enter the lottery by paying the ticket price in ERC7984 tokens. The payment amount is encrypted, so other participants can't see your stake.",
+      "searchTerms": ["enter", "buy", "ticket", "participate"]
+    },
+    {
+      "id": "draw",
+      "type": "function",
+      "lines": [55, 75],
+      "explanation": "Draw the winner using encrypted random number generation. The winner index is computed without revealing intermediate values.",
+      "searchTerms": ["draw", "winner", "random", "select"]
+    },
+    {
+      "id": "claim",
+      "type": "function",
+      "lines": [80, 95],
+      "explanation": "Winner claims the prize pool. The prize amount transfer is confidential.",
+      "searchTerms": ["claim", "prize", "winner", "withdraw"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/LotteryERC7984.sol", "source": "LotteryERC7984.sol" },
+    { "path": "test/LotteryERC7984.test.ts", "source": "LotteryERC7984.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "FHE.randEuint64", "fromExternal"],
+  "fheTypes": ["euint64", "euint32"],
+  "relatedTemplates": ["erc7984-token", "amm-erc7984"],
+  "prerequisites": ["erc7984-token", "input-proofs"],
+  "nextSteps": ["amm-erc7984"]
+}

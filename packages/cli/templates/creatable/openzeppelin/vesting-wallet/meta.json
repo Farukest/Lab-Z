@@ -1,0 +1,55 @@
+{
+  "id": "vesting-wallet",
+  "name": "Vesting Wallet with ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "intermediate",
+  "tags": ["vesting", "wallet", "ERC7984", "schedule", "tokens", "OpenZeppelin"],
+  "description": "A confidential token vesting wallet with cliff-based release schedule",
+  "longDescription": "This example implements a vesting wallet that releases ERC7984 tokens according to a cliff schedule. The vested amounts remain encrypted, preserving privacy of the vesting arrangement. Beneficiaries can release tokens after the vesting period ends.",
+  "blocks": [
+    {
+      "id": "constructor",
+      "type": "function",
+      "lines": [47, 56],
+      "explanation": "Initialize vesting with beneficiary address, start timestamp, and duration.",
+      "searchTerms": ["constructor", "initialize", "setup"]
+    },
+    {
+      "id": "release",
+      "type": "function",
+      "lines": [98, 114],
+      "explanation": "Release vested tokens to the beneficiary. Transfers releasable amount.",
+      "searchTerms": ["release", "withdraw", "claim"]
+    },
+    {
+      "id": "releasable",
+      "type": "function",
+      "lines": [85, 94],
+      "explanation": "Calculate the amount of tokens available for release (vested minus already released).",
+      "searchTerms": ["releasable", "available", "amount"]
+    },
+    {
+      "id": "vested-amount",
+      "type": "function",
+      "lines": [122, 130],
+      "explanation": "Calculate total vested amount at a given timestamp based on cliff schedule.",
+      "searchTerms": ["vested", "total", "amount"]
+    },
+    {
+      "id": "vesting-schedule",
+      "type": "function",
+      "lines": [137, 148],
+      "explanation": "Cliff vesting schedule: 0% before cliff, 100% after. Uses cliff since FHE doesn't support division.",
+      "searchTerms": ["schedule", "cliff", "vesting"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/VestingWalletExample.sol", "source": "VestingWalletExample.sol" },
+    { "path": "test/VestingWalletExample.test.ts", "source": "VestingWalletExample.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransfer", "confidentialBalanceOf", "FHE.add", "FHE.sub", "FHE.ge", "FHE.select", "FHE.asEuint64", "FHE.allow", "FHE.allowThis", "FHE.allowTransient"],
+  "fheTypes": ["euint64", "euint128", "ebool"],
+  "relatedTemplates": ["erc7984-token"],
+  "prerequisites": ["erc7984-token"],
+  "nextSteps": ["escrow-erc7984"]
+}

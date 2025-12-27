@@ -1,0 +1,248 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+{{IMPORTS}}
+
+/**
+ * @title {{CONTRACT_NAME}}
+ * @notice NFT Mystery Box with encrypted rarity - fair distribution guaranteed
+ * @dev Uses FHE.random() for provably fair rarity assignment
+ *
+ * Rarity Tiers:
+ * - Legendary: 0-5 (5% chance)
+ * - Epic: 6-20 (15% chance)
+ * - Rare: 21-45 (25% chance)
+ * - Common: 46-100 (55% chance)
+ *
+ * FHE Operations Used:
+ * - random: Generate unpredictable rarity values
+ * - rem: Map random to 0-100 range
+ * - lt/lte/gt/gte: Determine rarity tier
+ * - select: Choose tier based on conditions
+ * - eq: Check specific rarity values
+ */
+contract {{CONTRACT_NAME}} is {{INHERITS}} {
+    // ============ Errors ============
+    error BoxNotFound();
+    error BoxAlreadyRevealed();
+    error NotBoxOwner();
+    error InsufficientPayment();
+    error NoBoxesAvailable();
+    {{ERRORS}}
+
+    // ============ Events ============
+    event BoxPurchased(uint256 indexed boxId, address indexed buyer);
+    event BoxRevealed(uint256 indexed boxId, address indexed owner);
+    event RarityAssigned(uint256 indexed boxId, uint8 tier);
+    {{EVENTS}}
+
+    // ============ Enums ============
+    enum Tier { Common, Rare, Epic, Legendary }
+
+    // ============ Structs ============
+    struct Box {
+        address owner;
+        [[RARITY_TYPE]] rarity;          // Encrypted rarity (0-100)
+        bool revealed;
+        uint8 revealedTier;              // Only set after reveal
+        uint256 purchasedAt;
+    }
+
+    // ============ State Variables ============
+    mapping(uint256 => Box) public _boxes;
+    mapping(address => uint256[]) public _userBoxes;
+    uint256 public _boxCount;
+
+    uint256 public boxPrice;
+    uint256 public maxSupply;
+
+    // Tier thresholds (cumulative percentages)
+    uint8 public constant LEGENDARY_THRESHOLD = 5;    // 0-5 = Legendary (5%)
+    uint8 public constant EPIC_THRESHOLD = 20;        // 6-20 = Epic (15%)
+    uint8 public constant RARE_THRESHOLD = 45;        // 21-45 = Rare (25%)
+    // 46-100 = Common (55%)
+    {{STATE_VARIABLES}}
+
+    // ============ Modifiers ============
+    modifier boxExists(uint256 boxId) {
+        if (boxId >= _boxCount) revert BoxNotFound();
+        _;
+    }
+
+    modifier isBoxOwner(uint256 boxId) {
+        if (_boxes[boxId].owner != msg.sender) revert NotBoxOwner();
+        _;
+    }
+    {{MODIFIERS}}
+
+    // ============ Constructor ============
+    constructor(uint256 _boxPrice, uint256 _maxSupply{{CONSTRUCTOR_PARAMS}}) {
+        boxPrice = _boxPrice;
+        maxSupply = _maxSupply;
+        {{CONSTRUCTOR_BODY}}
+    }
+
+    // ============ External Functions ============
+
+    /**
+     * @notice Purchase a mystery box
+     * @dev Rarity is assigned immediately but encrypted
+     */
+    function purchaseBox() external payable returns (uint256) {
+        if (msg.value < boxPrice) revert InsufficientPayment();
+        if (_boxCount >= maxSupply) revert NoBoxesAvailable();
+
+        uint256 boxId = _boxCount++;
+
+        // Generate random rarity (0-100) using FHE
+        euint64 randomValue = FHE.randEuint64();
+        [[RARITY_TYPE]] rarity = FHE.asEuint8(FHE.rem(randomValue, uint64(101)));
+
+        _boxes[boxId] = Box({
+            owner: msg.sender,
+            rarity: rarity,
+            revealed: false,
+            revealedTier: 0,
+            purchasedAt: block.timestamp
+        });
+
+        _userBoxes[msg.sender].push(boxId);
+
+        // Allow contract to use the rarity value
+        FHE.allowThis(rarity);
+
+        emit BoxPurchased(boxId, msg.sender);
+        return boxId;
+    }
+
+    /**
+     * @notice Reveal your box's rarity
+     * @param boxId The box to reveal
+     */
+    function revealBox(uint256 boxId)
+        external
+        boxExists(boxId)
+        isBoxOwner(boxId)
+        returns ([[RARITY_TYPE]])
+    {
+        Box storage box = _boxes[boxId];
+        if (box.revealed) revert BoxAlreadyRevealed();
+
+        box.revealed = true;
+
+        // Allow owner to see their rarity
+        FHE.allow(box.rarity, msg.sender);
+
+        emit BoxRevealed(boxId, msg.sender);
+        return box.rarity;
+    }
+
+    /**
+     * @notice Get rarity tier from encrypted rarity value
+     * @dev Uses encrypted comparisons to determine tier
+     * @param boxId The box to check
+     */
+    function getRarityTier(uint256 boxId)
+        external
+        boxExists(boxId)
+        isBoxOwner(boxId)
+        returns (ebool isLegendary, ebool isEpic, ebool isRare)
+    {
+        Box storage box = _boxes[boxId];
+        [[RARITY_TYPE]] rarity = box.rarity;
+
+        // Check each tier using encrypted comparisons
+        isLegendary = FHE.le(rarity, FHE.asEuint8(LEGENDARY_THRESHOLD));
+        isEpic = FHE.and(
+            FHE.gt(rarity, FHE.asEuint8(LEGENDARY_THRESHOLD)),
+            FHE.le(rarity, FHE.asEuint8(EPIC_THRESHOLD))
+        );
+        isRare = FHE.and(
+            FHE.gt(rarity, FHE.asEuint8(EPIC_THRESHOLD)),
+            FHE.le(rarity, FHE.asEuint8(RARE_THRESHOLD))
+        );
+        // Common is implicit: rarity > 45
+
+        // Allow owner to see tier results
+        FHE.allow(isLegendary, msg.sender);
+        FHE.allow(isEpic, msg.sender);
+        FHE.allow(isRare, msg.sender);
+
+        FHE.allowThis(isLegendary);
+        FHE.allowThis(isEpic);
+        FHE.allowThis(isRare);
+
+        return (isLegendary, isEpic, isRare);
+    }
+
+    /**
+     * @notice Transfer box to another address
+     * @param boxId The box to transfer
+     * @param to The recipient
+     */
+    function transferBox(uint256 boxId, address to)
+        external
+        boxExists(boxId)
+        isBoxOwner(boxId)
+    {
+        Box storage box = _boxes[boxId];
+        box.owner = to;
+
+        // Update ownership for FHE access
+        FHE.allow(box.rarity, to);
+    }
+
+    {{EXTERNAL_FUNCTIONS}}
+
+    // ============ View Functions ============
+
+    /**
+     * @notice Get box info
+     */
+    function getBox(uint256 boxId) external view returns (
+        address owner,
+        bool revealed,
+        uint256 purchasedAt
+    ) {
+        Box storage box = _boxes[boxId];
+        return (box.owner, box.revealed, box.purchasedAt);
+    }
+
+    /**
+     * @notice Get total boxes sold
+     */
+    function getBoxCount() external view returns (uint256) {
+        return _boxCount;
+    }
+
+    /**
+     * @notice Get remaining supply
+     */
+    function getRemainingSupply() external view returns (uint256) {
+        return maxSupply - _boxCount;
+    }
+
+    /**
+     * @notice Get user's boxes
+     */
+    function getUserBoxes(address user) external view returns (uint256[] memory) {
+        return _userBoxes[user];
+    }
+
+    /**
+     * @notice Get tier probabilities
+     */
+    function getTierProbabilities() external pure returns (
+        uint8 legendary,
+        uint8 epic,
+        uint8 rare,
+        uint8 common
+    ) {
+        return (5, 15, 25, 55);
+    }
+
+    {{VIEW_FUNCTIONS}}
+
+    // ============ Internal Functions ============
+    {{INTERNAL_FUNCTIONS}}
+}

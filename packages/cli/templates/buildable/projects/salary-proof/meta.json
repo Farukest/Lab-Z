@@ -1,0 +1,48 @@
+{
+  "name": "salary-proof",
+  "version": "1.0.0",
+  "description": "Prove salary range without revealing exact amount - for loans, rentals, employment",
+  "author": "Lab-Z",
+  "tags": ["identity", "privacy", "income", "proof"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "AMOUNT_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for salary amounts"
+    },
+    "EXTERNAL_AMOUNT_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for salary input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_salaries", "_proofs", "_verifiers"],
+    "functions": ["registerSalary", "proveAboveThreshold", "proveBelowThreshold", "proveInRange", "verifyProof"],
+    "events": ["SalaryRegistered", "ProofGenerated", "ProofVerified"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[AMOUNT_TYPE]], [[EXTERNAL_AMOUNT_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["gt", "gte", "lt", "lte", "eq", "ne", "and", "or", "select", "allowThis", "allow", "fromExternal"]
+}

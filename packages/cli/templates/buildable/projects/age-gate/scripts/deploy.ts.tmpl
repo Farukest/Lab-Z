@@ -1,0 +1,45 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const validityPeriod = 86400 * 30; // 30 days
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Verification Validity:", validityPeriod / 86400, "days");
+
+  const AgeGateFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const ageGate = await AgeGateFactory.deploy(validityPeriod);
+
+  await ageGate.waitForDeployment();
+
+  const address = await ageGate.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nWorkflow:");
+  console.log("  1. Issuer (KYC provider) registers user's encrypted birth date:");
+  console.log("     registerBirthDate(userAddress, encryptedBirthDate)");
+  console.log("  2. User generates age proof for a service:");
+  console.log("     verifyAge(minAge, serviceAddress) -> verificationId");
+  console.log("  3. Service checks the verification:");
+  console.log("     checkAgeRequirement(verificationId) -> encrypted boolean");
+  console.log("  4. Or use grantAccess for inline verification:");
+  console.log("     grantAccess(resourceId, minAge) -> encrypted boolean");
+  console.log("\nCommon Age Requirements:");
+  console.log("  - 13+: Social media accounts");
+  console.log("  - 18+: Adult content, gambling");
+  console.log("  - 21+: Alcohol, cannabis (US)");
+  console.log("  - 25+: Car rental without surcharge");
+  console.log("  - 65+: Senior discounts");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Birth date is NEVER revealed");
+  console.log("  - Services only learn boolean (age >= X)");
+  console.log("  - Exact age remains private");
+  console.log("\nFHE Operations Used:");
+  console.log("  - sub: Calculate age from timestamp difference");
+  console.log("  - div: Convert seconds to years");
+  console.log("  - gte: Check if age meets requirement");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

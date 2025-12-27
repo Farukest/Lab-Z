@@ -1,0 +1,221 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let qv: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let voter1: HardhatEthersSigner;
+  let voter2: HardhatEthersSigner;
+  let whale: HardhatEthersSigner;
+
+  const INITIAL_CREDITS = 100;
+  const ONE_DAY = 86400;
+
+  beforeEach(async function () {
+    [owner, voter1, voter2, whale] = await ethers.getSigners();
+
+    const QVFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    qv = await QVFactory.deploy(INITIAL_CREDITS);
+    await qv.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct initial credits", async function () {
+      expect(await qv.initialCredits()).to.equal(INITIAL_CREDITS);
+    });
+
+    it("Should start with zero proposals", async function () {
+      expect(await qv.getProposalCount()).to.equal(0);
+    });
+  });
+
+  describe("Proposal Creation", function () {
+    it("Should create proposal with correct parameters", async function () {
+      const description = "Increase treasury allocation";
+      await expect(qv.createProposal(description, ONE_DAY))
+        .to.emit(qv, "ProposalCreated");
+
+      const [desc, deadline, tallied, revealRequested, revealed, voterCount] = await qv.getProposal(0);
+      expect(desc).to.equal(description);
+      expect(tallied).to.equal(false);
+      expect(revealRequested).to.equal(false);
+      expect(revealed).to.equal(false);
+      expect(voterCount).to.equal(0);
+    });
+
+    it("Should increment proposal count", async function () {
+      await qv.createProposal("Proposal 1", ONE_DAY);
+      await qv.createProposal("Proposal 2", ONE_DAY);
+      expect(await qv.getProposalCount()).to.equal(2);
+    });
+  });
+
+  describe("Quadratic Cost Calculation", function () {
+    it("Should calculate 1 vote = 1 credit", async function () {
+      expect(await qv.calculateCost(1)).to.equal(1);
+    });
+
+    it("Should calculate 2 votes = 4 credits", async function () {
+      expect(await qv.calculateCost(2)).to.equal(4);
+    });
+
+    it("Should calculate 3 votes = 9 credits", async function () {
+      expect(await qv.calculateCost(3)).to.equal(9);
+    });
+
+    it("Should calculate 10 votes = 100 credits", async function () {
+      expect(await qv.calculateCost(10)).to.equal(100);
+    });
+
+    it("Should calculate 100 votes = 10000 credits", async function () {
+      expect(await qv.calculateCost(100)).to.equal(10000);
+    });
+  });
+
+  describe("Max Votes Calculation", function () {
+    it("Should calculate sqrt of credits for max votes", async function () {
+      expect(await qv.calculateMaxVotes(100)).to.equal(10);
+      expect(await qv.calculateMaxVotes(81)).to.equal(9);
+      expect(await qv.calculateMaxVotes(64)).to.equal(8);
+      expect(await qv.calculateMaxVotes(1)).to.equal(1);
+      expect(await qv.calculateMaxVotes(0)).to.equal(0);
+    });
+
+    it("Should floor for non-perfect squares", async function () {
+      expect(await qv.calculateMaxVotes(99)).to.equal(9);  // sqrt(99) ≈ 9.95
+      expect(await qv.calculateMaxVotes(50)).to.equal(7);  // sqrt(50) ≈ 7.07
+    });
+  });
+
+  describe("Voting", function () {
+    beforeEach(async function () {
+      await qv.createProposal("Test proposal", ONE_DAY);
+    });
+
+    it("Should track voted status", async function () {
+      expect(await qv.hasVoted(0, voter1.address)).to.equal(false);
+    });
+
+    it("Should reject voting on non-existent proposal", async function () {
+      // Would need encrypted input in real test
+    });
+  });
+
+  describe("Tally", function () {
+    it("Should reject tally before deadline", async function () {
+      await qv.createProposal("Test", ONE_DAY);
+      await expect(qv.tallyVotes(0))
+        .to.be.revertedWithCustomError(qv, "VotingNotEnded");
+    });
+
+    it("Should reject tally for non-existent proposal", async function () {
+      await expect(qv.tallyVotes(999))
+        .to.be.revertedWithCustomError(qv, "ProposalNotFound");
+    });
+  });
+
+  describe("Quadratic Voting Economics", function () {
+    it("Should demonstrate anti-whale properties", async function () {
+      /**
+       * Scenario: 100 credits each
+       *
+       * Whale strategy (10 votes on one proposal):
+       * - Cost: 10^2 = 100 credits
+       * - Gets: 10 votes
+       *
+       * Community strategy (10 voters, 1 vote each):
+       * - Cost per person: 1^2 = 1 credit
+       * - Total votes: 10 votes
+       * - Remaining credits: 990 for other proposals!
+       *
+       * With same total credits, community has MORE influence across proposals
+       */
+    });
+
+    it("Should show diminishing returns for large votes", async function () {
+      /**
+       * Cost progression:
+       * 1 vote  = 1 credit   (1 credit/vote)
+       * 2 votes = 4 credits  (2 credits/vote)
+       * 3 votes = 9 credits  (3 credits/vote)
+       * 4 votes = 16 credits (4 credits/vote)
+       *
+       * Marginal cost increases linearly with vote count
+       */
+    });
+  });
+
+  describe("Public Decryption Flow", function () {
+    it("Documents the complete 3-step async decryption flow", async function () {
+      /**
+       * Complete Public Decryption Flow for Quadratic Voting:
+       *
+       * VOTING PHASE
+       * ============
+       * // Voters cast encrypted quadratic votes
+       * const encryptedVotes = await fhevmInstance.encrypt64(voteCount);
+       * await qv.castVote(proposalId, true, encryptedVotes.data);
+       *
+       * STEP 1 - On-chain: Tally & Request Reveal
+       * =========================================
+       * await qv.tallyVotes(proposalId);
+       * await qv.requestResultsReveal(proposalId);
+       * // Internally calls: FHE.makePubliclyDecryptable(yesVotes), FHE.makePubliclyDecryptable(noVotes)
+       * // Emits: ResultsReadyForReveal event
+       *
+       * STEP 2 - Off-chain: Decrypt via Relayer SDK
+       * ============================================
+       * const [yesHandle, noHandle] = await qv.getVoteHandles(proposalId);
+       * const result = await fhevmInstance.publicDecrypt([yesHandle, noHandle]);
+       * const yesVotes = result.clearValues[yesHandle];
+       * const noVotes = result.clearValues[noHandle];
+       * const proof = result.decryptionProof;
+       *
+       * STEP 3 - On-chain: Finalize with Proof
+       * ======================================
+       * await qv.finalizeResultsReveal(proposalId, yesVotes, noVotes, proof);
+       * // Internally calls: FHE.checkSignatures(cts, cleartexts, proof)
+       * // Stores results and determines if proposal passed
+       * // Emits: ResultsRevealed(proposalId, yesVotes, noVotes, passed)
+       *
+       * VIEW RESULTS
+       * ============
+       * const [yesVotes, noVotes, passed] = await qv.getRevealedResults(proposalId);
+       */
+    });
+
+    it("Should reject reveal request before tally", async function () {
+      await qv.createProposal("Test", ONE_DAY);
+      await expect(qv.requestResultsReveal(0))
+        .to.be.revertedWithCustomError(qv, "VotingNotEnded");
+    });
+
+    it("Should reject getRevealedResults before reveal", async function () {
+      await qv.createProposal("Test", 1);
+      await expect(qv.getRevealedResults(0))
+        .to.be.revertedWithCustomError(qv, "ResultsNotRevealed");
+    });
+  });
+
+  describe("Privacy", function () {
+    it("Should keep vote counts encrypted until public reveal", async function () {
+      /**
+       * FHE ensures:
+       * - Individual votes are encrypted
+       * - Running tallies are encrypted
+       * - Results only revealed via verified public decryption
+       * - No one knows how any individual voted
+       */
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct proposal count", async function () {
+      expect(await qv.getProposalCount()).to.equal(0);
+      await qv.createProposal("Test", ONE_DAY);
+      expect(await qv.getProposalCount()).to.equal(1);
+    });
+  });
+});

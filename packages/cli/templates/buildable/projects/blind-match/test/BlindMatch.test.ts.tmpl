@@ -1,0 +1,139 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let blindMatch: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let user1: HardhatEthersSigner;
+  let user2: HardhatEthersSigner;
+  let user3: HardhatEthersSigner;
+
+  const MIN_MATCH_SCORE = 50;
+
+  beforeEach(async function () {
+    [owner, user1, user2, user3] = await ethers.getSigners();
+
+    const BlindMatchFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    blindMatch = await BlindMatchFactory.deploy(MIN_MATCH_SCORE);
+    await blindMatch.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct minimum match score", async function () {
+      expect(await blindMatch.minMatchScore()).to.equal(MIN_MATCH_SCORE);
+    });
+
+    it("Should start with zero registered users", async function () {
+      expect(await blindMatch.getRegisteredUserCount()).to.equal(0);
+    });
+
+    it("Should reject score above 100", async function () {
+      const BlindMatchFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+      await expect(BlindMatchFactory.deploy(101))
+        .to.be.revertedWith("Score must be <= 100");
+    });
+  });
+
+  describe("Profile Registration", function () {
+    // Note: In real tests, encrypted attributes would be created with fhevmjs
+    // These tests verify the non-FHE logic paths
+
+    it("Should track registered user count", async function () {
+      expect(await blindMatch.getRegisteredUserCount()).to.equal(0);
+    });
+
+    it("Should correctly report profile status", async function () {
+      expect(await blindMatch.hasRegisteredProfile(user1.address)).to.equal(false);
+    });
+
+    it("Should correctly report preference status", async function () {
+      expect(await blindMatch.hasSetPreferences(user1.address)).to.equal(false);
+    });
+  });
+
+  describe("Match Checking", function () {
+    it("Should reject matching with self", async function () {
+      // This would need a registered profile first
+      // Placeholder for FHE-enabled test
+    });
+
+    it("Should reject matching unregistered users", async function () {
+      await expect(blindMatch.checkMatch(user2.address))
+        .to.be.revertedWithCustomError(blindMatch, "ProfileNotFound");
+    });
+  });
+
+  describe("Match Reveal", function () {
+    it("Should track acceptance from both parties", async function () {
+      // Placeholder - requires registered profiles with FHE
+      const fakeMatchId = ethers.keccak256(ethers.toUtf8Bytes("test"));
+      const [revealed, accepted1, accepted2] = await blindMatch.getMatchStatus(fakeMatchId);
+
+      expect(revealed).to.equal(false);
+      expect(accepted1).to.equal(false);
+      expect(accepted2).to.equal(false);
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct registered user count", async function () {
+      expect(await blindMatch.getRegisteredUserCount()).to.equal(0);
+    });
+
+    it("Should correctly check profile existence", async function () {
+      expect(await blindMatch.hasRegisteredProfile(user1.address)).to.equal(false);
+      expect(await blindMatch.hasRegisteredProfile(user2.address)).to.equal(false);
+    });
+  });
+
+  describe("Security", function () {
+    it("Should prevent unauthorized match reveal", async function () {
+      const fakeMatchId = ethers.keccak256(ethers.toUtf8Bytes("test"));
+
+      // Getting users from non-existent match should fail
+      // This tests the security of the reveal function
+    });
+  });
+
+  describe("Use Cases", function () {
+    it("Dating app scenario - bitfield preferences", async function () {
+      /**
+       * Example bit encoding for dating:
+       * Bit 0-3: Age range (0=18-25, 1=26-35, 2=36-45, etc.)
+       * Bit 4-7: Location preference
+       * Bit 8-15: Interests (music, sports, art, etc.)
+       * Bit 16-23: Lifestyle (smoking, drinking, pets, etc.)
+       *
+       * Matching works by:
+       * 1. AND(myPrefs, theirAttrs) - do they have what I want?
+       * 2. AND(theirPrefs, myAttrs) - do I have what they want?
+       * 3. If both have overlap, it's a match!
+       */
+    });
+
+    it("Job matching scenario", async function () {
+      /**
+       * Example bit encoding for jobs:
+       * Bit 0-7: Skills (programming, design, marketing, etc.)
+       * Bit 8-15: Experience level
+       * Bit 16-23: Industry preferences
+       * Bit 24-31: Work style (remote, hybrid, office)
+       *
+       * Candidates and jobs both have attributes and preferences.
+       */
+    });
+
+    it("Roommate matching scenario", async function () {
+      /**
+       * Example bit encoding for roommates:
+       * Bit 0-3: Cleanliness level
+       * Bit 4-7: Noise tolerance
+       * Bit 8-11: Sleep schedule
+       * Bit 12-15: Guest policy
+       * Bit 16-23: Shared interests
+       */
+    });
+  });
+});

@@ -1,0 +1,55 @@
+{
+  "id": "anti-pattern-view-encrypted",
+  "name": "Anti-Pattern: View Encrypted",
+  "category": "anti-patterns",
+  "difficulty": "beginner",
+  "tags": ["anti-pattern", "mistake", "view", "decrypt", "handle", "common error", "beginner trap", "yaygin hata"],
+  "description": "Common mistake: expecting view functions to return plaintext instead of encrypted handles",
+  "longDescription": "This is one of the MOST COMMON mistakes when learning FHEVM. Developers expect view functions to return readable values, but they return encrypted handles that must be decrypted off-chain. Learn why this happens, see the common variations of this mistake, and understand the correct pattern: get handle from view function, then decrypt off-chain using fhevm.userDecryptEuint() with user signature.",
+  "blocks": [
+    {
+      "id": "the-mistake",
+      "type": "comment",
+      "lines": [10, 27],
+      "explanation": "The mistake: developers think calling getBalance() will return 1000, but it returns 0x1234... (an encrypted handle). You cannot read plaintext from view functions!",
+      "searchTerms": ["mistake", "anti-pattern", "view", "plaintext", "handle"]
+    },
+    {
+      "id": "why-not-work",
+      "type": "comment",
+      "lines": [29, 41],
+      "explanation": "View functions return handles (32-byte references to encrypted data). Decryption requires: permission check, user signature, and off-chain processing.",
+      "searchTerms": ["why", "handle", "decrypt", "permission", "signature"]
+    },
+    {
+      "id": "correct-approach",
+      "type": "comment",
+      "lines": [43, 58],
+      "explanation": "Correct approach: grant permission with FHE.allow(), return handle from view function, then decrypt off-chain using fhevm.userDecryptEuint() with user signature.",
+      "searchTerms": ["correct", "solution", "userDecryptEuint", "off-chain"]
+    },
+    {
+      "id": "anti-pattern-example",
+      "type": "function",
+      "lines": [78, 92],
+      "explanation": "ANTI-PATTERN function showing what NOT to expect. Developers call this expecting plaintext but get an encrypted handle instead.",
+      "searchTerms": ["anti-pattern", "wrong", "example", "mistake"]
+    },
+    {
+      "id": "correct-example",
+      "type": "function",
+      "lines": [96, 121],
+      "explanation": "CORRECT usage with full client-side code showing how to get handle and then decrypt off-chain properly.",
+      "searchTerms": ["correct", "example", "proper", "how to"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/ViewEncryptedAntiPattern.sol", "source": "ViewEncryptedAntiPattern.sol" },
+    { "path": "test/ViewEncryptedAntiPattern.test.ts", "source": "ViewEncryptedAntiPattern.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "allowThis", "allow"],
+  "fheTypes": ["euint64", "externalEuint64"],
+  "relatedTemplates": ["decryption-user-single", "anti-pattern-missing-allow"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["decryption-user-single", "anti-pattern-missing-allow"]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "prediction-market",
+  "version": "1.0.0",
+  "description": "Polymarket-style prediction market with encrypted positions",
+  "author": "Lab-Z",
+  "tags": ["defi", "prediction", "betting", "privacy"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_BET", "description": "Before bet logic", "required": false },
+    { "name": "POST_BET", "description": "After bet logic", "required": false },
+    { "name": "BET_MODIFIERS", "description": "Modifiers for bet function", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "AMOUNT_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for bet amounts"
+    },
+    "EXTERNAL_AMOUNT_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for inputs"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_markets", "_positions", "_marketCount"],
+    "functions": ["createMarket", "placeBet", "resolveMarket", "claimWinnings"],
+    "events": ["MarketCreated", "BetPlaced", "MarketResolved", "WinningsClaimed"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[AMOUNT_TYPE]], [[EXTERNAL_AMOUNT_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["add", "sub", "div", "mul", "min", "max", "select", "gt", "eq", "allowThis", "allow", "fromExternal", "asEuint64"]
+}

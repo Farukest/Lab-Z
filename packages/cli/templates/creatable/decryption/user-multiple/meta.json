@@ -1,0 +1,55 @@
+{
+  "id": "decryption-user-multiple",
+  "name": "User Decrypt Multiple Values",
+  "category": "decryption",
+  "difficulty": "intermediate",
+  "tags": ["decryption", "private", "user", "multiple", "batch", "FHE.allow", "userDecryptEuint", "profile", "game-stats"],
+  "description": "How to privately decrypt multiple encrypted values at once for authorized users",
+  "longDescription": "This example demonstrates batch private decryption in FHEVM. Learn how to store multiple encrypted values (like a user profile with balance, score, level) and let users decrypt all of them efficiently. Shows how to use FHE.allow() for multiple values, retrieve all handles in one call, and decrypt in batch off-chain.",
+  "blocks": [
+    {
+      "id": "create-profile",
+      "type": "function",
+      "lines": [48, 90],
+      "explanation": "Store 4 encrypted values (balance, score, level, isPremium) with FHE.allow() for each. All values are encrypted and only the owner can decrypt them.",
+      "searchTerms": ["create", "profile", "multiple", "store", "4 values"]
+    },
+    {
+      "id": "get-all-handles",
+      "type": "function",
+      "lines": [106, 120],
+      "explanation": "Return all 4 encrypted handles in one call. User can then decrypt all values off-chain in batch. More efficient than calling 4 separate functions.",
+      "searchTerms": ["get", "handles", "batch", "all values", "tuple"]
+    },
+    {
+      "id": "game-stats",
+      "type": "function",
+      "lines": [124, 168],
+      "explanation": "Another example with 4 encrypted game attributes (health, mana, strength, defense). Shows the pattern works for any type of multi-value data.",
+      "searchTerms": ["game", "stats", "attributes", "health", "mana"]
+    },
+    {
+      "id": "share-multiple",
+      "type": "function",
+      "lines": [172, 184],
+      "explanation": "Share all encrypted values with another user at once. Grants FHE.allow() for all 4 values to the viewer address.",
+      "searchTerms": ["share", "viewer", "grant", "all values", "permission"]
+    },
+    {
+      "id": "update-multiple",
+      "type": "function",
+      "lines": [202, 222],
+      "explanation": "Update multiple encrypted values atomically. IMPORTANT: New values need new FHE.allow() permissions.",
+      "searchTerms": ["update", "atomic", "multiple", "new permissions"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/UserDecryptMultiple.sol", "source": "UserDecryptMultiple.sol" },
+    { "path": "test/UserDecryptMultiple.test.ts", "source": "UserDecryptMultiple.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "add", "asEbool", "allowThis", "allow"],
+  "fheTypes": ["euint64", "euint32", "ebool", "externalEuint64", "externalEuint32"],
+  "relatedTemplates": ["decryption-user-single", "decryption-public-multiple", "encryption-multiple"],
+  "prerequisites": ["decryption-user-single", "encryption-multiple"],
+  "nextSteps": ["decryption-public-multiple", "acl-transient"]
+}

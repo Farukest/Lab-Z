@@ -1,0 +1,45 @@
+{
+  "id": "prediction-market",
+  "name": "Prediction Market",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["defi", "prediction", "betting", "privacy", "polymarket", "oracle"],
+  "description": "Polymarket-style prediction market with encrypted positions and private bet amounts",
+  "longDescription": "A fully-featured prediction market where users can bet on binary outcomes (YES/NO) with encrypted amounts. Uses FHE for private bet positions - no one can see how much others are betting. After market resolution, pools are decrypted to calculate proportional payouts. Demonstrates complex FHE patterns: encrypted pools, oracle integration, and payout calculations with mixed encrypted/plaintext operations.",
+  "sections": [
+    { "id": "setup", "title": "Setup", "description": "Deploy & configure" },
+    { "id": "market-creation", "title": "Create Market", "description": "Initialize pools" },
+    { "id": "placing-bets", "title": "Place Bets", "description": "Encrypted betting" },
+    { "id": "resolution", "title": "Resolution", "description": "Oracle decides" },
+    { "id": "claim", "title": "Claim", "description": "Get winnings" }
+  ],
+  "blocks": [
+    {
+      "id": "market-struct",
+      "type": "struct",
+      "lines": [31, 43],
+      "explanation": "Market stores encrypted YES/NO pools as euint64. Pool values remain private during betting. decryptedYesPool/decryptedNoPool are set by oracle after resolution for payout calculation."
+    },
+    {
+      "id": "place-bet",
+      "type": "function",
+      "lines": [96, 120],
+      "explanation": "Users bet with encrypted amounts. FHE.add accumulates bets in encrypted pools. Both contract (allowThis) and user (allow) get permissions for their position amounts."
+    },
+    {
+      "id": "claim-winnings",
+      "type": "function",
+      "lines": [143, 171],
+      "explanation": "Payout calculation uses mixed FHE: encrypted user bet multiplied by plaintext total pool, divided by plaintext winning pool. Result is encrypted payout amount."
+    }
+  ],
+  "files": [
+    { "path": "contracts/PredictionMarket.sol", "source": "PredictionMarket.sol" },
+    { "path": "test/PredictionMarket.test.ts", "source": "PredictionMarket.test.ts" }
+  ],
+  "fheOperations": ["add", "sub", "mul", "div", "asEuint64", "fromExternal", "allowThis", "allow"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["sealed-tender", "dark-pool", "voting"],
+  "prerequisites": ["encryption-single", "acl-allow"],
+  "nextSteps": ["quadratic-vote", "lottery"]
+}

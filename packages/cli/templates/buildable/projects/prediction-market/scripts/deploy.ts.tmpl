@@ -1,0 +1,39 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  const minBetAmount = 100; // Minimum bet amount
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Oracle Address:", deployer.address);
+  console.log("  Minimum Bet Amount:", minBetAmount);
+
+  const MarketFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const market = await MarketFactory.deploy(deployer.address, minBetAmount);
+
+  await market.waitForDeployment();
+
+  const address = await market.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nUsage:");
+  console.log("  1. Create a market: createMarket(question, deadline)");
+  console.log("  2. Place bets: placeBet(marketId, outcome, encryptedAmount)");
+  console.log("     - outcome: true for YES, false for NO");
+  console.log("  3. After deadline, oracle resolves: resolveMarket(marketId, outcome)");
+  console.log("  4. Winners claim: claimWinnings(marketId)");
+  console.log("\nPrivacy Features:");
+  console.log("  - Bet amounts are encrypted (no one knows your position size)");
+  console.log("  - Pool totals are encrypted (prevents front-running)");
+  console.log("  - Payout calculation happens on encrypted values");
+  console.log("\nFHE Operations Used:");
+  console.log("  - add: Accumulate bets into pools");
+  console.log("  - mul/div: Calculate proportional winnings");
+  console.log("  - min/max: Cap payouts safely");
+  console.log("  - select: Choose payout based on outcome");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

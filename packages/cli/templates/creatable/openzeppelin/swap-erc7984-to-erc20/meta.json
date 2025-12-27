@@ -1,0 +1,34 @@
+{
+  "id": "swap-erc7984-to-erc20",
+  "name": "Swap ERC7984 to ERC20",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["swap", "exchange", "ERC7984", "ERC20", "DEX", "OpenZeppelin"],
+  "description": "Atomic swap between confidential ERC7984 and standard ERC20 tokens",
+  "longDescription": "This example implements an atomic swap contract that allows users to exchange confidential ERC7984 tokens for standard ERC20 tokens. The swap amount remains confidential while the exchange rate is public. Useful for DEX integrations and bridging between confidential and public token systems.",
+  "blocks": [
+    {
+      "id": "create-swap",
+      "type": "function",
+      "lines": [25, 45],
+      "explanation": "Creates a new swap offer with encrypted ERC7984 amount. The offer is stored and can be accepted by anyone with matching ERC20 tokens.",
+      "searchTerms": ["create", "offer", "swap", "ERC7984"]
+    },
+    {
+      "id": "accept-swap",
+      "type": "function",
+      "lines": [50, 75],
+      "explanation": "Accepts an existing swap offer by providing ERC20 tokens. The atomic swap ensures both parties receive their tokens or the transaction reverts.",
+      "searchTerms": ["accept", "complete", "atomic", "ERC20"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/SwapERC7984ToERC20.sol", "source": "SwapERC7984ToERC20.sol" },
+    { "path": "test/SwapERC7984ToERC20.test.ts", "source": "SwapERC7984ToERC20.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "fromExternal"],
+  "fheTypes": ["euint64"],
+  "relatedTemplates": ["swap-erc7984-to-erc7984", "erc7984-wrapper"],
+  "prerequisites": ["erc7984-token", "erc7984-wrapper"],
+  "nextSteps": ["amm-erc7984"]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "voting",
+  "name": "Private Voting",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["voting", "governance", "dao", "privacy", "elections"],
+  "description": "Encrypted voting system with private ballots and verifiable tallying",
+  "longDescription": "A private voting system where each vote is encrypted and no one can see individual votes. Vote counts are tallied homomorphically - addition happens on encrypted values. Demonstrates FHE.add for accumulating encrypted votes and proper ACL for vote privacy. Essential pattern for DAOs and governance systems.",
+  "files": [
+    { "path": "contracts/Voting.sol", "source": "Voting.sol" },
+    { "path": "test/Voting.test.ts", "source": "Voting.test.ts" }
+  ],
+  "fheOperations": ["add", "allowThis", "allow", "fromExternal", "asEuint32"],
+  "fheTypes": ["euint32", "externalEuint32", "ebool"],
+  "relatedTemplates": ["quadratic-vote", "prediction-market"],
+  "prerequisites": ["encryption-single", "acl-allow"],
+  "nextSteps": ["quadratic-vote"]
+}

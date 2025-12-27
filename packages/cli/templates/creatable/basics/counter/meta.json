@@ -1,0 +1,66 @@
+{
+  "id": "counter",
+  "name": "FHE Counter",
+  "category": "basics",
+  "difficulty": "beginner",
+  "tags": ["counter", "euint32", "add", "sub", "state", "beginner", "FHE.add", "FHE.sub"],
+  "description": "A simple encrypted counter with increment and decrement operations",
+  "longDescription": "This example demonstrates the fundamental concepts of FHEVM by implementing a basic counter that stores its value as an encrypted euint32. Users can increment or decrement the counter using encrypted inputs, and only authorized users can decrypt the current count value.",
+  "sections": [
+    { "id": "setup", "title": "Setup", "description": "Deploy contract" },
+    { "id": "increment", "title": "Increment", "description": "Add to counter" },
+    { "id": "decrement", "title": "Decrement", "description": "Subtract from counter" },
+    { "id": "read", "title": "Read", "description": "Get count value" }
+  ],
+  "blocks": [
+    {
+      "id": "imports",
+      "type": "import",
+      "lines": [1, 5],
+      "explanation": "Import the FHE library with encrypted types (euint32, externalEuint32) and the ZamaEthereumConfig for network configuration. These are essential for any FHEVM contract.",
+      "searchTerms": ["import", "FHE", "library", "euint32", "externalEuint32", "ZamaEthereumConfig", "başlangıç", "kütüphane"]
+    },
+    {
+      "id": "contract-declaration",
+      "type": "state",
+      "lines": [7, 9],
+      "explanation": "The contract inherits from ZamaEthereumConfig which provides the necessary FHEVM configuration. The _count variable is an encrypted euint32 - its value is never visible on-chain.",
+      "searchTerms": ["contract", "inheritance", "ZamaEthereumConfig", "euint32", "state variable", "encrypted state", "şifreli değişken"]
+    },
+    {
+      "id": "get-count",
+      "type": "function",
+      "lines": [11, 14],
+      "explanation": "Returns the encrypted counter handle. Note: This does NOT return the actual value - it returns a bytes32 handle that points to the encrypted value. Users need off-chain decryption to see the actual count.",
+      "searchTerms": ["getCount", "view", "handle", "encrypted return", "bytes32", "okuma", "değer alma"]
+    },
+    {
+      "id": "increment",
+      "type": "function",
+      "lines": [16, 24],
+      "explanation": "Increments the counter by an encrypted value. The input comes as externalEuint32 with a proof (inputProof) that validates the encryption. FHE.fromExternal converts it to usable euint32, then FHE.add performs encrypted addition.",
+      "searchTerms": ["increment", "add", "FHE.add", "FHE.fromExternal", "inputProof", "externalEuint32", "toplama", "artırma"]
+    },
+    {
+      "id": "decrement",
+      "type": "function",
+      "lines": [26, 34],
+      "explanation": "Decrements the counter by an encrypted value. Similar to increment but uses FHE.sub for encrypted subtraction. Note: No underflow check is performed in this simple example.",
+      "searchTerms": ["decrement", "sub", "FHE.sub", "subtraction", "çıkarma", "azaltma"]
+    },
+    {
+      "id": "permissions",
+      "type": "function",
+      "lines": [21, 23],
+      "explanation": "FHE.allowThis grants the contract permission to use the encrypted value in future operations. FHE.allow grants the caller (msg.sender) permission to decrypt the value off-chain. Both are critical for proper ACL management.",
+      "searchTerms": ["allow", "allowThis", "ACL", "permission", "access control", "izin", "yetki"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/FHECounter.sol", "source": "FHECounter.sol" },
+    { "path": "test/FHECounter.test.ts", "source": "FHECounter.test.ts" }
+  ],
+  "relatedTemplates": ["add", "encryption-single", "user-decrypt-single"],
+  "prerequisites": [],
+  "nextSteps": ["add", "encryption-single", "acl-allow"]
+}

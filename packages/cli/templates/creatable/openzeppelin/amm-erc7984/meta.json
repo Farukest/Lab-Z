@@ -1,0 +1,41 @@
+{
+  "id": "amm-erc7984",
+  "name": "AMM with ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["AMM", "DEX", "liquidity", "ERC7984", "swap", "DeFi", "OpenZeppelin"],
+  "description": "An Automated Market Maker (AMM) for confidential ERC7984 token swaps",
+  "longDescription": "This advanced example implements a constant-product AMM (like Uniswap) for ERC7984 tokens. Liquidity providers can add/remove liquidity with confidential amounts. Traders can swap between token pairs while keeping their trade sizes private. The AMM uses encrypted reserves and computations.",
+  "blocks": [
+    {
+      "id": "add-liquidity",
+      "type": "function",
+      "lines": [35, 60],
+      "explanation": "Add liquidity to the pool with confidential token amounts. LP tokens are minted proportionally to the provided liquidity.",
+      "searchTerms": ["liquidity", "add", "provide", "LP"]
+    },
+    {
+      "id": "remove-liquidity",
+      "type": "function",
+      "lines": [65, 90],
+      "explanation": "Remove liquidity by burning LP tokens. The withdrawn amounts are confidential.",
+      "searchTerms": ["remove", "withdraw", "liquidity", "burn"]
+    },
+    {
+      "id": "swap",
+      "type": "function",
+      "lines": [95, 130],
+      "explanation": "Swap tokens using the constant product formula (x*y=k). The swap amount is encrypted, hiding trade size from observers.",
+      "searchTerms": ["swap", "trade", "exchange", "AMM"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/AMMERC7984.sol", "source": "AMMERC7984.sol" },
+    { "path": "test/AMMERC7984.test.ts", "source": "AMMERC7984.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "FHE.mul", "FHE.div", "fromExternal"],
+  "fheTypes": ["euint64"],
+  "relatedTemplates": ["swap-erc7984-to-erc7984", "erc7984-token"],
+  "prerequisites": ["erc7984-token", "swap-erc7984-to-erc7984"],
+  "nextSteps": []
+}

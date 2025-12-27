@@ -1,0 +1,34 @@
+{
+  "id": "swap-erc7984-to-erc7984",
+  "name": "Swap ERC7984 to ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["swap", "exchange", "ERC7984", "DEX", "confidential", "OpenZeppelin"],
+  "description": "Atomic swap between two different confidential ERC7984 tokens",
+  "longDescription": "This example implements a fully confidential atomic swap between two ERC7984 tokens. Both the swap amounts remain encrypted, providing complete privacy for token exchanges. Ideal for confidential DEXs and private OTC trading.",
+  "blocks": [
+    {
+      "id": "create-swap",
+      "type": "function",
+      "lines": [25, 50],
+      "explanation": "Creates a swap offer with encrypted amounts for both tokens. Only the creator knows the exact terms of the swap.",
+      "searchTerms": ["create", "offer", "confidential", "swap"]
+    },
+    {
+      "id": "accept-swap",
+      "type": "function",
+      "lines": [55, 80],
+      "explanation": "Accepts a swap by providing the counter-party's ERC7984 tokens. Both transfers happen atomically with encrypted amounts.",
+      "searchTerms": ["accept", "atomic", "complete", "trade"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/SwapERC7984ToERC7984.sol", "source": "SwapERC7984ToERC7984.sol" },
+    { "path": "test/SwapERC7984ToERC7984.test.ts", "source": "SwapERC7984ToERC7984.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "fromExternal"],
+  "fheTypes": ["euint64"],
+  "relatedTemplates": ["swap-erc7984-to-erc20", "amm-erc7984"],
+  "prerequisites": ["erc7984-token"],
+  "nextSteps": ["amm-erc7984"]
+}

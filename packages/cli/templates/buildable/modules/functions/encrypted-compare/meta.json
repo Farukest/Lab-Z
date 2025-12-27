@@ -1,0 +1,33 @@
+{
+  "name": "functions/encrypted-compare",
+  "version": "1.0.0",
+  "description": "Add encrypted comparison functions (eq, gt, gte, lt, lte) using FHE",
+  "author": "Lab-Z",
+  "category": "functions",
+  "tags": ["fhe", "comparison", "logic"],
+
+  "compatibleWith": ["token", "counter", "voting", "auction"],
+  "incompatibleWith": [],
+  "requires": [],
+
+  "imports": ["import { ebool } from \"@fhevm/solidity/lib/FHE.sol\";"],
+
+  "requiresSlots": ["EXTERNAL_FUNCTIONS"],
+
+  "provides": {
+    "functions": ["encryptedEq", "encryptedGt", "encryptedGte", "encryptedLt", "encryptedLte"],
+    "events": [],
+    "modifiers": [],
+    "stateVariables": []
+  },
+
+  "exclusive": false,
+
+  "injections": {
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 102
+    }
+  }
+}

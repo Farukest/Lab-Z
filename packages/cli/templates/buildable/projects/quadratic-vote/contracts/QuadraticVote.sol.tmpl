@@ -1,0 +1,386 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+{{IMPORTS}}
+
+/**
+ * @title {{CONTRACT_NAME}}
+ * @notice Quadratic voting with encrypted vote counts
+ * @dev Cost of N votes = N^2 credits. Prevents whale dominance in governance.
+ *
+ * How Quadratic Voting Works:
+ * - 1 vote costs 1 credit
+ * - 2 votes cost 4 credits
+ * - 3 votes cost 9 credits
+ * - N votes cost N^2 credits
+ *
+ * FHE Operations Used:
+ * - mul: Calculate vote cost (votes * votes)
+ * - sub: Deduct credits
+ * - add: Accumulate votes for proposals
+ * - gt/gte: Check sufficient credits
+ * - select: Conditional operations
+ * - div: Square root approximation for vote calculation
+ */
+contract {{CONTRACT_NAME}} is {{INHERITS}} {
+    // ============ Errors ============
+    error ProposalNotFound();
+    error ProposalNotActive();
+    error InsufficientCredits();
+    error AlreadyVoted();
+    error VotingNotEnded();
+    error VotingEnded();
+    error InvalidVoteCount();
+    error ResultsNotRevealed();
+    error RevealAlreadyRequested();
+    error InvalidDecryptionProof();
+    {{ERRORS}}
+
+    // ============ Events ============
+    event ProposalCreated(uint256 indexed proposalId, string description, uint256 deadline);
+    event CreditsAllocated(address indexed voter, uint256 amount);
+    event VoteCast(uint256 indexed proposalId, address indexed voter);
+    event VotesTallied(uint256 indexed proposalId);
+    event ResultsReadyForReveal(uint256 indexed proposalId);
+    event ResultsRevealed(uint256 indexed proposalId, uint64 yesVotes, uint64 noVotes, bool passed);
+    {{EVENTS}}
+
+    // ============ Structs ============
+    struct Proposal {
+        string description;
+        uint256 deadline;
+        [[VOTE_TYPE]] yesVotes;          // Encrypted total YES votes
+        [[VOTE_TYPE]] noVotes;           // Encrypted total NO votes
+        bool tallied;
+        bool revealRequested;            // Has public reveal been requested
+        bool revealed;                    // Have results been revealed
+        uint64 revealedYesVotes;         // Decrypted YES votes (after reveal)
+        uint64 revealedNoVotes;          // Decrypted NO votes (after reveal)
+        uint256 voterCount;
+    }
+
+    struct VoterInfo {
+        [[VOTE_TYPE]] credits;           // Encrypted remaining credits
+        mapping(uint256 => bool) hasVoted;
+    }
+
+    // ============ State Variables ============
+    mapping(uint256 => Proposal) public _proposals;
+    mapping(address => VoterInfo) internal _voters;
+    uint256 public _proposalCount;
+
+    uint256 public initialCredits;       // Credits each voter starts with
+    {{STATE_VARIABLES}}
+
+    // ============ Modifiers ============
+    modifier proposalExists(uint256 proposalId) {
+        if (proposalId >= _proposalCount) revert ProposalNotFound();
+        _;
+    }
+
+    modifier votingOpen(uint256 proposalId) {
+        if (block.timestamp > _proposals[proposalId].deadline) revert VotingEnded();
+        _;
+    }
+    {{MODIFIERS}}
+
+    // ============ Constructor ============
+    constructor(uint256 _initialCredits{{CONSTRUCTOR_PARAMS}}) {
+        initialCredits = _initialCredits;
+        {{CONSTRUCTOR_BODY}}
+    }
+
+    // ============ External Functions ============
+
+    /**
+     * @notice Create a new proposal
+     * @param description What is being voted on
+     * @param duration How long voting is open (seconds)
+     */
+    function createProposal(string calldata description, uint256 duration)
+        external
+        returns (uint256)
+    {
+        uint256 proposalId = _proposalCount++;
+
+        _proposals[proposalId] = Proposal({
+            description: description,
+            deadline: block.timestamp + duration,
+            yesVotes: FHE.asEuint64(0),
+            noVotes: FHE.asEuint64(0),
+            tallied: false,
+            revealRequested: false,
+            revealed: false,
+            revealedYesVotes: 0,
+            revealedNoVotes: 0,
+            voterCount: 0
+        });
+
+        FHE.allowThis(_proposals[proposalId].yesVotes);
+        FHE.allowThis(_proposals[proposalId].noVotes);
+
+        emit ProposalCreated(proposalId, description, block.timestamp + duration);
+        return proposalId;
+    }
+
+    /**
+     * @notice Allocate vote credits to a voter
+     * @param voter The voter to allocate to
+     * @param encryptedCredits Encrypted credit amount
+     */
+    function allocateCredits(address voter, [[EXTERNAL_VOTE_TYPE]] encryptedCredits, bytes calldata inputProof)
+        external
+    {
+        [[VOTE_TYPE]] credits = FHE.fromExternal(encryptedCredits, inputProof);
+
+        _voters[voter].credits = FHE.add(_voters[voter].credits, credits);
+
+        FHE.allowThis(_voters[voter].credits);
+        FHE.allow(_voters[voter].credits, voter);
+
+        emit CreditsAllocated(voter, 0); // Amount hidden
+    }
+
+    /**
+     * @notice Cast quadratic votes on a proposal
+     * @param proposalId The proposal to vote on
+     * @param support true for YES, false for NO
+     * @param encryptedVotes Encrypted number of votes (cost = votes^2 credits)
+     */
+    function castVote(
+        uint256 proposalId,
+        bool support,
+        [[EXTERNAL_VOTE_TYPE]] encryptedVotes, bytes calldata inputProof
+    )
+        external
+        proposalExists(proposalId)
+        votingOpen(proposalId)
+    {
+        if (_voters[msg.sender].hasVoted[proposalId]) revert AlreadyVoted();
+
+        [[VOTE_TYPE]] votes = FHE.fromExternal(encryptedVotes, inputProof);
+
+        // Calculate cost: votes * votes (quadratic)
+        [[VOTE_TYPE]] cost = FHE.mul(votes, votes);
+
+        // Check sufficient credits
+        ebool hasEnough = FHE.ge(_voters[msg.sender].credits, cost);
+
+        // Deduct credits (will be 0 if not enough - checked on reveal)
+        [[VOTE_TYPE]] newCredits = FHE.sub(_voters[msg.sender].credits, cost);
+        // Only deduct if has enough
+        _voters[msg.sender].credits = FHE.select(hasEnough, newCredits, _voters[msg.sender].credits);
+
+        // Add votes to proposal (only if has enough credits)
+        [[VOTE_TYPE]] validVotes = FHE.select(hasEnough, votes, FHE.asEuint64(0));
+
+        if (support) {
+            _proposals[proposalId].yesVotes = FHE.add(
+                _proposals[proposalId].yesVotes,
+                validVotes
+            );
+        } else {
+            _proposals[proposalId].noVotes = FHE.add(
+                _proposals[proposalId].noVotes,
+                validVotes
+            );
+        }
+
+        _voters[msg.sender].hasVoted[proposalId] = true;
+        _proposals[proposalId].voterCount++;
+
+        // Update permissions
+        FHE.allowThis(_voters[msg.sender].credits);
+        FHE.allow(_voters[msg.sender].credits, msg.sender);
+        FHE.allowThis(_proposals[proposalId].yesVotes);
+        FHE.allowThis(_proposals[proposalId].noVotes);
+
+        emit VoteCast(proposalId, msg.sender);
+    }
+
+    /**
+     * @notice Tally votes after deadline
+     * @param proposalId The proposal to tally
+     */
+    function tallyVotes(uint256 proposalId)
+        external
+        proposalExists(proposalId)
+    {
+        Proposal storage proposal = _proposals[proposalId];
+        if (block.timestamp <= proposal.deadline) revert VotingNotEnded();
+        if (proposal.tallied) return;
+
+        proposal.tallied = true;
+
+        emit VotesTallied(proposalId);
+    }
+
+    /**
+     * @notice Request public reveal of vote results
+     * @dev Step 1 of 3-step async public decryption pattern
+     * @param proposalId The proposal to reveal
+     */
+    function requestResultsReveal(uint256 proposalId)
+        external
+        proposalExists(proposalId)
+    {
+        Proposal storage proposal = _proposals[proposalId];
+        if (!proposal.tallied) revert VotingNotEnded();
+        if (proposal.revealRequested) revert RevealAlreadyRequested();
+
+        proposal.revealRequested = true;
+
+        // Mark both vote counts for public decryption
+        FHE.makePubliclyDecryptable(proposal.yesVotes);
+        FHE.makePubliclyDecryptable(proposal.noVotes);
+
+        emit ResultsReadyForReveal(proposalId);
+    }
+
+    /**
+     * @notice Get encrypted vote handles for off-chain decryption
+     * @dev Step 2 is off-chain: use relayer-sdk to decrypt
+     * @param proposalId The proposal
+     */
+    function getVoteHandles(uint256 proposalId)
+        external
+        view
+        proposalExists(proposalId)
+        returns ([[VOTE_TYPE]] yesHandle, [[VOTE_TYPE]] noHandle)
+    {
+        Proposal storage proposal = _proposals[proposalId];
+        return (proposal.yesVotes, proposal.noVotes);
+    }
+
+    /**
+     * @notice Finalize results reveal with decryption proof
+     * @dev Step 3 of 3-step async public decryption pattern
+     * @param proposalId The proposal
+     * @param yesVotes The decrypted YES vote count
+     * @param noVotes The decrypted NO vote count
+     * @param decryptionProof The proof from Zama KMS
+     */
+    function finalizeResultsReveal(
+        uint256 proposalId,
+        uint64 yesVotes,
+        uint64 noVotes,
+        bytes calldata decryptionProof
+    )
+        external
+        proposalExists(proposalId)
+    {
+        Proposal storage proposal = _proposals[proposalId];
+        if (!proposal.revealRequested) revert VotingNotEnded();
+        if (proposal.revealed) revert RevealAlreadyRequested();
+
+        // Verify the decryption proof for both values
+        bytes32[] memory cts = new bytes32[](2);
+        cts[0] = [[VOTE_TYPE]].unwrap(proposal.yesVotes);
+        cts[1] = [[VOTE_TYPE]].unwrap(proposal.noVotes);
+
+        bytes memory cleartexts = abi.encode(yesVotes, noVotes);
+
+        // This reverts if proof is invalid
+        FHE.checkSignatures(cts, cleartexts, decryptionProof);
+
+        // Store revealed results
+        proposal.revealed = true;
+        proposal.revealedYesVotes = yesVotes;
+        proposal.revealedNoVotes = noVotes;
+
+        bool passed = yesVotes > noVotes;
+
+        emit ResultsRevealed(proposalId, yesVotes, noVotes, passed);
+    }
+
+    /**
+     * @notice Get revealed results (only after reveal)
+     * @param proposalId The proposal
+     */
+    function getRevealedResults(uint256 proposalId)
+        external
+        view
+        proposalExists(proposalId)
+        returns (uint64 yesVotes, uint64 noVotes, bool passed)
+    {
+        Proposal storage proposal = _proposals[proposalId];
+        if (!proposal.revealed) revert ResultsNotRevealed();
+
+        return (
+            proposal.revealedYesVotes,
+            proposal.revealedNoVotes,
+            proposal.revealedYesVotes > proposal.revealedNoVotes
+        );
+    }
+
+    {{EXTERNAL_FUNCTIONS}}
+
+    // ============ View Functions ============
+
+    /**
+     * @notice Get proposal info
+     */
+    function getProposal(uint256 proposalId) external view returns (
+        string memory description,
+        uint256 deadline,
+        bool tallied,
+        bool revealRequested,
+        bool revealed,
+        uint256 voterCount
+    ) {
+        Proposal storage proposal = _proposals[proposalId];
+        return (
+            proposal.description,
+            proposal.deadline,
+            proposal.tallied,
+            proposal.revealRequested,
+            proposal.revealed,
+            proposal.voterCount
+        );
+    }
+
+    /**
+     * @notice Get total proposal count
+     */
+    function getProposalCount() external view returns (uint256) {
+        return _proposalCount;
+    }
+
+    /**
+     * @notice Check if voter has voted on proposal
+     */
+    function hasVoted(uint256 proposalId, address voter) external view returns (bool) {
+        return _voters[voter].hasVoted[proposalId];
+    }
+
+    /**
+     * @notice Calculate vote cost (public helper)
+     * @param votes Number of votes
+     * @return cost Credits required (votes^2)
+     */
+    function calculateCost(uint256 votes) external pure returns (uint256) {
+        return votes * votes;
+    }
+
+    /**
+     * @notice Calculate max votes from credits (public helper)
+     * @param credits Available credits
+     * @return maxVotes Maximum votes affordable (sqrt of credits)
+     */
+    function calculateMaxVotes(uint256 credits) external pure returns (uint256) {
+        // Integer square root
+        if (credits == 0) return 0;
+        uint256 x = credits;
+        uint256 y = (x + 1) / 2;
+        while (y < x) {
+            x = y;
+            y = (x + credits / x) / 2;
+        }
+        return x;
+    }
+
+    {{VIEW_FUNCTIONS}}
+
+    // ============ Internal Functions ============
+    {{INTERNAL_FUNCTIONS}}
+}

@@ -1,0 +1,68 @@
+{
+  "id": "boolean",
+  "name": "Boolean Operations",
+  "category": "basics",
+  "difficulty": "beginner",
+  "tags": ["ebool", "boolean", "FHE.not", "FHE.and", "FHE.or", "FHE.asEbool", "logic", "comparison"],
+  "description": "Encrypted boolean operations: NOT, AND, OR, and comparisons",
+  "longDescription": "This example demonstrates encrypted boolean (ebool) operations in FHEVM. Learn how to negate booleans with FHE.not(), combine them with FHE.and() and FHE.or(), convert plaintext to encrypted with FHE.asEbool(), and understand how comparison operations (eq, gt, lt) return ebool results. Boolean logic is fundamental for conditional operations in FHE.",
+  "sections": [
+    { "id": "not", "title": "NOT", "description": "Negate boolean" },
+    { "id": "and-or", "title": "AND/OR", "description": "Combine booleans" },
+    { "id": "plaintext", "title": "Plaintext", "description": "Convert to encrypted" },
+    { "id": "comparison", "title": "Compare", "description": "Integer → boolean" }
+  ],
+  "blocks": [
+    {
+      "id": "imports",
+      "type": "import",
+      "lines": [1, 5],
+      "explanation": "Import ebool for encrypted booleans and externalEbool for encrypted input. Also import euint8 for demonstrating comparisons that return ebool.",
+      "searchTerms": ["import", "ebool", "externalEbool", "boolean type"]
+    },
+    {
+      "id": "not-operation",
+      "type": "function",
+      "lines": [48, 60],
+      "explanation": "FHE.not() negates an encrypted boolean. If the input is encrypted(true), the output is encrypted(false), and vice versa. The operation never reveals the actual value.",
+      "searchTerms": ["not", "FHE.not", "negation", "flip", "invert", "boolean not"]
+    },
+    {
+      "id": "and-operation",
+      "type": "function",
+      "lines": [74, 89],
+      "explanation": "FHE.and() performs logical AND on two encrypted booleans. Returns encrypted(true) only if BOTH inputs are encrypted(true). Neither input nor result is ever visible.",
+      "searchTerms": ["and", "FHE.and", "logical and", "boolean and", "conjunction"]
+    },
+    {
+      "id": "or-operation",
+      "type": "function",
+      "lines": [93, 108],
+      "explanation": "FHE.or() performs logical OR on two encrypted booleans. Returns encrypted(true) if EITHER input is encrypted(true). Useful for combining conditions.",
+      "searchTerms": ["or", "FHE.or", "logical or", "boolean or", "disjunction"]
+    },
+    {
+      "id": "as-ebool",
+      "type": "function",
+      "lines": [36, 46],
+      "explanation": "FHE.asEbool() converts a plaintext boolean to encrypted form. WARNING: The input value is visible on-chain! Only use for initialization with known public values.",
+      "searchTerms": ["asEbool", "plaintext", "convert", "encrypt boolean", "initialization"]
+    },
+    {
+      "id": "comparison-to-ebool",
+      "type": "function",
+      "lines": [112, 131],
+      "explanation": "Comparison operations like FHE.gt(), FHE.lt(), FHE.eq() return ebool. This shows how to compare encrypted integers and get an encrypted boolean result.",
+      "searchTerms": ["comparison", "gt", "lt", "eq", "greater than", "less than", "equal", "karsilastirma"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/BooleanOps.sol", "source": "BooleanOps.sol" },
+    { "path": "test/BooleanOps.test.ts", "source": "BooleanOps.test.ts" }
+  ],
+  "fheOperations": ["not", "and", "or", "asEbool", "eq", "gt", "fromExternal", "allowThis", "allow"],
+  "fheTypes": ["ebool", "euint8", "externalEbool", "externalEuint8"],
+  "relatedTemplates": ["add", "compare", "bitwise"],
+  "prerequisites": [],
+  "nextSteps": ["bitwise", "compare"]
+}

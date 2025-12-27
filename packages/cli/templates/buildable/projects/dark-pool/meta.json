@@ -1,0 +1,65 @@
+{
+  "name": "dark-pool",
+  "version": "1.0.0",
+  "description": "Private DEX order book - orders matched without revealing prices",
+  "author": "Lab-Z",
+  "tags": ["defi", "dex", "trading", "privacy", "orderbook"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_ORDER", "description": "Before order placement logic", "required": false },
+    { "name": "POST_ORDER", "description": "After order placement logic", "required": false },
+    { "name": "ORDER_MODIFIERS", "description": "Modifiers for order function", "required": false },
+    { "name": "PRE_MATCH", "description": "Before matching logic", "required": false },
+    { "name": "POST_MATCH", "description": "After matching logic", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "PRICE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64", "euint128"],
+      "default": "euint64",
+      "description": "Encrypted type for prices"
+    },
+    "AMOUNT_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64", "euint128"],
+      "default": "euint64",
+      "description": "Encrypted type for amounts"
+    },
+    "EXTERNAL_PRICE_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64", "externalEuint128"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for price input"
+    },
+    "EXTERNAL_AMOUNT_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64", "externalEuint128"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for amount input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_orders", "_pendingMatches", "_orderCount", "_matchCount", "_activeBuyOrders", "_activeSellOrders"],
+    "functions": ["placeBuyOrder", "placeSellOrder", "cancelOrder", "requestMatch", "getMatchHandle", "finalizeMatch", "getOrderCount", "getMatchCount", "getOrderInfo", "getMatchInfo"],
+    "events": ["OrderPlaced", "OrderCancelled", "MatchRequested", "MatchReadyForReveal", "MatchRevealed", "TradeExecuted"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[PRICE_TYPE]], [[AMOUNT_TYPE]], [[EXTERNAL_PRICE_TYPE]], [[EXTERNAL_AMOUNT_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["min", "max", "div", "gt", "gte", "lt", "lte", "ne", "eq", "select", "sub", "add", "allowThis", "allow", "fromExternal", "asEuint64", "makePubliclyDecryptable", "checkSignatures"]
+}

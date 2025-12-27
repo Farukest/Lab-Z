@@ -1,0 +1,315 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+{{IMPORTS}}
+
+/**
+ * @title {{CONTRACT_NAME}}
+ * @notice Prove salary range without revealing exact amount
+ * @dev Perfect for: loan applications, rental verification, employment checks
+ *
+ * FHE Operations Used:
+ * - gt/gte: Prove salary above threshold
+ * - lt/lte: Prove salary below threshold
+ * - eq/ne: Exact match or exclusion proofs
+ * - and/or: Combine multiple conditions
+ * - select: Conditional proof generation
+ */
+contract {{CONTRACT_NAME}} is {{INHERITS}} {
+    // ============ Errors ============
+    error SalaryAlreadyRegistered();
+    error SalaryNotRegistered();
+    error InvalidThreshold();
+    error ProofNotFound();
+    error NotAuthorized();
+    error ProofExpired();
+    {{ERRORS}}
+
+    // ============ Events ============
+    event SalaryRegistered(address indexed user, address indexed employer);
+    event ProofGenerated(bytes32 indexed proofId, address indexed user, address indexed verifier);
+    event ProofVerified(bytes32 indexed proofId, address indexed verifier);
+    event SalaryUpdated(address indexed user);
+    {{EVENTS}}
+
+    // ============ Enums ============
+    enum ProofType { AboveThreshold, BelowThreshold, InRange, ExactBracket }
+
+    // ============ Structs ============
+    struct SalaryRecord {
+        [[AMOUNT_TYPE]] salary;         // Encrypted salary amount
+        address employer;               // Who attested this salary
+        uint256 registeredAt;           // When it was registered
+        bool active;
+    }
+
+    struct Proof {
+        address user;                   // Who the proof is about
+        address verifier;               // Who can verify this proof
+        ProofType proofType;
+        ebool result;                   // Encrypted proof result
+        uint256 createdAt;
+        uint256 expiresAt;
+        bool verified;
+    }
+
+    // ============ State Variables ============
+    mapping(address => SalaryRecord) public _salaries;
+    mapping(bytes32 => Proof) public _proofs;
+    mapping(address => bool) public _verifiers;  // Authorized verifiers
+
+    uint256 public proofValidityPeriod;  // How long proofs are valid
+    uint256 public proofCount;
+    {{STATE_VARIABLES}}
+
+    // ============ Modifiers ============
+    modifier hasSalary() {
+        if (!_salaries[msg.sender].active) revert SalaryNotRegistered();
+        _;
+    }
+
+    modifier onlyVerifier() {
+        if (!_verifiers[msg.sender]) revert NotAuthorized();
+        _;
+    }
+    {{MODIFIERS}}
+
+    // ============ Constructor ============
+    constructor(uint256 _proofValidityPeriod{{CONSTRUCTOR_PARAMS}}) {
+        proofValidityPeriod = _proofValidityPeriod;
+        {{CONSTRUCTOR_BODY}}
+    }
+
+    // ============ External Functions ============
+
+    /**
+     * @notice Register encrypted salary (called by employer)
+     * @param employee The employee address
+     * @param encryptedSalary The encrypted salary amount
+     */
+    function registerSalary(
+        address employee,
+        [[EXTERNAL_AMOUNT_TYPE]] encryptedSalary, bytes calldata inputProof
+    ) external {
+        if (_salaries[employee].active) revert SalaryAlreadyRegistered();
+
+        [[AMOUNT_TYPE]] salary = FHE.fromExternal(encryptedSalary, inputProof);
+
+        _salaries[employee] = SalaryRecord({
+            salary: salary,
+            employer: msg.sender,
+            registeredAt: block.timestamp,
+            active: true
+        });
+
+        // Allow contract and employee to use the encrypted salary
+        FHE.allowThis(salary);
+        FHE.allow(salary, employee);
+
+        emit SalaryRegistered(employee, msg.sender);
+    }
+
+    /**
+     * @notice Prove salary is above a threshold
+     * @param threshold The minimum amount (public)
+     * @param verifier Who will verify this proof
+     */
+    function proveAboveThreshold(uint256 threshold, address verifier)
+        external
+        hasSalary
+        returns (bytes32)
+    {
+        [[AMOUNT_TYPE]] salaryEnc = _salaries[msg.sender].salary;
+        [[AMOUNT_TYPE]] thresholdEnc = FHE.asEuint64(uint64(threshold));
+
+        // salary >= threshold
+        ebool result = FHE.ge(salaryEnc, thresholdEnc);
+
+        return _createProof(msg.sender, verifier, ProofType.AboveThreshold, result);
+    }
+
+    /**
+     * @notice Prove salary is below a threshold
+     * @param threshold The maximum amount (public)
+     * @param verifier Who will verify this proof
+     */
+    function proveBelowThreshold(uint256 threshold, address verifier)
+        external
+        hasSalary
+        returns (bytes32)
+    {
+        [[AMOUNT_TYPE]] salaryEnc = _salaries[msg.sender].salary;
+        [[AMOUNT_TYPE]] thresholdEnc = FHE.asEuint64(uint64(threshold));
+
+        // salary <= threshold
+        ebool result = FHE.le(salaryEnc, thresholdEnc);
+
+        return _createProof(msg.sender, verifier, ProofType.BelowThreshold, result);
+    }
+
+    /**
+     * @notice Prove salary is within a range
+     * @param minThreshold Minimum amount (public)
+     * @param maxThreshold Maximum amount (public)
+     * @param verifier Who will verify this proof
+     */
+    function proveInRange(
+        uint256 minThreshold,
+        uint256 maxThreshold,
+        address verifier
+    )
+        external
+        hasSalary
+        returns (bytes32)
+    {
+        if (minThreshold >= maxThreshold) revert InvalidThreshold();
+
+        [[AMOUNT_TYPE]] salaryEnc = _salaries[msg.sender].salary;
+        [[AMOUNT_TYPE]] minEnc = FHE.asEuint64(uint64(minThreshold));
+        [[AMOUNT_TYPE]] maxEnc = FHE.asEuint64(uint64(maxThreshold));
+
+        // salary >= min AND salary <= max
+        ebool aboveMin = FHE.ge(salaryEnc, minEnc);
+        ebool belowMax = FHE.le(salaryEnc, maxEnc);
+        ebool result = FHE.and(aboveMin, belowMax);
+
+        return _createProof(msg.sender, verifier, ProofType.InRange, result);
+    }
+
+    /**
+     * @notice Verifier checks a proof (reveals encrypted result to them)
+     * @param proofId The proof to verify
+     */
+    function verifyProof(bytes32 proofId) external returns (ebool) {
+        Proof storage proof = _proofs[proofId];
+
+        if (proof.user == address(0)) revert ProofNotFound();
+        if (proof.verifier != msg.sender) revert NotAuthorized();
+        if (block.timestamp > proof.expiresAt) revert ProofExpired();
+
+        proof.verified = true;
+
+        // Allow verifier to see the result
+        FHE.allow(proof.result, msg.sender);
+
+        emit ProofVerified(proofId, msg.sender);
+        return proof.result;
+    }
+
+    /**
+     * @notice Update salary (by original employer)
+     * @param employee The employee
+     * @param encryptedSalary New encrypted salary
+     */
+    function updateSalary(
+        address employee,
+        [[EXTERNAL_AMOUNT_TYPE]] encryptedSalary, bytes calldata inputProof
+    ) external {
+        SalaryRecord storage record = _salaries[employee];
+        require(record.employer == msg.sender, "Not employer");
+
+        [[AMOUNT_TYPE]] salary = FHE.fromExternal(encryptedSalary, inputProof);
+        record.salary = salary;
+        record.registeredAt = block.timestamp;
+
+        FHE.allowThis(salary);
+        FHE.allow(salary, employee);
+
+        emit SalaryUpdated(employee);
+    }
+
+    /**
+     * @notice Add authorized verifier
+     */
+    function addVerifier(address verifier) external {
+        _verifiers[verifier] = true;
+    }
+
+    /**
+     * @notice Remove verifier
+     */
+    function removeVerifier(address verifier) external {
+        _verifiers[verifier] = false;
+    }
+
+    {{EXTERNAL_FUNCTIONS}}
+
+    // ============ View Functions ============
+
+    /**
+     * @notice Check if user has registered salary
+     */
+    function hasSalaryRegistered(address user) external view returns (bool) {
+        return _salaries[user].active;
+    }
+
+    /**
+     * @notice Get salary record info (not the encrypted amount)
+     */
+    function getSalaryInfo(address user) external view returns (
+        address employer,
+        uint256 registeredAt,
+        bool active
+    ) {
+        SalaryRecord storage record = _salaries[user];
+        return (record.employer, record.registeredAt, record.active);
+    }
+
+    /**
+     * @notice Get proof status
+     */
+    function getProofStatus(bytes32 proofId) external view returns (
+        address user,
+        address verifier,
+        ProofType proofType,
+        uint256 expiresAt,
+        bool verified
+    ) {
+        Proof storage proof = _proofs[proofId];
+        return (proof.user, proof.verifier, proof.proofType, proof.expiresAt, proof.verified);
+    }
+
+    /**
+     * @notice Check if address is authorized verifier
+     */
+    function isVerifier(address addr) external view returns (bool) {
+        return _verifiers[addr];
+    }
+
+    {{VIEW_FUNCTIONS}}
+
+    // ============ Internal Functions ============
+
+    function _createProof(
+        address user,
+        address verifier,
+        ProofType proofType,
+        ebool result
+    ) internal returns (bytes32) {
+        bytes32 proofId = keccak256(abi.encodePacked(
+            user,
+            verifier,
+            proofType,
+            block.timestamp,
+            proofCount++
+        ));
+
+        _proofs[proofId] = Proof({
+            user: user,
+            verifier: verifier,
+            proofType: proofType,
+            result: result,
+            createdAt: block.timestamp,
+            expiresAt: block.timestamp + proofValidityPeriod,
+            verified: false
+        });
+
+        FHE.allowThis(result);
+        // Note: Verifier can only see result after calling verifyProof
+
+        emit ProofGenerated(proofId, user, verifier);
+        return proofId;
+    }
+
+    {{INTERNAL_FUNCTIONS}}
+}

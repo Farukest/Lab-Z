@@ -16,17 +16,17 @@ export function getTemplatesDir(): string {
     return process.env.LABZ_TEMPLATES;
   }
 
+  // Check for installed templates (npm package - dist/../templates)
+  const packageTemplates = path.join(__dirname, '..', 'templates');
+  if (fs.existsSync(packageTemplates)) {
+    return packageTemplates;
+  }
+
   // Check for local templates directory (development)
   // From packages/cli/dist -> packages/cli -> packages -> Lab-Z root
   const localTemplates = path.join(__dirname, '..', '..', '..', 'templates');
   if (fs.existsSync(localTemplates)) {
     return localTemplates;
-  }
-
-  // Check for installed templates (npm global)
-  const globalTemplates = path.join(__dirname, '..', '..', 'templates');
-  if (fs.existsSync(globalTemplates)) {
-    return globalTemplates;
   }
 
   // Default to current working directory
@@ -43,17 +43,17 @@ export function getBaseTemplatePath(): string {
     return process.env.LABZ_BASE_TEMPLATE;
   }
 
+  // Check for installed base-template (npm package - dist/../base-template)
+  const packageBase = path.join(__dirname, '..', 'base-template');
+  if (fs.existsSync(packageBase)) {
+    return packageBase;
+  }
+
   // Check for local base-template directory (development)
   // From packages/cli/dist -> packages/cli -> packages -> root
   const localBase = path.join(__dirname, '..', '..', '..', 'base-template');
   if (fs.existsSync(localBase)) {
     return localBase;
-  }
-
-  // Check for installed base-template (npm global)
-  const globalBase = path.join(__dirname, '..', '..', 'base-template');
-  if (fs.existsSync(globalBase)) {
-    return globalBase;
   }
 
   // Fallback to templates/_base for backwards compatibility

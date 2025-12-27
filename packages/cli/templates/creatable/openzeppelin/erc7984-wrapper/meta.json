@@ -1,0 +1,34 @@
+{
+  "id": "erc7984-wrapper",
+  "name": "ERC7984 ERC20 Wrapper",
+  "category": "openzeppelin",
+  "difficulty": "intermediate",
+  "tags": ["ERC7984", "ERC20", "wrapper", "wrap", "unwrap", "bridge", "OpenZeppelin"],
+  "description": "Wrap ERC20 tokens into confidential ERC7984 tokens and unwrap back",
+  "longDescription": "This example demonstrates how to wrap standard ERC20 tokens into confidential ERC7984 tokens. Users can deposit their ERC20 tokens and receive wrapped confidential tokens with encrypted balances. The wrapper handles decimal conversion and maintains a 1:1 backing ratio.",
+  "blocks": [
+    {
+      "id": "wrap",
+      "type": "function",
+      "lines": [20, 35],
+      "explanation": "Wrap function deposits ERC20 tokens and mints equivalent ERC7984 tokens. The underlying tokens are held by the wrapper contract.",
+      "searchTerms": ["wrap", "deposit", "ERC20", "convert"]
+    },
+    {
+      "id": "unwrap",
+      "type": "function",
+      "lines": [40, 55],
+      "explanation": "Unwrap function burns ERC7984 tokens and returns the underlying ERC20 tokens. Amount is encrypted so only the user knows how much they're withdrawing.",
+      "searchTerms": ["unwrap", "withdraw", "burn", "convert"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/ERC7984ERC20WrapperExample.sol", "source": "ERC7984ERC20WrapperExample.sol" },
+    { "path": "test/ERC7984ERC20WrapperExample.test.ts", "source": "ERC7984ERC20WrapperExample.test.ts" }
+  ],
+  "fheOperations": ["wrap", "unwrap", "confidentialTransfer"],
+  "fheTypes": ["euint64"],
+  "relatedTemplates": ["erc7984-token", "swap-erc7984-to-erc20"],
+  "prerequisites": ["erc7984-token"],
+  "nextSteps": ["swap-erc7984-to-erc20", "amm-erc7984"]
+}

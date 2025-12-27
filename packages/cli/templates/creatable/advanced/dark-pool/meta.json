@@ -1,0 +1,18 @@
+{
+  "id": "dark-pool",
+  "name": "Dark Pool DEX",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["defi", "dex", "trading", "privacy", "orderbook", "matching"],
+  "description": "Private DEX order book - orders matched without revealing prices",
+  "longDescription": "A dark pool exchange where buy and sell orders are matched without revealing individual prices. Uses encrypted price comparisons (FHE.lte/gte) to find matches. Matched prices remain private - only the trade execution is visible. Demonstrates complex order matching with encrypted values.",
+  "files": [
+    { "path": "contracts/DarkPool.sol", "source": "DarkPool.sol" },
+    { "path": "test/DarkPool.test.ts", "source": "DarkPool.test.ts" }
+  ],
+  "fheOperations": ["lt", "gt", "lte", "gte", "min", "max", "eq", "select", "sub", "add", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["sealed-tender", "prediction-market"],
+  "prerequisites": ["encryption-single", "acl-allow"],
+  "nextSteps": ["amm-erc7984"]
+}

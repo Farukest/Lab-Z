@@ -1,0 +1,48 @@
+{
+  "name": "quadratic-vote",
+  "version": "1.0.0",
+  "description": "Quadratic voting with encrypted vote counts - prevents whale dominance",
+  "author": "Lab-Z",
+  "tags": ["governance", "voting", "quadratic", "privacy"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "VOTE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for vote credits"
+    },
+    "EXTERNAL_VOTE_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for vote input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_proposals", "_voters", "_proposalCount"],
+    "functions": ["createProposal", "allocateCredits", "castVote", "tallyVotes", "requestResultsReveal", "getVoteHandles", "finalizeResultsReveal", "getRevealedResults", "getProposal"],
+    "events": ["ProposalCreated", "CreditsAllocated", "VoteCast", "VotesTallied", "ResultsReadyForReveal", "ResultsRevealed"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[VOTE_TYPE]], [[EXTERNAL_VOTE_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["add", "sub", "mul", "div", "gt", "gte", "eq", "select", "min", "allowThis", "allow", "fromExternal", "asEuint64", "makePubliclyDecryptable", "checkSignatures"]
+}

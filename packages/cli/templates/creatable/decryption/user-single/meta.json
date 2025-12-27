@@ -1,0 +1,55 @@
+{
+  "id": "decryption-user-single",
+  "name": "User Decrypt Single Value",
+  "category": "decryption",
+  "difficulty": "beginner",
+  "tags": ["decryption", "private", "user", "FHE.allow", "userDecryptEuint", "off-chain", "permission", "ozel-sifre-cozme"],
+  "description": "How to privately decrypt encrypted values for authorized users only",
+  "longDescription": "This example teaches private (user) decryption in FHEVM. Unlike public decryption where everyone can see the value, user decryption only reveals values to specifically authorized addresses. Learn how to use FHE.allow() to grant decrypt permission, and how users decrypt off-chain using fhevm.userDecryptEuint(). This is essential for private balances, scores, and any sensitive data.",
+  "blocks": [
+    {
+      "id": "set-with-permission",
+      "type": "function",
+      "lines": [35, 50],
+      "explanation": "Store encrypted value and grant decrypt permission only to the sender. FHE.allow(value, msg.sender) ensures only the sender can decrypt their value off-chain.",
+      "searchTerms": ["store", "allow", "permission", "sender", "balance"]
+    },
+    {
+      "id": "get-for-decrypt",
+      "type": "function",
+      "lines": [53, 69],
+      "explanation": "Return encrypted handle for off-chain decryption. Caller uses fhevm.userDecryptEuint() with their signer to decrypt. Only works if they have FHE.allow() permission.",
+      "searchTerms": ["get", "handle", "decrypt", "off-chain"]
+    },
+    {
+      "id": "share-with-viewer",
+      "type": "function",
+      "lines": [73, 93],
+      "explanation": "Grant decrypt permission to multiple users. Owner and viewer can both decrypt the same encrypted value. Useful for sharing private data with specific parties.",
+      "searchTerms": ["share", "viewer", "multiple users", "grant access", "paylasim"]
+    },
+    {
+      "id": "dynamic-grant",
+      "type": "function",
+      "lines": [113, 124],
+      "explanation": "Grant permission after initial storage. FHE.allow() can be called any time, allowing dynamic access control. Useful for granting access to new parties later.",
+      "searchTerms": ["grant", "dynamic", "later", "add permission", "access control"]
+    },
+    {
+      "id": "computed-result",
+      "type": "function",
+      "lines": [128, 152],
+      "explanation": "IMPORTANT: New encrypted values from FHE operations need NEW permissions! The result of FHE.add() is a new encrypted value that requires its own FHE.allow() calls.",
+      "searchTerms": ["computed", "result", "add", "new permission", "operation result"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/UserDecryptSingle.sol", "source": "UserDecryptSingle.sol" },
+    { "path": "test/UserDecryptSingle.test.ts", "source": "UserDecryptSingle.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "add", "gt", "allowThis", "allow"],
+  "fheTypes": ["euint64", "ebool", "externalEuint64"],
+  "relatedTemplates": ["encryption-single", "decryption-user-multiple", "decryption-public-single"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["decryption-user-multiple", "decryption-public-single", "acl-transient"]
+}

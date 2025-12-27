@@ -1,0 +1,54 @@
+{
+  "name": "events/basic",
+  "version": "1.0.0",
+  "description": "Adds basic event emission for counter operations",
+  "author": "Lab-Z",
+
+  "category": "events",
+  "tags": ["events", "logging", "tracking"],
+
+  "compatibleWith": ["counter"],
+  "incompatibleWith": ["events/detailed"],
+  "requires": [],
+
+  "requiresSlots": ["EVENTS", "EMIT_INCREMENT", "EMIT_DECREMENT"],
+
+  "provides": {
+    "stateVariables": [],
+    "functions": [],
+    "modifiers": [],
+    "events": ["CounterIncremented", "CounterDecremented"],
+    "errors": []
+  },
+
+  "exclusive": true,
+
+  "semantics": {
+    "mutability": "stateless",
+    "gas": "low"
+  },
+
+  "injections": {
+    "EVENTS": {
+      "content": "./inject/events.sol",
+      "mode": "append",
+      "order": 80
+    },
+    "EMIT_INCREMENT": {
+      "content": "emit CounterIncremented(msg.sender);",
+      "mode": "append",
+      "order": 100
+    },
+    "EMIT_DECREMENT": {
+      "content": "emit CounterDecremented(msg.sender);",
+      "mode": "append",
+      "order": 100
+    }
+  },
+
+  "estimatedSize": 200,
+  "estimatedGas": {
+    "deployment": 20000,
+    "perCall": 1500
+  }
+}

@@ -6,7 +6,7 @@
 
 import { Command } from 'commander';
 import * as readline from 'readline';
-import { createHub } from '@labz/core';
+import { createHub } from '@0xflydev/labz-core';
 import {
   blocks,
   searchBlocks,
@@ -20,7 +20,7 @@ import {
   type ProjectFunction,
   type ProjectBlock,
   type ZoneType
-} from '@labz/core/blocks';
+} from '@0xflydev/labz-core/blocks';
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';

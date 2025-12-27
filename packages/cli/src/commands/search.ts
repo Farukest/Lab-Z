@@ -6,7 +6,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import { createHub, type Category, type Difficulty } from '@labz/core';
+import { createHub, type Category, type Difficulty } from '@0xflydev/labz-core';
 import { getTemplatesDir, formatInfo, formatError, printBanner } from '../utils';
 
 export const searchCommand = new Command('search')

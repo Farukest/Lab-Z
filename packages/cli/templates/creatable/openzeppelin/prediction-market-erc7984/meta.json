@@ -1,0 +1,55 @@
+{
+  "id": "prediction-market-erc7984",
+  "name": "Prediction Market with ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["prediction", "betting", "market", "ERC7984", "oracle", "OpenZeppelin"],
+  "description": "A confidential prediction market where bet amounts stay private",
+  "longDescription": "This advanced example implements a binary prediction market (YES/NO outcomes) using ERC7984 tokens. Bettors can place encrypted bets on market outcomes while keeping their bet amounts private. The market owner can create markets, close betting, and resolve outcomes.",
+  "blocks": [
+    {
+      "id": "create-market",
+      "type": "function",
+      "lines": [78, 96],
+      "explanation": "Create a new prediction market with description, betting token, and duration.",
+      "searchTerms": ["create", "market", "new"]
+    },
+    {
+      "id": "place-bet",
+      "type": "function",
+      "lines": [129, 179],
+      "explanation": "Place an encrypted bet on YES or NO outcome. The bet amount is kept private.",
+      "searchTerms": ["bet", "wager", "predict"]
+    },
+    {
+      "id": "resolve-market",
+      "type": "function",
+      "lines": [111, 120],
+      "explanation": "Owner resolves the market by declaring the winning outcome (YES or NO).",
+      "searchTerms": ["resolve", "outcome", "winner"]
+    },
+    {
+      "id": "claim-winnings",
+      "type": "function",
+      "lines": [185, 205],
+      "explanation": "Winners claim their encrypted payouts after market resolution.",
+      "searchTerms": ["claim", "winnings", "payout"]
+    },
+    {
+      "id": "close-market",
+      "type": "function",
+      "lines": [100, 106],
+      "explanation": "Close betting on a market before resolution.",
+      "searchTerms": ["close", "stop", "end"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/PredictionMarketERC7984.sol", "source": "PredictionMarketERC7984.sol" },
+    { "path": "test/PredictionMarketERC7984.test.ts", "source": "PredictionMarketERC7984.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "confidentialTransfer", "FHE.add", "FHE.allowTransient", "FHE.allowThis", "FHE.allow", "fromExternal"],
+  "fheTypes": ["euint64", "ebool"],
+  "relatedTemplates": ["erc7984-token", "lottery-erc7984"],
+  "prerequisites": ["erc7984-token"],
+  "nextSteps": ["lottery-erc7984"]
+}

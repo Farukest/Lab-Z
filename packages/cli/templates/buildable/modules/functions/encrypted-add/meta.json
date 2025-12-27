@@ -1,0 +1,36 @@
+{
+  "name": "functions/encrypted-add",
+  "version": "1.0.0",
+  "description": "Add encryptedAdd(a,b) function that performs FHE.add on two encrypted values",
+  "author": "Lab-Z",
+  "category": "functions",
+  "tags": ["fhe", "arithmetic", "add"],
+
+  "compatibleWith": ["token", "counter", "voting", "auction"],
+  "incompatibleWith": [],
+  "requires": [],
+
+  "requiresSlots": ["EXTERNAL_FUNCTIONS", "EVENTS"],
+
+  "provides": {
+    "functions": ["encryptedAdd"],
+    "events": ["EncryptedAddResult"],
+    "modifiers": [],
+    "stateVariables": []
+  },
+
+  "exclusive": false,
+
+  "injections": {
+    "EVENTS": {
+      "content": "file:inject/events.sol",
+      "mode": "append",
+      "order": 100
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 100
+    }
+  }
+}

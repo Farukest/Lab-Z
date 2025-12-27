@@ -1,0 +1,57 @@
+{
+  "id": "input-proofs",
+  "name": "Input Proofs Explained",
+  "category": "input-proofs",
+  "difficulty": "intermediate",
+  "tags": ["input proof", "security", "fromExternal", "verification", "ZK proof", "attack prevention", "replay", "guvenlik"],
+  "description": "Understanding input proofs: what they are, why they exist, and how they protect FHE applications",
+  "longDescription": "This CRITICAL security example explains input proofs in FHEVM. Input proofs are cryptographic proofs that verify encrypted values were created correctly by authorized users for specific contracts. Learn why they're needed (to prevent malformed ciphertext, replay, and cross-contract attacks), how they're generated client-side, and how FHE.fromExternal() verifies them automatically. Understanding input proofs is essential for building secure FHE applications.",
+  "blocks": [
+    {
+      "id": "what-are-proofs",
+      "type": "comment",
+      "lines": [10, 22],
+      "explanation": "Input proofs verify that: (1) the encrypted value was created by an authorized party, (2) the encryption was performed correctly, and (3) the data hasn't been tampered with.",
+      "searchTerms": ["what", "input proof", "definition", "nedir"]
+    },
+    {
+      "id": "why-needed",
+      "type": "comment",
+      "lines": [24, 36],
+      "explanation": "Without proofs, attackers could: submit malformed ciphertexts, copy others' encrypted values (replay attack), or use values across contracts inappropriately.",
+      "searchTerms": ["why", "needed", "attack", "security", "replay", "saldiri"]
+    },
+    {
+      "id": "how-work",
+      "type": "comment",
+      "lines": [38, 55],
+      "explanation": "Client-side: fhevm encrypts with contract+user binding and generates ZK proof. Contract-side: FHE.fromExternal() verifies proof matches sender and contract, reverts if invalid.",
+      "searchTerms": ["how", "work", "verification", "fromExternal", "nasil"]
+    },
+    {
+      "id": "basic-example",
+      "type": "function",
+      "lines": [68, 86],
+      "explanation": "Basic usage showing FHE.fromExternal() doing three things: extract ciphertext, verify proof, return usable euint64. Reverts if proof is invalid.",
+      "searchTerms": ["example", "basic", "fromExternal", "store", "ornek"]
+    },
+    {
+      "id": "security-demo",
+      "type": "function",
+      "lines": [90, 128],
+      "explanation": "Financial security example showing why proof verification is critical for deposits and transfers. Prevents attacker from copying or replaying others' values.",
+      "searchTerms": ["security", "deposit", "transfer", "financial", "token"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/InputProofsExplained.sol", "source": "InputProofsExplained.sol" },
+    { "path": "test/InputProofsExplained.test.ts", "source": "InputProofsExplained.test.ts" },
+    { "path": "contracts/ConfidentialAuction.sol", "source": "ConfidentialAuction.sol" },
+    { "path": "test/ConfidentialAuction.test.ts", "source": "ConfidentialAuction.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "add", "sub", "allowThis", "allow"],
+  "fheTypes": ["euint64", "externalEuint64"],
+  "relatedTemplates": ["encryption-single", "anti-patterns-missing-allow"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["handles", "anti-patterns-view-encrypted"]
+}

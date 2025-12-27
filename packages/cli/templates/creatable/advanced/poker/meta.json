@@ -1,0 +1,18 @@
+{
+  "id": "poker",
+  "name": "Encrypted Poker",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["gambling", "poker", "cards", "privacy", "gaming"],
+  "description": "Texas Hold'em poker with encrypted cards and private hands",
+  "longDescription": "A poker implementation where cards are dealt as encrypted values - only the holder can see their hand. Uses mental poker techniques with FHE for card shuffling and dealing. Demonstrates complex state management with encrypted arrays and selective reveals.",
+  "files": [
+    { "path": "contracts/Poker.sol", "source": "Poker.sol" },
+    { "path": "test/Poker.test.ts", "source": "Poker.test.ts" }
+  ],
+  "fheOperations": ["mod", "add", "eq", "gt", "select", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint8", "euint64", "externalEuint8", "ebool"],
+  "relatedTemplates": ["dice-game", "mystery-box"],
+  "prerequisites": ["dice-game", "acl-allow"],
+  "nextSteps": ["dark-pool"]
+}

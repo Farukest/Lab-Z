@@ -1,0 +1,39 @@
+import hre from "hardhat";
+
+async function main() {
+  console.log("Deploying {{CONTRACT_NAME}}...");
+
+  const Factory = await hre.ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const contract = await Factory.deploy();
+
+  await contract.waitForDeployment();
+
+  const address = await contract.getAddress();
+  console.log(`{{CONTRACT_NAME}} deployed to: ${address}`);
+
+  // Verify on explorer if not local
+  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+    console.log("Waiting for block confirmations...");
+    await contract.deploymentTransaction()?.wait(5);
+
+    console.log("Verifying contract...");
+    try {
+      await hre.run("verify:verify", {
+        address: address,
+        constructorArguments: [],
+      });
+      console.log("Contract verified!");
+    } catch (error) {
+      console.log("Verification failed:", error);
+    }
+  }
+
+  return address;
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

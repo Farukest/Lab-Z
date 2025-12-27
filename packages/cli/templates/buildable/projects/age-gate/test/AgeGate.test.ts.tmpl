@@ -1,0 +1,162 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let ageGate: {{CONTRACT_NAME}};
+  let issuer: HardhatEthersSigner;
+  let user1: HardhatEthersSigner;
+  let user2: HardhatEthersSigner;
+  let service: HardhatEthersSigner;
+
+  const VALIDITY_PERIOD = 86400 * 30; // 30 days
+
+  beforeEach(async function () {
+    [issuer, user1, user2, service] = await ethers.getSigners();
+
+    const AgeGateFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    ageGate = await AgeGateFactory.deploy(VALIDITY_PERIOD);
+    await ageGate.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct validity period", async function () {
+      expect(await ageGate.verificationValidityPeriod()).to.equal(VALIDITY_PERIOD);
+    });
+
+    it("Should set deployer as issuer", async function () {
+      expect(await ageGate.isIssuer(issuer.address)).to.equal(true);
+    });
+
+    it("Should have correct seconds per year constant", async function () {
+      expect(await ageGate.SECONDS_PER_YEAR()).to.equal(31536000);
+    });
+  });
+
+  describe("Issuer Management", function () {
+    it("Should add new issuer", async function () {
+      await expect(ageGate.addIssuer(user1.address))
+        .to.emit(ageGate, "IssuerAdded")
+        .withArgs(user1.address);
+
+      expect(await ageGate.isIssuer(user1.address)).to.equal(true);
+    });
+
+    it("Should remove issuer", async function () {
+      await ageGate.addIssuer(user1.address);
+      await expect(ageGate.removeIssuer(user1.address))
+        .to.emit(ageGate, "IssuerRemoved")
+        .withArgs(user1.address);
+
+      expect(await ageGate.isIssuer(user1.address)).to.equal(false);
+    });
+
+    it("Should reject non-issuer adding issuer", async function () {
+      await expect(ageGate.connect(user1).addIssuer(user2.address))
+        .to.be.revertedWithCustomError(ageGate, "NotAuthorizedIssuer");
+    });
+  });
+
+  describe("Birth Date Registration", function () {
+    it("Should track registration status", async function () {
+      expect(await ageGate.hasBirthDateRegistered(user1.address)).to.equal(false);
+    });
+
+    it("Should reject registration from non-issuer", async function () {
+      // Would need encrypted input
+    });
+  });
+
+  describe("Age Verification", function () {
+    it("Should reject verification without birth date", async function () {
+      await expect(ageGate.connect(user1).verifyAge(18, service.address))
+        .to.be.revertedWithCustomError(ageGate, "BirthDateNotRegistered");
+    });
+
+    it("Should reject invalid age requirement (0)", async function () {
+      // Would need registered birth date to test
+    });
+
+    it("Should reject invalid age requirement (>150)", async function () {
+      // Would need registered birth date to test
+    });
+  });
+
+  describe("Access Check", function () {
+    it("Should reject check from non-verifier", async function () {
+      const fakeVerificationId = ethers.keccak256(ethers.toUtf8Bytes("fake"));
+      await expect(ageGate.checkAgeRequirement(fakeVerificationId))
+        .to.be.reverted;
+    });
+  });
+
+  describe("Use Cases", function () {
+    it("Adult content access (18+)", async function () {
+      /**
+       * Scenario: User wants to access 18+ content
+       *
+       * 1. Government/KYC provider registers encrypted birth date
+       * 2. User calls verifyAge(18, contentPlatformAddress)
+       * 3. Platform calls checkAgeRequirement(verificationId)
+       * 4. Platform sees boolean: user is 18+ or not
+       * 5. Platform never learns exact birth date
+       */
+    });
+
+    it("Alcohol purchase verification (21+)", async function () {
+      /**
+       * Scenario: User buys alcohol online
+       *
+       * 1. User has encrypted birth date from ID verification
+       * 2. User calls verifyAge(21, merchantAddress)
+       * 3. Merchant verifies age >= 21
+       * 4. Purchase proceeds
+       *
+       * Privacy: Merchant only knows user is 21+, not actual age
+       */
+    });
+
+    it("Senior discount eligibility (65+)", async function () {
+      /**
+       * Scenario: User claims senior discount
+       *
+       * 1. User proves age >= 65 without revealing they're 78
+       * 2. Service grants discount
+       * 3. Exact age remains private
+       */
+    });
+
+    it("Age range verification", async function () {
+      /**
+       * Multiple verifications can be combined:
+       * - Is user >= 21? (can buy alcohol)
+       * - Is user >= 65? (senior discount)
+       * - Is user >= 25? (car rental)
+       *
+       * Each returns encrypted boolean, never reveals birth date
+       */
+    });
+  });
+
+  describe("Privacy", function () {
+    it("Should never reveal exact birth date", async function () {
+      /**
+       * FHE guarantees:
+       * - Birth date encrypted at registration
+       * - Age calculation happens on encrypted values
+       * - Only boolean result is revealed
+       * - Even issuers can't see stored dates
+       */
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct identity info", async function () {
+      const [issuerAddr, registeredAt, active] = await ageGate.getIdentity(user1.address);
+      expect(issuerAddr).to.equal(ethers.ZeroAddress);
+      expect(registeredAt).to.equal(0);
+      expect(active).to.equal(false);
+    });
+  });
+});

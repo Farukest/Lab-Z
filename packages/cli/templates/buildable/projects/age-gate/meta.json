@@ -1,0 +1,48 @@
+{
+  "name": "age-gate",
+  "version": "1.0.0",
+  "description": "Age verification without revealing birth date - privacy-preserving access control",
+  "author": "Lab-Z",
+  "tags": ["identity", "verification", "privacy", "compliance"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "DATE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint32",
+      "description": "Encrypted type for birth date (Unix timestamp)"
+    },
+    "EXTERNAL_DATE_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint32",
+      "description": "External encrypted type for date input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_birthDates", "_verifications", "_issuers"],
+    "functions": ["registerBirthDate", "verifyAge", "checkAgeRequirement", "grantAccess"],
+    "events": ["BirthDateRegistered", "AgeVerified", "AccessGranted"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[DATE_TYPE]], [[EXTERNAL_DATE_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["sub", "div", "gt", "gte", "lt", "lte", "and", "or", "select", "allowThis", "allow", "fromExternal", "asEuint32"]
+}

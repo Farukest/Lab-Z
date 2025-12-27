@@ -35,7 +35,7 @@ import {
   type BaseTemplate,
   type Module,
   type MergeResult
-} from '@labz/core/composer';
+} from '@0xflydev/labz-core/composer';
 
 // Get templates directory
 function getTemplatesDir(): string {

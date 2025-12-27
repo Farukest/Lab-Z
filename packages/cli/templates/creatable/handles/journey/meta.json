@@ -1,0 +1,55 @@
+{
+  "id": "handle-journey",
+  "name": "Handle Journey",
+  "category": "handles",
+  "difficulty": "beginner",
+  "tags": ["handles", "lifecycle", "birth", "permission", "operation", "decryption", "educational"],
+  "description": "Complete lifecycle of an FHE handle from birth to death",
+  "longDescription": "This educational template demonstrates the complete lifecycle of FHE handles in FHEVM. A handle is a 256-bit reference to encrypted data stored in the coprocessor. This template walks through all 5 stages: Birth (handle creation from plaintext or user input), Permission (ACL grants via allow/allowTransient), Operation (creating child handles via FHE operations), Storage (persisting handles in contract state), and Death (decryption reveals the value). Essential for understanding how encrypted values work in FHEVM.",
+  "blocks": [
+    {
+      "id": "stage1-birth",
+      "type": "function",
+      "lines": [85, 114],
+      "explanation": "Handle creation from plaintext (FHE.asEuint64) and user input (FHE.fromExternal). Shows how handles are born.",
+      "searchTerms": ["birth", "create", "asEuint64", "fromExternal"]
+    },
+    {
+      "id": "stage2-permission",
+      "type": "function",
+      "lines": [120, 150],
+      "explanation": "Granting permanent (FHE.allow) and transient (FHE.allowTransient) permissions on handles.",
+      "searchTerms": ["permission", "allow", "allowTransient", "ACL"]
+    },
+    {
+      "id": "stage3-operation",
+      "type": "function",
+      "lines": [156, 210],
+      "explanation": "FHE operations create NEW child handles. Original handles remain unchanged. Demonstrates add, multiply, and compare.",
+      "searchTerms": ["operation", "add", "multiply", "child", "compare"]
+    },
+    {
+      "id": "stage4-storage",
+      "type": "function",
+      "lines": [216, 230],
+      "explanation": "Handles stored in contract state persist between transactions. Shows how to maintain encrypted state.",
+      "searchTerms": ["storage", "persist", "state"]
+    },
+    {
+      "id": "stage5-death",
+      "type": "function",
+      "lines": [236, 275],
+      "explanation": "Decryption is the 'death' of a handle - the value becomes public. Shows 3-step async decryption pattern.",
+      "searchTerms": ["death", "decrypt", "reveal", "makePubliclyDecryptable", "checkSignatures"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/HandleJourney.sol", "source": "HandleJourney.sol" },
+    { "path": "test/HandleJourney.test.ts", "source": "HandleJourney.test.ts" }
+  ],
+  "fheOperations": ["FHE.asEuint64", "FHE.fromExternal", "FHE.add", "FHE.mul", "FHE.gt", "FHE.allow", "FHE.allowThis", "FHE.allowTransient", "FHE.makePubliclyDecryptable", "FHE.checkSignatures"],
+  "fheTypes": ["euint64", "ebool", "externalEuint64"],
+  "relatedTemplates": ["handle-vs-value", "observatory", "allow"],
+  "prerequisites": [],
+  "nextSteps": ["handle-vs-value", "observatory"]
+}

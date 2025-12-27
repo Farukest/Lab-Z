@@ -1,0 +1,55 @@
+{
+  "id": "encryption-multiple",
+  "name": "Encrypt Multiple Values",
+  "category": "encryption",
+  "difficulty": "beginner",
+  "tags": ["encryption", "batch", "multiple", "fromExternal", "handles", "efficiency", "coklu-sifreleme"],
+  "description": "How to encrypt and send multiple values in a single transaction",
+  "longDescription": "This example teaches efficient batch encryption in FHEVM. Instead of encrypting values separately, chain multiple .add*() calls to create a single encrypted input with shared proof. This reduces gas costs, ensures atomicity, and improves efficiency. Learn how to encrypt mixed types (integers + booleans) together and access them via handles array.",
+  "blocks": [
+    {
+      "id": "two-values",
+      "type": "function",
+      "lines": [55, 75],
+      "explanation": "Store two encrypted values from a single encrypted input. Client uses .add64(a).add64(b).encrypt() and contract receives both via handles[0] and handles[1].",
+      "searchTerms": ["two values", "pair", "batch", "efficiency", "iki deger"]
+    },
+    {
+      "id": "three-values",
+      "type": "function",
+      "lines": [79, 98],
+      "explanation": "Store three encrypted values. Demonstrates scaling to more values with the same pattern. Order matters: first added = handles[0], second = handles[1], etc.",
+      "searchTerms": ["three values", "multiple", "batch", "scaling"]
+    },
+    {
+      "id": "mixed-types",
+      "type": "function",
+      "lines": [102, 136],
+      "explanation": "Store mixed encrypted types (euint64 + ebool) in single input. Shows that different types can share the same encrypted input and proof.",
+      "searchTerms": ["mixed types", "boolean", "integer", "different types", "karma tipler"]
+    },
+    {
+      "id": "coordinates",
+      "type": "function",
+      "lines": [140, 160],
+      "explanation": "Store encrypted 3D coordinates. Practical example for games, location privacy, spatial data. Shows how to group related values.",
+      "searchTerms": ["coordinates", "3D", "x y z", "spatial", "games", "location"]
+    },
+    {
+      "id": "operations-on-multiple",
+      "type": "function",
+      "lines": [164, 195],
+      "explanation": "Perform operations on multiple stored encrypted values. Examples: summing values, calculating distance squared, validating account with multiple conditions.",
+      "searchTerms": ["sum", "add", "distance", "validate", "combine", "multiple operations"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/EncryptMultiple.sol", "source": "EncryptMultiple.sol" },
+    { "path": "test/EncryptMultiple.test.ts", "source": "EncryptMultiple.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "add", "mul", "le", "and", "allowThis", "allow"],
+  "fheTypes": ["euint64", "ebool", "externalEuint64", "externalEbool"],
+  "relatedTemplates": ["encryption-single", "decryption-user-multiple"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["decryption-user-single", "decryption-public-single"]
+}

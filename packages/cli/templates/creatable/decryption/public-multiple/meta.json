@@ -1,0 +1,55 @@
+{
+  "id": "decryption-public-multiple",
+  "name": "Public Decrypt Multiple Values",
+  "category": "decryption",
+  "difficulty": "intermediate",
+  "tags": ["decryption", "public", "multiple", "batch", "lottery", "auction", "election", "reveal", "makePubliclyDecryptable", "checkSignatures"],
+  "description": "How to publicly reveal multiple encrypted values at once using batch 3-step decryption",
+  "longDescription": "This example demonstrates batch public decryption in FHEVM. Learn how to reveal multiple encrypted values (like lottery numbers or auction bids) at once using a single proof. More efficient than decrypting one value at a time. Shows the complete 3-step flow: batch request, batch off-chain decrypt, and single-proof finalization.",
+  "blocks": [
+    {
+      "id": "store-multiple",
+      "type": "function",
+      "lines": [83, 105],
+      "explanation": "Store 3 encrypted values with FHE.allowThis() for each. All values will be revealed together in the batch decryption flow.",
+      "searchTerms": ["store", "multiple", "3 values", "set"]
+    },
+    {
+      "id": "request-batch",
+      "type": "function",
+      "lines": [109, 124],
+      "explanation": "STEP 1: Request public decryption for ALL values at once. Calls FHE.makePubliclyDecryptable() for each encrypted value.",
+      "searchTerms": ["request", "batch", "reveal all", "makePubliclyDecryptable"]
+    },
+    {
+      "id": "get-all-handles",
+      "type": "function",
+      "lines": [138, 145],
+      "explanation": "Get all encrypted handles in one call for off-chain batch decryption. STEP 2 uses these handles with relayer-sdk.",
+      "searchTerms": ["handles", "batch", "all", "get"]
+    },
+    {
+      "id": "finalize-batch",
+      "type": "function",
+      "lines": [156, 181],
+      "explanation": "STEP 3: Finalize with single proof that verifies ALL values. One FHE.checkSignatures() call for all values is more efficient than separate calls.",
+      "searchTerms": ["finalize", "batch", "single proof", "checkSignatures"]
+    },
+    {
+      "id": "lottery-example",
+      "type": "function",
+      "lines": [185, 244],
+      "explanation": "Real-world example: Lottery with 4 encrypted winning numbers. Shows how to batch reveal lottery results fairly.",
+      "searchTerms": ["lottery", "winning numbers", "4 values", "bonus"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/PublicDecryptMultiple.sol", "source": "PublicDecryptMultiple.sol" },
+    { "path": "test/PublicDecryptMultiple.test.ts", "source": "PublicDecryptMultiple.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "allowThis", "makePubliclyDecryptable", "checkSignatures"],
+  "fheTypes": ["euint64", "euint32", "externalEuint64", "externalEuint32"],
+  "relatedTemplates": ["decryption-public-single", "decryption-user-multiple", "lottery"],
+  "prerequisites": ["decryption-public-single"],
+  "nextSteps": ["lottery", "auction", "voting"]
+}

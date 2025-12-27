@@ -1,0 +1,18 @@
+{
+  "id": "token",
+  "name": "Private Token",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["token", "erc20", "privacy", "defi", "balances"],
+  "description": "ERC20-like token with encrypted balances and private transfers",
+  "longDescription": "A fungible token implementation where all balances are encrypted. Transfers happen between encrypted amounts - no one can see how much anyone holds. Uses FHE.sub and FHE.add for balance updates with encrypted overflow checks.",
+  "files": [
+    { "path": "contracts/Token.sol", "source": "Token.sol" },
+    { "path": "test/Token.test.ts", "source": "Token.test.ts" }
+  ],
+  "fheOperations": ["add", "sub", "gte", "select", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["erc7984-token", "escrow"],
+  "prerequisites": ["encryption-single", "acl-allow"],
+  "nextSteps": ["erc7984-token"]
+}

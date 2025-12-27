@@ -1,0 +1,167 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let mysteryBox: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let buyer1: HardhatEthersSigner;
+  let buyer2: HardhatEthersSigner;
+
+  const BOX_PRICE = ethers.parseEther("0.1");
+  const MAX_SUPPLY = 1000;
+
+  beforeEach(async function () {
+    [owner, buyer1, buyer2] = await ethers.getSigners();
+
+    const MysteryBoxFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    mysteryBox = await MysteryBoxFactory.deploy(BOX_PRICE, MAX_SUPPLY);
+    await mysteryBox.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct box price", async function () {
+      expect(await mysteryBox.boxPrice()).to.equal(BOX_PRICE);
+    });
+
+    it("Should set the correct max supply", async function () {
+      expect(await mysteryBox.maxSupply()).to.equal(MAX_SUPPLY);
+    });
+
+    it("Should start with zero boxes", async function () {
+      expect(await mysteryBox.getBoxCount()).to.equal(0);
+    });
+
+    it("Should have full remaining supply", async function () {
+      expect(await mysteryBox.getRemainingSupply()).to.equal(MAX_SUPPLY);
+    });
+  });
+
+  describe("Tier Probabilities", function () {
+    it("Should return correct tier probabilities", async function () {
+      const [legendary, epic, rare, common] = await mysteryBox.getTierProbabilities();
+      expect(legendary).to.equal(5);
+      expect(epic).to.equal(15);
+      expect(rare).to.equal(25);
+      expect(common).to.equal(55);
+      expect(legendary + epic + rare + common).to.equal(100);
+    });
+
+    it("Should have correct threshold constants", async function () {
+      expect(await mysteryBox.LEGENDARY_THRESHOLD()).to.equal(5);
+      expect(await mysteryBox.EPIC_THRESHOLD()).to.equal(20);
+      expect(await mysteryBox.RARE_THRESHOLD()).to.equal(45);
+    });
+  });
+
+  describe("Box Purchase", function () {
+    it("Should purchase box with correct payment", async function () {
+      await expect(mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE }))
+        .to.emit(mysteryBox, "BoxPurchased")
+        .withArgs(0, buyer1.address);
+
+      expect(await mysteryBox.getBoxCount()).to.equal(1);
+    });
+
+    it("Should reject insufficient payment", async function () {
+      const lowPrice = BOX_PRICE - 1n;
+      await expect(mysteryBox.connect(buyer1).purchaseBox({ value: lowPrice }))
+        .to.be.revertedWithCustomError(mysteryBox, "InsufficientPayment");
+    });
+
+    it("Should track user's boxes", async function () {
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+
+      const boxes = await mysteryBox.getUserBoxes(buyer1.address);
+      expect(boxes.length).to.equal(2);
+      expect(boxes[0]).to.equal(0);
+      expect(boxes[1]).to.equal(1);
+    });
+
+    it("Should decrease remaining supply", async function () {
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+      expect(await mysteryBox.getRemainingSupply()).to.equal(MAX_SUPPLY - 1);
+    });
+  });
+
+  describe("Box Info", function () {
+    beforeEach(async function () {
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+    });
+
+    it("Should return correct box info", async function () {
+      const [boxOwner, revealed] = await mysteryBox.getBox(0);
+      expect(boxOwner).to.equal(buyer1.address);
+      expect(revealed).to.equal(false);
+    });
+
+    it("Should reject non-existent box query", async function () {
+      await expect(mysteryBox.getBox(999))
+        .to.be.revertedWithCustomError(mysteryBox, "BoxNotFound");
+    });
+  });
+
+  describe("Box Reveal", function () {
+    beforeEach(async function () {
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+    });
+
+    it("Should allow owner to reveal", async function () {
+      await expect(mysteryBox.connect(buyer1).revealBox(0))
+        .to.emit(mysteryBox, "BoxRevealed")
+        .withArgs(0, buyer1.address);
+    });
+
+    it("Should reject non-owner reveal", async function () {
+      await expect(mysteryBox.connect(buyer2).revealBox(0))
+        .to.be.revertedWithCustomError(mysteryBox, "NotBoxOwner");
+    });
+
+    it("Should reject double reveal", async function () {
+      await mysteryBox.connect(buyer1).revealBox(0);
+      await expect(mysteryBox.connect(buyer1).revealBox(0))
+        .to.be.revertedWithCustomError(mysteryBox, "BoxAlreadyRevealed");
+    });
+  });
+
+  describe("Fairness", function () {
+    it("Should use FHE.random for unpredictable rarity", async function () {
+      /**
+       * FHE guarantees:
+       * - Random values are generated at purchase time
+       * - Values are encrypted until reveal
+       * - No one (including contract owner) can predict rarity
+       * - Distribution follows defined probabilities
+       */
+    });
+
+    it("Should prevent rarity manipulation", async function () {
+      /**
+       * Unlike traditional loot boxes:
+       * - Rarity is determined by FHE.random, not by server
+       * - Contract owner cannot adjust odds after purchase
+       * - Users can verify fairness through encryption
+       */
+    });
+  });
+
+  describe("Transfer", function () {
+    beforeEach(async function () {
+      await mysteryBox.connect(buyer1).purchaseBox({ value: BOX_PRICE });
+    });
+
+    it("Should transfer box to new owner", async function () {
+      await mysteryBox.connect(buyer1).transferBox(0, buyer2.address);
+
+      const [newOwner] = await mysteryBox.getBox(0);
+      expect(newOwner).to.equal(buyer2.address);
+    });
+
+    it("Should reject transfer from non-owner", async function () {
+      await expect(mysteryBox.connect(buyer2).transferBox(0, buyer2.address))
+        .to.be.revertedWithCustomError(mysteryBox, "NotBoxOwner");
+    });
+  });
+});

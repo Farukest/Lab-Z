@@ -1,0 +1,52 @@
+{
+  "name": "auction",
+  "version": "1.0.0",
+  "description": "Sealed-bid auction with encrypted bids - bids remain private until reveal",
+  "author": "Lab-Z",
+  "tags": ["defi", "auction", "bidding", "privacy"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_BID", "description": "Before bid logic", "required": false },
+    { "name": "POST_BID", "description": "After bid logic", "required": false },
+    { "name": "BID_MODIFIERS", "description": "Modifiers for bid function", "required": false },
+    { "name": "ACL_BID", "description": "ACL permissions after bidding", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "BID_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64", "euint128"],
+      "default": "euint64",
+      "description": "Encrypted type for bid amounts"
+    },
+    "EXTERNAL_BID_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64", "externalEuint128"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for bid input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_highestBid", "_highestBidder", "_bids", "_auctionEndTime", "_revealRequested", "_revealed", "_winner"],
+    "functions": ["bid", "requestWinnerReveal", "getWinnerHandle", "finalizeWinnerReveal", "finalizeAuction", "getHighestBid", "getWinner", "hasBid", "isRevealed", "isFinalized"],
+    "events": ["BidPlaced", "WinnerReadyForReveal", "WinnerRevealed", "AuctionFinalized"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[BID_TYPE]], [[EXTERNAL_BID_TYPE]], ebool, eaddress } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["gt", "select", "asEuint64", "asEaddress", "allowThis", "allow", "fromExternal", "makePubliclyDecryptable", "checkSignatures"]
+}

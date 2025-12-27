@@ -1,0 +1,60 @@
+{
+  "id": "acl-allow",
+  "name": "Access Control (ACL)",
+  "category": "acl",
+  "difficulty": "intermediate",
+  "tags": ["ACL", "allow", "allowThis", "allowTransient", "permission", "access control", "security"],
+  "description": "Demonstrates FHE permission management with allow, allowThis, and allowTransient",
+  "longDescription": "Access Control Lists (ACL) are critical in FHEVM. Every encrypted value has an ACL that determines who can access it. This example shows how to grant persistent access (allow), contract-level access (allowThis), and temporary access (allowTransient). Understanding ACL is essential for building secure confidential applications.",
+  "blocks": [
+    {
+      "id": "imports",
+      "type": "import",
+      "lines": [1, 5],
+      "explanation": "Standard FHEVM imports. The FHE library contains all ACL functions: allow, allowThis, allowTransient, isAllowed, isSenderAllowed.",
+      "searchTerms": ["import", "FHE", "ACL", "library"]
+    },
+    {
+      "id": "state",
+      "type": "state",
+      "lines": [10, 12],
+      "explanation": "We store an encrypted secret and track who owns it. The owner will have special permissions to share access.",
+      "searchTerms": ["state", "secret", "owner", "encrypted storage"]
+    },
+    {
+      "id": "set-secret",
+      "type": "function",
+      "lines": [17, 28],
+      "explanation": "Sets the secret and grants initial permissions. allowThis() is critical - without it, the contract cannot use this value in future transactions!",
+      "searchTerms": ["setSecret", "allowThis", "initial permission", "ilk izin"]
+    },
+    {
+      "id": "share-access",
+      "type": "function",
+      "lines": [30, 37],
+      "explanation": "Demonstrates granting persistent access to another address. Once allowed, that address can decrypt the value off-chain anytime.",
+      "searchTerms": ["shareAccess", "allow", "grant permission", "paylaşma", "izin verme"]
+    },
+    {
+      "id": "share-transient",
+      "type": "function",
+      "lines": [39, 46],
+      "explanation": "Demonstrates temporary access with allowTransient. This permission only lasts for the current transaction - useful for one-time operations.",
+      "searchTerms": ["allowTransient", "temporary", "geçici izin", "one-time"]
+    },
+    {
+      "id": "check-access",
+      "type": "function",
+      "lines": [48, 54],
+      "explanation": "Shows how to check if an address has access using FHE.isAllowed. Useful for conditional logic based on permissions.",
+      "searchTerms": ["isAllowed", "check permission", "izin kontrolü"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/ACLDemo.sol", "source": "ACLDemo.sol" },
+    { "path": "test/ACLDemo.test.ts", "source": "ACLDemo.test.ts" }
+  ],
+  "relatedTemplates": ["counter", "encryption-single"],
+  "prerequisites": ["counter"],
+  "nextSteps": ["user-decrypt-single", "antipattern-view"]
+}

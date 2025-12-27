@@ -1,0 +1,39 @@
+{
+  "id": "add",
+  "name": "Encrypted Addition",
+  "category": "basics",
+  "difficulty": "beginner",
+  "tags": ["add", "arithmetic", "euint64", "FHE.add", "basic operation", "beginner"],
+  "description": "Add two encrypted values and return the encrypted result",
+  "longDescription": "This example demonstrates the most fundamental FHE operation: adding two encrypted values. The operation happens entirely on encrypted data - neither the inputs nor the result are ever visible on-chain. This is the building block for more complex encrypted computations.",
+  "blocks": [
+    {
+      "id": "imports",
+      "type": "import",
+      "lines": [1, 5],
+      "explanation": "Import FHE library with euint64 for 64-bit encrypted integers. Using euint64 provides larger range than euint32 for arithmetic operations.",
+      "searchTerms": ["import", "FHE", "euint64", "library"]
+    },
+    {
+      "id": "add-function",
+      "type": "function",
+      "lines": [11, 22],
+      "explanation": "The add function takes two external encrypted values with their proofs, converts them using FHE.fromExternal, then adds them with FHE.add. The result is a new encrypted value that nobody can see.",
+      "searchTerms": ["add", "FHE.add", "toplama", "arithmetic", "encrypted addition"]
+    },
+    {
+      "id": "acl",
+      "type": "function",
+      "lines": [19, 21],
+      "explanation": "After creating a new encrypted value, we must set permissions. allowThis lets the contract use it later, allow lets the caller decrypt it off-chain.",
+      "searchTerms": ["allow", "ACL", "permission", "access control", "yetki"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/EncryptedAdd.sol", "source": "EncryptedAdd.sol" },
+    { "path": "test/EncryptedAdd.test.ts", "source": "EncryptedAdd.test.ts" }
+  ],
+  "relatedTemplates": ["counter", "compare"],
+  "prerequisites": ["counter"],
+  "nextSteps": ["compare", "encryption-single"]
+}

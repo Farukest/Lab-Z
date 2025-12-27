@@ -1,0 +1,44 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const proofValidityPeriod = 86400 * 30; // 30 days
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Proof Validity Period:", proofValidityPeriod, "seconds (30 days)");
+
+  const SalaryProofFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const salaryProof = await SalaryProofFactory.deploy(proofValidityPeriod);
+
+  await salaryProof.waitForDeployment();
+
+  const address = await salaryProof.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nWorkflow:");
+  console.log("  1. Employer registers employee salary:");
+  console.log("     registerSalary(employeeAddress, encryptedSalary)");
+  console.log("  2. Employee generates proof for verifier:");
+  console.log("     - proveAboveThreshold(amount, verifierAddress)");
+  console.log("     - proveBelowThreshold(amount, verifierAddress)");
+  console.log("     - proveInRange(min, max, verifierAddress)");
+  console.log("  3. Verifier checks the proof:");
+  console.log("     verifyProof(proofId) -> encrypted boolean");
+  console.log("\nUse Cases:");
+  console.log("  - Loan applications: Prove income >= required amount");
+  console.log("  - Rental applications: Prove income >= 3x rent");
+  console.log("  - Income-based pricing: Prove you're in a bracket");
+  console.log("  - Employment verification: Confirm salary range claims");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Exact salary never revealed");
+  console.log("  - Verifier only learns if condition is met (boolean)");
+  console.log("  - Proofs expire after validity period");
+  console.log("\nFHE Operations Used:");
+  console.log("  - gt/gte: Above threshold proofs");
+  console.log("  - lt/lte: Below threshold proofs");
+  console.log("  - and: Range proofs (min AND max)");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

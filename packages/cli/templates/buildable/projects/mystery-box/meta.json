@@ -1,0 +1,42 @@
+{
+  "name": "mystery-box",
+  "version": "1.0.0",
+  "description": "NFT mystery box with encrypted rarity - fair distribution guaranteed",
+  "author": "Lab-Z",
+  "tags": ["nft", "gaming", "random", "lootbox"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "RARITY_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint8", "euint16"],
+      "default": "euint8",
+      "description": "Encrypted type for rarity value (0-100)"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_boxes", "_boxCount", "_revealedBoxes"],
+    "functions": ["purchaseBox", "revealBox", "getRarityTier"],
+    "events": ["BoxPurchased", "BoxRevealed", "RarityAssigned"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[RARITY_TYPE]], euint64, ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["random", "rem", "lt", "lte", "gt", "gte", "select", "eq", "allowThis", "allow", "asEuint8", "asEuint64"]
+}

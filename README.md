@@ -43,6 +43,20 @@
 
 ### ▎Installation
 
+**▸ Option A: Install via npm (recommended)**
+
+```bash
+npm install -g @0xflydev/labz
+#      ↑    ↑        ↑
+#      │    │        └── Package name on npm registry
+#      │    │
+#      │    └── Install globally (available everywhere)
+#      │
+#      └── Node package manager
+```
+
+**▸ Option B: Build from source**
+
 ```bash
 git clone https://github.com/Farukest/Lab-Z.git
 cd Lab-Z
