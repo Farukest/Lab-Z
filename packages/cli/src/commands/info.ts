@@ -13,9 +13,9 @@ import { getTemplatesDir, formatInfo, formatError, printBanner } from '../utils'
 export const infoCommand = new Command('info')
   .description('Show detailed information about a template')
   .argument('<template>', 'Template ID')
-  .option('--code', 'Show contract code')
-  .option('--test', 'Show test code')
-  .option('--blocks', 'Show code block explanations')
+  .option('-c, --code', 'Show contract code')
+  .option('-t, --test', 'Show test code')
+  .option('-b, --blocks', 'Show code block explanations')
   .option('--json', 'Output as JSON')
   .action(async (templateId, options) => {
     await executeInfo(templateId, options);
@@ -101,26 +101,32 @@ async function executeInfo(
     }
 
     // Code blocks explanation
-    if (options.blocks && template.blocks.length > 0) {
-      console.log(chalk.bold('\n🧱 Code Blocks\n'));
-      for (const block of template.blocks) {
-        const typeColor = {
-          import: chalk.blue,
-          state: chalk.green,
-          constructor: chalk.yellow,
-          function: chalk.magenta,
-          modifier: chalk.cyan,
-          event: chalk.red,
-          error: chalk.red,
-          comment: chalk.gray,
-        }[block.type] || chalk.white;
+    if (options.blocks) {
+      if (template.blocks && template.blocks.length > 0) {
+        console.log(chalk.bold('\n🧱 Code Blocks\n'));
+        for (const block of template.blocks) {
+          const typeColor = {
+            import: chalk.blue,
+            state: chalk.green,
+            constructor: chalk.yellow,
+            function: chalk.magenta,
+            modifier: chalk.cyan,
+            event: chalk.red,
+            error: chalk.red,
+            comment: chalk.gray,
+          }[block.type] || chalk.white;
 
-        console.log(`  ${typeColor(`[${block.type}]`)} Lines ${block.lines[0]}-${block.lines[1]}`);
-        console.log(chalk.dim(`  ${block.explanation}`));
-        if (block.searchTerms.length > 0) {
-          console.log(chalk.dim(`  Keywords: ${block.searchTerms.join(', ')}`));
+          console.log(`  ${typeColor(`[${block.type}]`)} Lines ${block.lines[0]}-${block.lines[1]}`);
+          console.log(chalk.dim(`  ${block.explanation}`));
+          if (block.searchTerms && block.searchTerms.length > 0) {
+            console.log(chalk.dim(`  Keywords: ${block.searchTerms.join(', ')}`));
+          }
+          console.log('');
         }
-        console.log('');
+      } else {
+        console.log(chalk.bold('\n🧱 Code Blocks\n'));
+        console.log(chalk.dim('  No annotated code blocks available for this template.'));
+        console.log(chalk.dim('  Use --code to view the full contract source.\n'));
       }
     }
 

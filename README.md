@@ -243,9 +243,9 @@ labz list [options]
   #         └── Example: labz list --difficulty beginner
   #         └── Explanation: Filter templates by learning curve level
 
-  -t, --tags <tags...>      # Filter by tags
+  -t, --tag <tag...>        # Filter by tags
   #      ↑
-  #      └── Example: labz list --tags defi privacy
+  #      └── Example: labz list --tag defi privacy
   #      └── Explanation: Find templates tagged with specific keywords
 ```
 
@@ -260,14 +260,24 @@ labz search <query> [options]
 #      │
 #      └── Search templates by keyword
 
+  -c, --category <cat>      # Filter by category
+  #      ↑
+  #      └── Example: labz search "token" -c advanced
+  #      └── Explanation: Search only in a specific category
+
+  -d, --difficulty <level>  # Filter by difficulty
+  #      ↑
+  #      └── Example: labz search "voting" -d beginner
+  #      └── Explanation: Search only templates of a specific difficulty
+
   -b, --blocks              # Include code block matches
-  #       ↑
-  #       └── Example: labz search "encrypted voting" --blocks
-  #       └── Explanation: Also search inside annotated code blocks
+  #      ↑
+  #      └── Example: labz search "encrypted voting" -b
+  #      └── Explanation: Also search inside annotated code blocks
 
   -l, --limit <n>           # Limit results (default: 10)
   #      ↑
-  #      └── Example: labz search "auction" --limit 5
+  #      └── Example: labz search "auction" -l 5
   #      └── Explanation: Return only first N matching templates
 ```
 
@@ -282,20 +292,20 @@ labz info <template> [options]
 #     │
 #     └── Show template details
 
-  --code                    # Show contract source code
-  #  ↑
-  #  └── Example: labz info auction --code
-  #  └── Explanation: Display the full Solidity contract source
+  -c, --code                # Show contract source code
+  #      ↑
+  #      └── Example: labz info auction -c
+  #      └── Explanation: Display the full Solidity contract source
 
-  --blocks                  # Show annotated code blocks
-  #   ↑
-  #   └── Example: labz info prediction-market --blocks
-  #   └── Explanation: Show code sections with FHE explanations
+  -b, --blocks              # Show annotated code blocks
+  #      ↑
+  #      └── Example: labz info prediction-market -b
+  #      └── Explanation: Show code sections with FHE explanations
 
-  --test                    # Show test file
-  #  ↑
-  #  └── Example: labz info auction --test
-  #  └── Explanation: Display the Hardhat test file for this template
+  -t, --test                # Show test file
+  #      ↑
+  #      └── Example: labz info auction -t
+  #      └── Explanation: Display the Hardhat test file for this template
 ```
 
 ### ▎labz compose
@@ -319,11 +329,11 @@ labz compose [contract-name]
 
 | Command | Options |
 |---------|---------|
-| `create` | `-o` `-l` `-y` |
-| `build` | `-w` `-t` `-o` `--list-bases` `--list-modules` `--check` `--preview` `--dry-run` `-i` `-y` |
-| `list` | `-c` `-d` `-t` |
-| `search` | `-b` `-l` |
-| `info` | `--code` `--blocks` `--test` |
+| `create` | `-o, --output` `-l, --list` `-y, --yes` |
+| `build` | `-w, --with` `-t, --type` `-o, --output` `--list-bases` `--list-modules` `--check` `--preview` `--dry-run` `-i, --interactive` `-y, --yes` |
+| `list` | `-c, --category` `-d, --difficulty` `-t, --tag` |
+| `search` | `-c, --category` `-d, --difficulty` `-b, --blocks` `-l, --limit` |
+| `info` | `-c, --code` `-t, --test` `-b, --blocks` |
 | `compose` | - |
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>

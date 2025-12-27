@@ -96,6 +96,16 @@ export async function executeBuild(
   // Check for --yes or -y in process.argv as workaround for Commander issue
   const forceYes = options.yes || options.force || process.argv.includes('--yes') || process.argv.includes('-y') || process.env.CI === 'true';
 
+  // Check for -o/--output in process.argv as workaround for Commander issue
+  let outputOverride: string | undefined;
+  const oIndex = process.argv.indexOf('-o');
+  const outputIndex = process.argv.indexOf('--output');
+  if (oIndex !== -1 && process.argv[oIndex + 1] && !process.argv[oIndex + 1].startsWith('-')) {
+    outputOverride = process.argv[oIndex + 1];
+  } else if (outputIndex !== -1 && process.argv[outputIndex + 1] && !process.argv[outputIndex + 1].startsWith('-')) {
+    outputOverride = process.argv[outputIndex + 1];
+  }
+
   // Debug: log options
   if (process.env.DEBUG) {
     console.log('DEBUG options:', JSON.stringify(options, null, 2));
@@ -287,8 +297,8 @@ export async function executeBuild(
   }
   finalProjectName = finalProjectName || base.name.charAt(0).toUpperCase() + base.name.slice(1);
 
-  // Output directory
-  const outputDir = path.resolve(options.output || '.', finalProjectName.toLowerCase());
+  // Output directory (use override from process.argv if available)
+  const outputDir = path.resolve(outputOverride || options.output || '.', finalProjectName.toLowerCase());
 
   // Show config and confirm (unless -y or --dry-run)
   console.log(formatInfo('\nProject configuration:'));

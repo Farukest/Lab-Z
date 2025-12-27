@@ -15,7 +15,7 @@ export const searchCommand = new Command('search')
   .option('-c, --category <category>', 'Filter by category')
   .option('-d, --difficulty <level>', 'Filter by difficulty')
   .option('-l, --limit <number>', 'Limit results', '10')
-  .option('--blocks', 'Include matching code blocks in results')
+  .option('-b, --blocks', 'Include matching code blocks in results')
   .option('--json', 'Output as JSON')
   .action(async (query, options) => {
     await executeSearch(query, options);

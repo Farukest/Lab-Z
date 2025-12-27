@@ -219,13 +219,6 @@ export function CodePreview() {
       if (block?.config?.line) {
         lineStart = parseInt(block.config.line, 10);
         lineEnd = lineStart;
-      } else {
-        // Check if it's a function ID
-        const fn = project.functions.find(f => f.id === highlightedBlockId);
-        if (fn?.startLine) {
-          lineStart = fn.startLine;
-          lineEnd = fn.endLine || fn.startLine;
-        }
       }
     } else {
       // For generated code, use mappings
