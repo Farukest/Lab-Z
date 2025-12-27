@@ -312,6 +312,9 @@ labz compose [contract-name]
 #  └── Explanation: Opens a terminal menu to select base + modules visually
 ```
 
+<img width="1231" height="680" alt="image" src="https://github.com/user-attachments/assets/b3f752c4-8536-41ca-97c4-a21b50535ed8" />
+
+
 ### ▎CLI Options Summary
 
 | Command | Options |
