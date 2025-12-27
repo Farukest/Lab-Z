@@ -1,0 +1,24 @@
+{
+  "id": "age-gate",
+  "name": "Age Gate",
+  "category": "advanced",
+  "difficulty": "beginner",
+  "tags": ["identity", "verification", "age", "privacy", "compliance"],
+  "description": "Age verification without revealing exact birth date",
+  "longDescription": "Proves someone is over a certain age without revealing their actual birth date. Uses FHE.gte for encrypted age comparison - the contract only learns if the user is above the threshold, nothing more. Essential pattern for privacy-preserving identity verification.",
+  "sections": [
+    { "id": "setup", "title": "Setup", "description": "Deploy & issuers" },
+    { "id": "registration", "title": "Register", "description": "Store birthdate" },
+    { "id": "verification", "title": "Verify", "description": "Check age" },
+    { "id": "access", "title": "Access", "description": "Grant or deny" }
+  ],
+  "files": [
+    { "path": "contracts/AgeGate.sol", "source": "AgeGate.sol" },
+    { "path": "test/AgeGate.test.ts", "source": "AgeGate.test.ts" }
+  ],
+  "fheOperations": ["gte", "gt", "sub", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["salary-proof", "blind-match"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["salary-proof"]
+}

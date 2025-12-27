@@ -1,0 +1,32 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const minOrderAmount = 100; // Minimum order amount
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Minimum Order Amount:", minOrderAmount);
+
+  const DarkPoolFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const darkPool = await DarkPoolFactory.deploy(minOrderAmount);
+
+  await darkPool.waitForDeployment();
+
+  const address = await darkPool.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nUsage:");
+  console.log("  1. Buyers call placeBuyOrder(encryptedPrice, proof, encryptedAmount, proof)");
+  console.log("  2. Sellers call placeSellOrder(encryptedPrice, proof, encryptedAmount, proof)");
+  console.log("  3. Anyone can call matchOrders(buyOrderId) to find matches");
+  console.log("  4. Orders match when buyPrice >= sellPrice (encrypted comparison)");
+  console.log("\nPrivacy Features:");
+  console.log("  - Order prices are encrypted");
+  console.log("  - Order amounts are encrypted");
+  console.log("  - Only order owners can see their own prices");
+  console.log("  - Matching happens without revealing prices");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

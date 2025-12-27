@@ -1,0 +1,34 @@
+{
+  "name": "security/reentrancy",
+  "version": "1.0.0",
+  "description": "Reentrancy guard to prevent reentrant calls",
+  "category": "security",
+  "compatibleWith": ["counter", "voting", "token", "auction"],
+  "incompatibleWith": [],
+  "requires": [],
+  "requiresSlots": ["ERRORS", "STATE_VARIABLES", "MODIFIERS"],
+  "provides": {
+    "functions": [],
+    "events": [],
+    "modifiers": ["nonReentrant"],
+    "stateVariables": ["_reentrancyStatus"]
+  },
+  "exclusive": false,
+  "injections": {
+    "ERRORS": {
+      "content": "file:inject/errors.sol",
+      "mode": "append",
+      "order": 5
+    },
+    "STATE_VARIABLES": {
+      "content": "file:inject/state.sol",
+      "mode": "append",
+      "order": 5
+    },
+    "MODIFIERS": {
+      "content": "file:inject/modifiers.sol",
+      "mode": "append",
+      "order": 5
+    }
+  }
+}

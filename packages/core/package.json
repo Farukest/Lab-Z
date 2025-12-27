@@ -1,0 +1,46 @@
+{
+  "name": "@labz/core",
+  "version": "1.0.0",
+  "description": "Lab-Z Core - Template engine, registry, generator, and validation",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./blocks": {
+      "types": "./dist/blocks.d.ts",
+      "import": "./dist/blocks.mjs",
+      "require": "./dist/blocks.js"
+    },
+    "./composer": {
+      "types": "./dist/composer.d.ts",
+      "import": "./dist/composer.mjs",
+      "require": "./dist/composer.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/blocks.ts src/composer.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts src/blocks.ts src/composer.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "gray-matter": "^4.0.3",
+    "fuse.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "files": [
+    "dist"
+  ]
+}

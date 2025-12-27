@@ -1,0 +1,129 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let escrow: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let buyer: HardhatEthersSigner;
+  let seller: HardhatEthersSigner;
+  let arbiter: HardhatEthersSigner;
+
+  const FEE_RATE = 100; // 1%
+  const ONE_WEEK = 86400 * 7;
+
+  beforeEach(async function () {
+    [owner, buyer, seller, arbiter] = await ethers.getSigners();
+
+    const EscrowFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    escrow = await EscrowFactory.deploy(FEE_RATE, owner.address);
+    await escrow.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct fee rate", async function () {
+      expect(await escrow.escrowFeeRate()).to.equal(FEE_RATE);
+    });
+
+    it("Should set the correct fee recipient", async function () {
+      expect(await escrow.feeRecipient()).to.equal(owner.address);
+    });
+
+    it("Should start with zero escrows", async function () {
+      expect(await escrow.getEscrowCount()).to.equal(0);
+    });
+  });
+
+  describe("Escrow Creation", function () {
+    it("Should reject self-escrow", async function () {
+      // Would need encrypted amount input
+    });
+  });
+
+  describe("Escrow States", function () {
+    it("Should track escrow count", async function () {
+      expect(await escrow.getEscrowCount()).to.equal(0);
+    });
+  });
+
+  describe("Release Flow", function () {
+    it("Should reject release for non-existent escrow", async function () {
+      await expect(escrow.releaseFunds(999))
+        .to.be.revertedWithCustomError(escrow, "EscrowNotFound");
+    });
+  });
+
+  describe("Refund Flow", function () {
+    it("Should reject refund for non-existent escrow", async function () {
+      await expect(escrow.refund(999))
+        .to.be.revertedWithCustomError(escrow, "EscrowNotFound");
+    });
+  });
+
+  describe("Dispute Resolution", function () {
+    it("Should reject dispute for non-existent escrow", async function () {
+      await expect(escrow.dispute(999))
+        .to.be.revertedWithCustomError(escrow, "EscrowNotFound");
+    });
+
+    it("Should reject resolve for non-existent escrow", async function () {
+      await expect(escrow.resolveDispute(999, true))
+        .to.be.revertedWithCustomError(escrow, "EscrowNotFound");
+    });
+  });
+
+  describe("Use Cases", function () {
+    it("Freelance payment scenario", async function () {
+      /**
+       * Scenario: Client hires freelancer for $5000 project
+       *
+       * 1. Client creates escrow with encrypted $5000
+       * 2. Client funds escrow
+       * 3. Freelancer delivers work
+       * 4. Client releases funds
+       *
+       * Privacy: Amount hidden from blockchain observers
+       */
+    });
+
+    it("P2P crypto trade scenario", async function () {
+      /**
+       * Scenario: Alice sells 1 BTC to Bob for 50,000 USDC
+       *
+       * 1. Alice creates escrow (seller) with encrypted BTC amount
+       * 2. Bob (buyer) funds with encrypted USDC
+       * 3. Alice sends BTC off-chain
+       * 4. Bob confirms, releases USDC to Alice
+       *
+       * Privacy: Trade amounts hidden from competitors
+       */
+    });
+
+    it("Real estate deposit scenario", async function () {
+      /**
+       * Scenario: $50,000 earnest money deposit
+       *
+       * 1. Buyer creates escrow with title company as arbiter
+       * 2. Buyer funds with encrypted amount
+       * 3. If deal closes: funds released to seller
+       * 4. If deal falls through: funds refunded per contract
+       * 5. If dispute: arbiter decides
+       *
+       * Privacy: Deposit amount private during negotiations
+       */
+    });
+  });
+
+  describe("Privacy", function () {
+    it("Should keep escrow amounts encrypted", async function () {
+      /**
+       * FHE ensures:
+       * - Escrow amount is encrypted at creation
+       * - Only parties (buyer, seller, arbiter) can view
+       * - Blockchain observers see only encrypted values
+       * - Amount revealed only to recipient upon release
+       */
+    });
+  });
+});

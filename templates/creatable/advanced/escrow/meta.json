@@ -1,0 +1,18 @@
+{
+  "id": "escrow",
+  "name": "Private Escrow",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["escrow", "defi", "payments", "privacy", "trust"],
+  "description": "Escrow service with encrypted amounts and private conditions",
+  "longDescription": "An escrow system where the escrowed amount and release conditions are encrypted. Neither party knows the exact terms until conditions are met. Uses encrypted comparisons for condition checking and private balance management.",
+  "files": [
+    { "path": "contracts/Escrow.sol", "source": "Escrow.sol" },
+    { "path": "test/Escrow.test.ts", "source": "Escrow.test.ts" }
+  ],
+  "fheOperations": ["add", "sub", "gte", "eq", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["token", "prediction-market"],
+  "prerequisites": ["encryption-single", "acl-allow"],
+  "nextSteps": ["dark-pool"]
+}

@@ -1,0 +1,62 @@
+{
+  "id": "escrow-erc7984",
+  "name": "Escrow with ERC7984",
+  "category": "openzeppelin",
+  "difficulty": "advanced",
+  "tags": ["escrow", "ERC7984", "payment", "dispute", "arbiter", "OpenZeppelin"],
+  "description": "A confidential escrow service for ERC7984 tokens with encrypted amounts",
+  "longDescription": "This advanced example implements a secure escrow system for ERC7984 tokens. Buyers can deposit encrypted amounts, sellers can refund, and disputes can be resolved by arbiters. All payment amounts remain private throughout the escrow lifecycle.",
+  "blocks": [
+    {
+      "id": "create-escrow",
+      "type": "function",
+      "lines": [73, 92],
+      "explanation": "Create a new escrow with buyer, seller, arbiter, and deadline. The escrow starts in Created state.",
+      "searchTerms": ["create", "escrow", "new"]
+    },
+    {
+      "id": "deposit",
+      "type": "function",
+      "lines": [100, 131],
+      "explanation": "Buyer deposits encrypted tokens into the escrow using confidentialTransferFrom.",
+      "searchTerms": ["deposit", "fund", "payment"]
+    },
+    {
+      "id": "release",
+      "type": "function",
+      "lines": [137, 150],
+      "explanation": "Buyer releases escrowed funds to the seller, completing the transaction.",
+      "searchTerms": ["release", "complete", "pay"]
+    },
+    {
+      "id": "refund",
+      "type": "function",
+      "lines": [154, 167],
+      "explanation": "Seller initiates a refund back to the buyer.",
+      "searchTerms": ["refund", "return", "cancel"]
+    },
+    {
+      "id": "dispute",
+      "type": "function",
+      "lines": [173, 183],
+      "explanation": "Either party can raise a dispute to involve the arbiter.",
+      "searchTerms": ["dispute", "conflict", "problem"]
+    },
+    {
+      "id": "resolve-dispute",
+      "type": "function",
+      "lines": [188, 204],
+      "explanation": "Arbiter resolves the dispute by deciding whether to release to seller or refund buyer.",
+      "searchTerms": ["resolve", "arbiter", "decision"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/EscrowERC7984.sol", "source": "EscrowERC7984.sol" },
+    { "path": "test/EscrowERC7984.test.ts", "source": "EscrowERC7984.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransferFrom", "confidentialTransfer", "FHE.add", "FHE.allowTransient", "FHE.allowThis", "fromExternal"],
+  "fheTypes": ["euint64", "ebool"],
+  "relatedTemplates": ["erc7984-token", "swap-erc7984-to-erc7984"],
+  "prerequisites": ["erc7984-token"],
+  "nextSteps": ["prediction-market-erc7984"]
+}

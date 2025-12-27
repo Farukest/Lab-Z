@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Turbo
+.turbo/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test
+coverage/
+
+# Generated
+*.generated.*
+
+# Claude memory
+claude.md
+
+# MD files (except README and INTEGRATION)
+*.md
+!README.md
+!**/README.md
+!*INTEGRATION*.md
+!**/*INTEGRATION*.md
+
+# Test and temp folders
+_test/
+templates/_test/
+document/
+fhecounter/
+tmp/
+
+# Translation cache (LLM code comment translations)
+.translation-cache/

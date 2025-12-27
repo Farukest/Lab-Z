@@ -1,0 +1,44 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const minBet = ethers.parseEther("0.01");
+  const maxBet = ethers.parseEther("10");
+  const houseEdge = 250; // 2.5%
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Min Bet:", ethers.formatEther(minBet), "ETH");
+  console.log("  Max Bet:", ethers.formatEther(maxBet), "ETH");
+  console.log("  House Edge:", houseEdge / 100, "%");
+
+  const DiceGameFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const diceGame = await DiceGameFactory.deploy(minBet, maxBet, houseEdge);
+
+  await diceGame.waitForDeployment();
+
+  const address = await diceGame.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nBet Types:");
+  console.log("  0 = Over/Under: Bet on dice total > your number (1.95x payout)");
+  console.log("  1 = Exact: Bet on exact dice sum 2-12 (5x payout)");
+  console.log("  2 = High/Low: Bet low (2-6) or high (8-12) (1.9x payout)");
+  console.log("\nHow to Play:");
+  console.log("  1. Place bet: placeBet(betType, prediction) with ETH");
+  console.log("  2. Reveal: revealResult(gameId) to see encrypted dice");
+  console.log("  3. Claim: claimWinnings(gameId) if you won");
+  console.log("\nFairness Guarantees:");
+  console.log("  - Dice generated with FHE.random() - unpredictable");
+  console.log("  - Results encrypted until player reveals");
+  console.log("  - No house manipulation possible");
+  console.log("  - Provably fair on-chain verification");
+  console.log("\nFHE Operations Used:");
+  console.log("  - random: Generate unpredictable dice");
+  console.log("  - rem: Map to 1-6 range");
+  console.log("  - add: Sum dice values");
+  console.log("  - gt/lt/eq: Check win conditions");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

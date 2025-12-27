@@ -1,0 +1,55 @@
+{
+  "id": "observatory",
+  "name": "Handle Observatory",
+  "category": "handles",
+  "difficulty": "advanced",
+  "tags": ["handles", "registry", "tracking", "debugging", "audit", "genealogy", "permissions", "lifecycle"],
+  "description": "Advanced handle tracking and registry system for debugging and auditing",
+  "longDescription": "The Handle Observatory is a comprehensive system for tracking, debugging, and auditing FHE handles. It provides: (1) Registry - every handle is registered with metadata including name, origin, creator, and timestamp; (2) Genealogy - track parent-child relationships between handles to understand computation flow; (3) Permissions - complete audit trail of all permission grants with timestamps; (4) Lifecycle - monitor handle states (ACTIVE, DECRYPTING, DECRYPTED, ARCHIVED). Essential for debugging complex FHE computations, compliance auditing, and understanding encrypted data flow.",
+  "blocks": [
+    {
+      "id": "registration",
+      "type": "function",
+      "lines": [130, 195],
+      "explanation": "Register handles with metadata: name, origin, creator, timestamp. Supports plaintext, user input, and random origins.",
+      "searchTerms": ["register", "create", "metadata", "track"]
+    },
+    {
+      "id": "operations-tracking",
+      "type": "function",
+      "lines": [200, 285],
+      "explanation": "Perform operations (add, mul, gt) while tracking parent-child relationships and operation types.",
+      "searchTerms": ["operation", "add", "mul", "parent", "child", "genealogy"]
+    },
+    {
+      "id": "permission-audit",
+      "type": "function",
+      "lines": [290, 320],
+      "explanation": "Grant permissions while maintaining complete audit trail with grantee, granter, and timestamp.",
+      "searchTerms": ["permission", "audit", "allow", "grant"]
+    },
+    {
+      "id": "lifecycle-tracking",
+      "type": "function",
+      "lines": [325, 380],
+      "explanation": "Track handle state transitions: ACTIVE -> DECRYPTING -> DECRYPTED. Record decrypted values.",
+      "searchTerms": ["lifecycle", "state", "decrypt", "makePubliclyDecryptable"]
+    },
+    {
+      "id": "query-functions",
+      "type": "function",
+      "lines": [385, 455],
+      "explanation": "Query handle info, permissions, and child handles. Build dependency graphs for debugging.",
+      "searchTerms": ["query", "get", "children", "permissions", "info"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/HandleObservatory.sol", "source": "HandleObservatory.sol" },
+    { "path": "test/HandleObservatory.test.ts", "source": "HandleObservatory.test.ts" }
+  ],
+  "fheOperations": ["FHE.asEuint64", "FHE.fromExternal", "FHE.randEuint64", "FHE.add", "FHE.mul", "FHE.gt", "FHE.allow", "FHE.allowThis", "FHE.allowTransient", "FHE.makePubliclyDecryptable", "FHE.checkSignatures"],
+  "fheTypes": ["euint64", "ebool", "externalEuint64"],
+  "relatedTemplates": ["handle-journey", "handle-vs-value", "symbolic-execution"],
+  "prerequisites": ["handle-journey", "handle-vs-value"],
+  "nextSteps": ["symbolic-execution"]
+}

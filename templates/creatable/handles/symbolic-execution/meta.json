@@ -1,0 +1,55 @@
+{
+  "id": "symbolic-execution",
+  "name": "Symbolic Execution",
+  "category": "handles",
+  "difficulty": "advanced",
+  "tags": ["symbolic", "mock", "production", "testing", "gas", "debugging", "best-practices"],
+  "description": "Understanding the difference between mock mode testing and production FHE",
+  "longDescription": "This advanced template demonstrates how FHEVM testing (mock mode) differs from production (real FHE). In mock mode, handles are 'symbolic' - they represent encrypted values without actual encryption, enabling fast testing. In production, handles reference real ciphertexts with cryptographic operations. Key differences covered: decryption timing (instant vs async), gas costs (minimal vs significant), random number behavior (deterministic vs cryptographically secure), and value inspection (possible vs opaque). Essential for writing testable code that works correctly in both environments.",
+  "blocks": [
+    {
+      "id": "basic-operations",
+      "type": "function",
+      "lines": [95, 150],
+      "explanation": "Basic FHE operations that work identically in both mock and production modes. Shows store, add, and compare.",
+      "searchTerms": ["store", "add", "compare", "basic"]
+    },
+    {
+      "id": "decryption-patterns",
+      "type": "function",
+      "lines": [156, 210],
+      "explanation": "Demonstrates async decryption pattern. Critical difference: mock is instant, production takes multiple blocks.",
+      "searchTerms": ["decrypt", "async", "3-step", "makePubliclyDecryptable"]
+    },
+    {
+      "id": "conditional-logic",
+      "type": "function",
+      "lines": [216, 255],
+      "explanation": "FHE.select for encrypted conditionals. Condition, true value, and false value are all encrypted.",
+      "searchTerms": ["select", "conditional", "ternary", "if"]
+    },
+    {
+      "id": "random-numbers",
+      "type": "function",
+      "lines": [261, 290],
+      "explanation": "Random number generation differs: mock is deterministic, production is cryptographically secure.",
+      "searchTerms": ["random", "deterministic", "secure"]
+    },
+    {
+      "id": "gas-considerations",
+      "type": "function",
+      "lines": [296, 340],
+      "explanation": "Multiple operations to show gas differences. Mock gas is minimal; production has significant FHE costs.",
+      "searchTerms": ["gas", "cost", "multiple", "operations"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/SymbolicExecution.sol", "source": "SymbolicExecution.sol" },
+    { "path": "test/SymbolicExecution.test.ts", "source": "SymbolicExecution.test.ts" }
+  ],
+  "fheOperations": ["FHE.asEuint64", "FHE.add", "FHE.mul", "FHE.gt", "FHE.select", "FHE.randEuint64", "FHE.allow", "FHE.allowThis", "FHE.makePubliclyDecryptable", "FHE.checkSignatures"],
+  "fheTypes": ["euint64", "ebool"],
+  "relatedTemplates": ["handle-journey", "observatory"],
+  "prerequisites": ["handle-journey", "handle-vs-value"],
+  "nextSteps": []
+}

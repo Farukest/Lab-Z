@@ -1,0 +1,48 @@
+{
+  "name": "blind-match",
+  "version": "1.0.0",
+  "description": "Private preference matching - find matches without revealing preferences",
+  "author": "Lab-Z",
+  "tags": ["social", "matching", "privacy", "dating"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "PREF_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for preference bitfield"
+    },
+    "EXTERNAL_PREF_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for preference input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_profiles", "_preferences", "_matches"],
+    "functions": ["registerProfile", "setPreferences", "checkMatch", "revealMatch"],
+    "events": ["ProfileRegistered", "PreferencesSet", "MatchFound", "MatchRevealed"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[PREF_TYPE]], [[EXTERNAL_PREF_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["and", "or", "xor", "not", "shl", "shr", "eq", "gt", "gte", "select", "allowThis", "allow", "fromExternal"]
+}

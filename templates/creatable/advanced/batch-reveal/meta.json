@@ -1,0 +1,69 @@
+{
+  "id": "advanced-batch-reveal",
+  "name": "Batch Reveal System",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["batch", "reveal", "multi-party", "session", "auction", "tournament", "voting", "lottery", "threshold", "organizer", "entries"],
+  "description": "Advanced multi-party batch reveal system with dynamic entries, session management, and single-proof verification",
+  "longDescription": "This advanced example demonstrates a sophisticated batch reveal system for multi-party scenarios. Features include: dynamic entry storage (up to 20 entries), session-based organization with designated organizer, batch submission of multiple entries, atomic reveal of all entries with a single proof, and built-in winner detection. Perfect for sealed-bid auctions, tournaments, salary distributions, and voting systems.",
+  "blocks": [
+    {
+      "id": "create-session",
+      "type": "function",
+      "lines": [77, 92],
+      "explanation": "Create a new batch reveal session. The creator becomes the organizer who controls when entries close and reveal happens.",
+      "searchTerms": ["create", "session", "organizer", "start"]
+    },
+    {
+      "id": "submit-entry",
+      "type": "function",
+      "lines": [98, 124],
+      "explanation": "Participants submit encrypted entries to the session. Each entry is stored with FHE.allowThis() for later reveal.",
+      "searchTerms": ["submit", "entry", "participant", "encrypted"]
+    },
+    {
+      "id": "submit-batch",
+      "type": "function",
+      "lines": [130, 156],
+      "explanation": "Submit multiple entries in a single transaction. Useful for batch operations like importing data or testing.",
+      "searchTerms": ["batch", "submit", "multiple", "entries"]
+    },
+    {
+      "id": "close-request",
+      "type": "function",
+      "lines": [162, 184],
+      "explanation": "Organizer closes entries and requests reveal. Calls FHE.makePubliclyDecryptable() for ALL entries at once.",
+      "searchTerms": ["close", "request", "reveal", "organizer", "makePubliclyDecryptable"]
+    },
+    {
+      "id": "get-handles",
+      "type": "function",
+      "lines": [198, 218],
+      "explanation": "Get all encrypted handles and participant addresses for off-chain batch decryption with relayer-sdk.",
+      "searchTerms": ["handles", "batch", "decrypt", "participants"]
+    },
+    {
+      "id": "finalize-batch",
+      "type": "function",
+      "lines": [224, 264],
+      "explanation": "Finalize with a single proof that verifies ALL entries. One FHE.checkSignatures() call for all values is highly efficient.",
+      "searchTerms": ["finalize", "single proof", "checkSignatures", "batch", "all entries"]
+    },
+    {
+      "id": "find-winner",
+      "type": "function",
+      "lines": [294, 314],
+      "explanation": "Helper function to find the winner (highest value) among all revealed entries. Useful for auctions and competitions.",
+      "searchTerms": ["winner", "highest", "auction", "competition"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/BatchReveal.sol", "source": "BatchReveal.sol" },
+    { "path": "test/BatchReveal.test.ts", "source": "BatchReveal.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "allowThis", "makePubliclyDecryptable", "checkSignatures"],
+  "fheTypes": ["euint64", "euint32", "externalEuint64", "externalEuint32"],
+  "relatedTemplates": ["decryption-public-multiple", "auction", "lottery", "voting", "sealed-tender"],
+  "prerequisites": ["decryption-public-single", "decryption-public-multiple"],
+  "nextSteps": ["auction", "voting", "lottery"]
+}

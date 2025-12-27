@@ -1,0 +1,62 @@
+{
+  "id": "multiply",
+  "name": "Multiply Operations",
+  "category": "basics",
+  "difficulty": "beginner",
+  "tags": ["mul", "div", "rem", "multiplication", "division", "modulo", "arithmetic", "FHE.mul", "FHE.div", "FHE.rem"],
+  "description": "Encrypted multiplication, division, and modulo operations",
+  "longDescription": "This example demonstrates multiplication-related FHE operations: FHE.mul() for multiplication, FHE.div() for integer division, and FHE.rem() for modulo (remainder). Learn how to perform these operations on encrypted values, use scalar operations with plaintext multipliers, and combine operations for practical use cases like fee calculations and percentages.",
+  "blocks": [
+    {
+      "id": "multiply",
+      "type": "function",
+      "lines": [26, 43],
+      "explanation": "FHE.mul() multiplies two encrypted values. The result is a new encrypted value - neither inputs nor output are ever visible on-chain.",
+      "searchTerms": ["multiply", "FHE.mul", "carpma", "multiplication", "product"]
+    },
+    {
+      "id": "multiply-scalar",
+      "type": "function",
+      "lines": [47, 61],
+      "explanation": "Multiply encrypted value by a plaintext scalar. Useful when the multiplier is public (like tax rates). The scalar is visible, but the encrypted value and result remain private.",
+      "searchTerms": ["scalar", "plaintext multiply", "public multiplier", "tax", "rate"]
+    },
+    {
+      "id": "divide",
+      "type": "function",
+      "lines": [67, 84],
+      "explanation": "FHE.div() performs integer division on encrypted values. Results are floored (10/3 = 3). Both operands and result stay encrypted.",
+      "searchTerms": ["divide", "FHE.div", "bolme", "division", "quotient"]
+    },
+    {
+      "id": "modulo",
+      "type": "function",
+      "lines": [106, 121],
+      "explanation": "FHE.rem() calculates the remainder of division. Example: 17 % 5 = 2. Useful for wrapping values, checking divisibility, and cyclic operations.",
+      "searchTerms": ["modulo", "remainder", "FHE.rem", "mod", "kalan"]
+    },
+    {
+      "id": "divmod",
+      "type": "function",
+      "lines": [145, 162],
+      "explanation": "Calculate both quotient and remainder in one transaction. More efficient than separate calls when you need both values.",
+      "searchTerms": ["divmod", "quotient", "remainder", "combined"]
+    },
+    {
+      "id": "percentage",
+      "type": "function",
+      "lines": [166, 184],
+      "explanation": "Calculate percentage: (value * percentage / 100). Common pattern for fees, discounts, and proportional calculations.",
+      "searchTerms": ["percentage", "yuzde", "fee", "discount", "commission"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/MultiplyOps.sol", "source": "MultiplyOps.sol" },
+    { "path": "test/MultiplyOps.test.ts", "source": "MultiplyOps.test.ts" }
+  ],
+  "fheOperations": ["mul", "div", "rem", "asEuint64", "fromExternal", "allowThis", "allow"],
+  "fheTypes": ["euint64", "externalEuint64"],
+  "relatedTemplates": ["add", "compare"],
+  "prerequisites": ["add"],
+  "nextSteps": ["bitwise", "compare"]
+}

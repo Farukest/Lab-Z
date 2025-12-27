@@ -1,0 +1,158 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let market: {{CONTRACT_NAME}};
+  let oracle: HardhatEthersSigner;
+  let bettor1: HardhatEthersSigner;
+  let bettor2: HardhatEthersSigner;
+  let bettor3: HardhatEthersSigner;
+
+  const MIN_BET = 100;
+  const ONE_DAY = 86400;
+
+  beforeEach(async function () {
+    [oracle, bettor1, bettor2, bettor3] = await ethers.getSigners();
+
+    const MarketFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    market = await MarketFactory.deploy(oracle.address, MIN_BET);
+    await market.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct oracle", async function () {
+      expect(await market.oracle()).to.equal(oracle.address);
+    });
+
+    it("Should set the correct minimum bet amount", async function () {
+      expect(await market.minBetAmount()).to.equal(MIN_BET);
+    });
+
+    it("Should start with zero markets", async function () {
+      expect(await market.getMarketCount()).to.equal(0);
+    });
+  });
+
+  describe("Market Creation", function () {
+    it("Should create a market with correct parameters", async function () {
+      const question = "Will ETH reach $10k in 2025?";
+      const deadline = Math.floor(Date.now() / 1000) + ONE_DAY;
+
+      await expect(market.createMarket(question, deadline))
+        .to.emit(market, "MarketCreated")
+        .withArgs(0, question, deadline);
+
+      const [q, d, resolved, outcome, yesCount, noCount] = await market.getMarket(0);
+      expect(q).to.equal(question);
+      expect(d).to.equal(deadline);
+      expect(resolved).to.equal(false);
+      expect(outcome).to.equal(false);
+      expect(yesCount).to.equal(0);
+      expect(noCount).to.equal(0);
+    });
+
+    it("Should reject market with past deadline", async function () {
+      const pastDeadline = Math.floor(Date.now() / 1000) - ONE_DAY;
+      await expect(market.createMarket("Test?", pastDeadline))
+        .to.be.revertedWith("Deadline must be future");
+    });
+
+    it("Should increment market count", async function () {
+      const deadline = Math.floor(Date.now() / 1000) + ONE_DAY;
+      await market.createMarket("Question 1?", deadline);
+      await market.createMarket("Question 2?", deadline);
+      expect(await market.getMarketCount()).to.equal(2);
+    });
+  });
+
+  describe("Market Resolution", function () {
+    let marketId: number;
+    let deadline: number;
+
+    beforeEach(async function () {
+      deadline = Math.floor(Date.now() / 1000) + 1; // 1 second from now
+      const tx = await market.createMarket("Test question?", deadline);
+      await tx.wait();
+      marketId = 0;
+
+      // Wait for deadline to pass
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    });
+
+    it("Should allow oracle to resolve market", async function () {
+      await expect(market.connect(oracle).resolveMarket(marketId, true))
+        .to.emit(market, "MarketResolved")
+        .withArgs(marketId, true);
+    });
+
+    it("Should reject non-oracle resolution", async function () {
+      await expect(market.connect(bettor1).resolveMarket(marketId, true))
+        .to.be.revertedWith("Only oracle");
+    });
+
+    it("Should reject resolving non-existent market", async function () {
+      await expect(market.resolveMarket(999, true))
+        .to.be.revertedWithCustomError(market, "MarketNotFound");
+    });
+
+    it("Should reject double resolution", async function () {
+      await market.resolveMarket(marketId, true);
+      await expect(market.resolveMarket(marketId, false))
+        .to.be.revertedWithCustomError(market, "MarketAlreadyResolved");
+    });
+  });
+
+  describe("Claiming", function () {
+    it("Should reject claiming from unresolved market", async function () {
+      const deadline = Math.floor(Date.now() / 1000) + ONE_DAY;
+      await market.createMarket("Test?", deadline);
+
+      await expect(market.claimWinnings(0))
+        .to.be.revertedWithCustomError(market, "MarketNotResolved");
+    });
+
+    it("Should reject claiming from non-existent market", async function () {
+      await expect(market.claimWinnings(999))
+        .to.be.revertedWithCustomError(market, "MarketNotFound");
+    });
+
+    it("Should track claimed status", async function () {
+      expect(await market.hasClaimed(0, bettor1.address)).to.equal(false);
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct market count", async function () {
+      expect(await market.getMarketCount()).to.equal(0);
+
+      const deadline = Math.floor(Date.now() / 1000) + ONE_DAY;
+      await market.createMarket("Q1?", deadline);
+      expect(await market.getMarketCount()).to.equal(1);
+
+      await market.createMarket("Q2?", deadline);
+      expect(await market.getMarketCount()).to.equal(2);
+    });
+  });
+
+  describe("Integration Scenarios", function () {
+    it("Should handle complete market lifecycle", async function () {
+      // 1. Create market
+      const question = "Will BTC hit $100k?";
+      const deadline = Math.floor(Date.now() / 1000) + 1;
+      await market.createMarket(question, deadline);
+
+      // 2. Wait for deadline
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // 3. Resolve market
+      await market.resolveMarket(0, true);
+
+      // 4. Verify resolved state
+      const [, , resolved, outcome] = await market.getMarket(0);
+      expect(resolved).to.equal(true);
+      expect(outcome).to.equal(true);
+    });
+  });
+});

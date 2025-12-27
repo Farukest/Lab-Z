@@ -1,0 +1,18 @@
+{
+  "id": "salary-proof",
+  "name": "Salary Range Proof",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["identity", "income", "verification", "privacy", "lending"],
+  "description": "Prove salary is within a range without revealing exact amount",
+  "longDescription": "Proves income falls within a specified range without revealing the actual salary. Uses encrypted comparisons (FHE.gte and FHE.lte) to check range bounds. Useful for loan applications, rental agreements, or any scenario requiring income verification.",
+  "files": [
+    { "path": "contracts/SalaryProof.sol", "source": "SalaryProof.sol" },
+    { "path": "test/SalaryProof.test.ts", "source": "SalaryProof.test.ts" }
+  ],
+  "fheOperations": ["gte", "lte", "and", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["age-gate", "escrow"],
+  "prerequisites": ["encryption-single", "boolean"],
+  "nextSteps": ["blind-match"]
+}

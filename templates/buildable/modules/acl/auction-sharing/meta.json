@@ -1,0 +1,41 @@
+{
+  "name": "acl/auction-sharing",
+  "version": "1.0.0",
+  "description": "Share your encrypted bid permanently via FHE.allow()",
+  "author": "Lab-Z",
+  "category": "acl",
+  "tags": ["access-control", "permissions", "fhe", "auction"],
+
+  "compatibleWith": ["auction"],
+  "incompatibleWith": [],
+  "requires": [],
+
+  "requiresSlots": ["EVENTS", "EXTERNAL_FUNCTIONS", "STATE_VARIABLES"],
+
+  "provides": {
+    "functions": ["shareBid", "hasBidAccess", "checkBidFHEAccess"],
+    "events": ["BidAccessGranted"],
+    "modifiers": [],
+    "stateVariables": ["_bidAccessList"]
+  },
+
+  "exclusive": false,
+
+  "injections": {
+    "EVENTS": {
+      "content": "file:inject/events.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "STATE_VARIABLES": {
+      "content": "file:inject/state.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 50
+    }
+  }
+}

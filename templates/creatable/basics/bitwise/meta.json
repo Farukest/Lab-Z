@@ -1,0 +1,62 @@
+{
+  "id": "bitwise",
+  "name": "Bitwise Operations",
+  "category": "basics",
+  "difficulty": "intermediate",
+  "tags": ["and", "or", "xor", "shl", "shr", "bitwise", "FHE.and", "FHE.or", "FHE.xor", "FHE.shl", "FHE.shr", "shift", "mask", "flags"],
+  "description": "Encrypted bit manipulation: AND, OR, XOR, and bit shifting",
+  "longDescription": "This example demonstrates bitwise operations on encrypted integers in FHEVM. Learn how to use FHE.and() for masking and extracting bits, FHE.or() for setting bits, FHE.xor() for toggling bits, FHE.shl() for left shifting (multiply by 2^n), and FHE.shr() for right shifting (divide by 2^n). These operations are essential for permission flags, bitfields, and efficient power-of-2 arithmetic.",
+  "blocks": [
+    {
+      "id": "bitwise-and",
+      "type": "function",
+      "lines": [24, 41],
+      "explanation": "FHE.and() performs bitwise AND on encrypted integers. Sets bits to 1 only where BOTH inputs have 1. Essential for extracting specific bits using masks.",
+      "searchTerms": ["and", "FHE.and", "bitwise and", "mask", "extract bits"]
+    },
+    {
+      "id": "apply-mask",
+      "type": "function",
+      "lines": [45, 59],
+      "explanation": "Apply a bitmask to extract specific bits. Useful for reading individual flags from a bitfield. The mask is plaintext (visible) but the value stays encrypted.",
+      "searchTerms": ["mask", "bitmask", "extract", "flags", "bitfield"]
+    },
+    {
+      "id": "bitwise-or",
+      "type": "function",
+      "lines": [65, 82],
+      "explanation": "FHE.or() performs bitwise OR on encrypted integers. Sets bits to 1 where EITHER input has 1. Perfect for combining or setting flags.",
+      "searchTerms": ["or", "FHE.or", "bitwise or", "set bits", "combine flags"]
+    },
+    {
+      "id": "bitwise-xor",
+      "type": "function",
+      "lines": [106, 123],
+      "explanation": "FHE.xor() performs bitwise XOR on encrypted integers. Sets bits to 1 where inputs DIFFER. XOR with 1 flips the bit, XOR with 0 keeps it. Useful for toggling flags.",
+      "searchTerms": ["xor", "FHE.xor", "bitwise xor", "toggle", "flip bits"]
+    },
+    {
+      "id": "shift-left",
+      "type": "function",
+      "lines": [145, 161],
+      "explanation": "FHE.shl() shifts bits to the left. Equivalent to multiplying by 2^n. Faster than FHE.mul() for power-of-2 multiplication.",
+      "searchTerms": ["shl", "shift left", "FHE.shl", "multiply power of 2", "left shift"]
+    },
+    {
+      "id": "shift-right",
+      "type": "function",
+      "lines": [167, 183],
+      "explanation": "FHE.shr() shifts bits to the right. Equivalent to integer division by 2^n (floored). Faster than FHE.div() for power-of-2 division.",
+      "searchTerms": ["shr", "shift right", "FHE.shr", "divide power of 2", "right shift"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/BitwiseOps.sol", "source": "BitwiseOps.sol" },
+    { "path": "test/BitwiseOps.test.ts", "source": "BitwiseOps.test.ts" }
+  ],
+  "fheOperations": ["and", "or", "xor", "shl", "shr", "asEuint8", "asEuint64", "fromExternal", "allowThis", "allow"],
+  "fheTypes": ["euint8", "euint64", "externalEuint8", "externalEuint64"],
+  "relatedTemplates": ["boolean", "multiply"],
+  "prerequisites": ["boolean"],
+  "nextSteps": ["encryption-single", "handles"]
+}

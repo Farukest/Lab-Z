@@ -1,0 +1,34 @@
+{
+  "name": "acl/sharing",
+  "version": "1.0.0",
+  "description": "Share encrypted counter value permanently via FHE.allow()",
+  "category": "acl",
+  "compatibleWith": ["counter"],
+  "incompatibleWith": [],
+  "requires": [],
+  "requiresSlots": ["EVENTS", "EXTERNAL_FUNCTIONS", "STATE_VARIABLES"],
+  "provides": {
+    "functions": ["grantAccess", "hasAccess", "checkFHEAccess"],
+    "events": ["AccessGranted"],
+    "modifiers": [],
+    "stateVariables": ["_accessList"]
+  },
+  "exclusive": false,
+  "injections": {
+    "EVENTS": {
+      "content": "file:inject/events.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "STATE_VARIABLES": {
+      "content": "file:inject/state.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 50
+    }
+  }
+}

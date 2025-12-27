@@ -1,0 +1,62 @@
+{
+  "id": "anti-pattern-missing-allow",
+  "name": "Anti-Pattern: Missing Allow",
+  "category": "anti-patterns",
+  "difficulty": "beginner",
+  "tags": ["anti-pattern", "mistake", "allowThis", "allow", "permission", "ACL", "common error", "izin hatasi"],
+  "description": "Common mistake: forgetting FHE.allowThis() and FHE.allow() after creating encrypted values",
+  "longDescription": "This CRITICAL anti-pattern shows what happens when you forget to set permissions on encrypted values. FHE.allowThis() grants the contract permission to use values in future operations. FHE.allow() grants users permission to decrypt. Forgetting either causes silent failures. Learn the permission checklist: every encrypted value needs explicit permissions, especially computed values which are NEW and don't inherit permissions.",
+  "blocks": [
+    {
+      "id": "the-mistake",
+      "type": "comment",
+      "lines": [10, 24],
+      "explanation": "The mistake: storing encrypted values without calling FHE.allowThis() and FHE.allow(). Results in contract failures and users unable to decrypt their own data.",
+      "searchTerms": ["mistake", "forget", "missing", "allow", "permission"]
+    },
+    {
+      "id": "why-matter",
+      "type": "comment",
+      "lines": [26, 43],
+      "explanation": "FHE.allowThis() grants contract permission to use values later. FHE.allow(value, address) grants users decrypt permission. Both are required for most use cases.",
+      "searchTerms": ["allowThis", "allow", "permission", "why", "required"]
+    },
+    {
+      "id": "bad-no-allowthis",
+      "type": "function",
+      "lines": [51, 65],
+      "explanation": "ANTI-PATTERN: Value stored without FHE.allowThis(). Future contract operations on this value will fail because contract lacks permission.",
+      "searchTerms": ["bad", "no allowThis", "fail", "anti-pattern"]
+    },
+    {
+      "id": "bad-no-user",
+      "type": "function",
+      "lines": [78, 94],
+      "explanation": "ANTI-PATTERN: Value has allowThis but no FHE.allow(value, user). Contract can use value but user cannot decrypt their own data.",
+      "searchTerms": ["bad", "no user allow", "decrypt fail", "anti-pattern"]
+    },
+    {
+      "id": "computed-values",
+      "type": "function",
+      "lines": [118, 140],
+      "explanation": "CRITICAL: FHE operations (add, mul, etc.) create NEW encrypted values. These NEW values need their own FHE.allowThis() and FHE.allow() calls - permissions don't transfer!",
+      "searchTerms": ["computed", "new value", "add", "operation", "transfer"]
+    },
+    {
+      "id": "correct-pattern",
+      "type": "function",
+      "lines": [98, 112],
+      "explanation": "CORRECT: Both FHE.allowThis() and FHE.allow(value, msg.sender) called. Contract can use value, user can decrypt it.",
+      "searchTerms": ["correct", "proper", "both permissions", "solution"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/MissingAllowAntiPattern.sol", "source": "MissingAllowAntiPattern.sol" },
+    { "path": "test/MissingAllowAntiPattern.test.ts", "source": "MissingAllowAntiPattern.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "add", "allowThis", "allow"],
+  "fheTypes": ["euint64", "externalEuint64"],
+  "relatedTemplates": ["decryption-user-single", "anti-pattern-view-encrypted", "acl-transient"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["acl-transient", "handles"]
+}

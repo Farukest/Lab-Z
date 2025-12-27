@@ -1,0 +1,48 @@
+{
+  "name": "dice-game",
+  "version": "1.0.0",
+  "description": "Provably fair dice game with encrypted rolls - casino without trust",
+  "author": "Lab-Z",
+  "tags": ["gaming", "gambling", "random", "casino"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "DICE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint8"],
+      "default": "euint8",
+      "description": "Encrypted type for dice value (1-6)"
+    },
+    "BET_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for bet amounts"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_games", "_gameCount"],
+    "functions": ["placeBet", "requestResultReveal", "getWinHandle", "finalizeResultReveal", "claimWinnings", "getGame", "getGameCount"],
+    "events": ["BetPlaced", "DiceRolled", "ResultReadyForReveal", "ResultRevealed", "WinningsClaimed"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[DICE_TYPE]], [[BET_TYPE]], euint64, externalEuint64, ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["random", "rem", "add", "mul", "gt", "gte", "lt", "lte", "eq", "select", "allowThis", "allow", "asEuint8", "asEuint64", "makePubliclyDecryptable", "checkSignatures"]
+}

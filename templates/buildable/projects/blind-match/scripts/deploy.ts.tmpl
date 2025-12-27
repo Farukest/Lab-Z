@@ -1,0 +1,47 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const minMatchScore = 50; // Minimum compatibility score (0-100)
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Minimum Match Score:", minMatchScore);
+
+  const BlindMatchFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const blindMatch = await BlindMatchFactory.deploy(minMatchScore);
+
+  await blindMatch.waitForDeployment();
+
+  const address = await blindMatch.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nHow It Works:");
+  console.log("  1. Register: registerProfile(encryptedAttributes)");
+  console.log("     - Encode your attributes as bits (interests, location, etc.)");
+  console.log("  2. Set preferences: setPreferences(encryptedPreferences)");
+  console.log("     - Encode what you're looking for");
+  console.log("  3. Check match: checkMatch(otherUser)");
+  console.log("     - System checks compatibility using encrypted AND");
+  console.log("  4. Reveal: revealMatch(matchId)");
+  console.log("     - Both parties must agree to reveal");
+  console.log("\nPrivacy Features:");
+  console.log("  - Preferences are never revealed");
+  console.log("  - Only mutual matches can see the result");
+  console.log("  - Non-matches learn nothing about each other");
+  console.log("  - Uses bitwise operations for efficient matching");
+  console.log("\nBit Encoding Example (Dating):");
+  console.log("  Bit 0-3:  Age range preferences");
+  console.log("  Bit 4-7:  Location preferences");
+  console.log("  Bit 8-15: Interest flags");
+  console.log("  Bit 16+:  Lifestyle preferences");
+  console.log("\nFHE Operations Used:");
+  console.log("  - and: Check preference overlap");
+  console.log("  - or: Combine flags");
+  console.log("  - xor: Find differences");
+  console.log("  - not: Invert preferences");
+  console.log("  - gt: Check if match score > 0");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

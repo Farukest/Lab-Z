@@ -1,0 +1,48 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const minBiddingPeriod = 86400; // 1 day minimum
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Minimum Bidding Period:", minBiddingPeriod / 86400, "day(s)");
+
+  const TenderFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const tender = await TenderFactory.deploy(minBiddingPeriod);
+
+  await tender.waitForDeployment();
+
+  const address = await tender.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nTender Lifecycle:");
+  console.log("  1. Create: createTender(title, description, duration)");
+  console.log("  2. Bid: submitBid(tenderId, encryptedAmount)");
+  console.log("     - Bids are encrypted and sealed");
+  console.log("     - No one can see competitors' bids");
+  console.log("  3. Close: Wait for deadline");
+  console.log("  4. Reveal: revealWinner(tenderId)");
+  console.log("     - Finds lowest bid using FHE comparison");
+  console.log("  5. Award: awardContract(tenderId, winnerAddress)");
+  console.log("\nTender States:");
+  console.log("  Open -> Closed -> Evaluated -> Awarded");
+  console.log("       -> Cancelled (optional)");
+  console.log("\nUse Cases:");
+  console.log("  - Government procurement");
+  console.log("  - Corporate RFPs");
+  console.log("  - Construction bidding");
+  console.log("  - Service contracts");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Bids encrypted until reveal");
+  console.log("  - Losing bids never disclosed");
+  console.log("  - Fair competition guaranteed");
+  console.log("\nFHE Operations Used:");
+  console.log("  - lt: Compare bids");
+  console.log("  - min: Track lowest bid");
+  console.log("  - eq: Identify winner");
+  console.log("  - select: Update lowest on new bid");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

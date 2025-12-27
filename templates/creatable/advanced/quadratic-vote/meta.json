@@ -1,0 +1,18 @@
+{
+  "id": "quadratic-vote",
+  "name": "Quadratic Voting",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["voting", "governance", "quadratic", "dao", "privacy"],
+  "description": "Quadratic voting with encrypted vote credits and private allocations",
+  "longDescription": "Implements quadratic voting where the cost of votes increases quadratically. Users allocate encrypted vote credits privately across proposals. Demonstrates FHE.mul for quadratic cost calculation and complex vote weight aggregation with encrypted values.",
+  "files": [
+    { "path": "contracts/QuadraticVote.sol", "source": "QuadraticVote.sol" },
+    { "path": "test/QuadraticVote.test.ts", "source": "QuadraticVote.test.ts" }
+  ],
+  "fheOperations": ["add", "mul", "sub", "lte", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["voting", "prediction-market"],
+  "prerequisites": ["voting"],
+  "nextSteps": ["prediction-market"]
+}

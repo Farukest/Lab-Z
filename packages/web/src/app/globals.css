@@ -1,0 +1,319 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* Light - minimal, paper-like */
+  --bg: #fafafa;
+  --bg-secondary: #f0f0f0;
+  --fg: #171717;
+  --fg-muted: #525252;
+  --border: #d4d4d4;
+  --accent: #2563eb;
+  --accent-muted: #3b82f6;
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --error: #dc2626;
+}
+
+.dark {
+  /* Dark - terminal inspired */
+  --bg: #09090b;
+  --bg-secondary: #18181b;
+  --fg: #fafafa;
+  --fg-muted: #71717a;
+  --border: #27272a;
+  --accent: #3b82f6;
+  --accent-muted: #60a5fa;
+  --success: #22c55e;
+  --warning: #eab308;
+  --error: #ef4444;
+}
+
+.dim {
+  /* Dim - VS Code dark+ inspired */
+  --bg: #1e1e1e;
+  --bg-secondary: #252526;
+  --fg: #d4d4d4;
+  --fg-muted: #808080;
+  --border: #3c3c3c;
+  --accent: #569cd6;
+  --accent-muted: #9cdcfe;
+  --success: #6a9955;
+  --warning: #dcdcaa;
+  --error: #f44747;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Monospace everywhere for that coder feel */
+code, pre, .mono,
+input, button,
+h1, h2, h3, h4 {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Scrollbar - thin */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-muted);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* No border radius anywhere - sharp edges */
+* {
+  border-radius: 0 !important;
+}
+
+/* Utility classes */
+.text-muted { color: var(--fg-muted); }
+.text-accent { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-error { color: var(--error); }
+
+.bg-primary { background: var(--bg); }
+.bg-secondary { background: var(--bg-secondary); }
+
+.border-default { border-color: var(--border); }
+
+/* Focus - simple underline */
+:focus-visible {
+  outline: none;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* Difficulty indicators - simple dots */
+.diff-beginner::before { content: '●'; color: var(--success); margin-right: 6px; }
+.diff-intermediate::before { content: '●'; color: var(--warning); margin-right: 6px; }
+.diff-advanced::before { content: '●'; color: var(--error); margin-right: 6px; }
+
+/* Tag style - minimal */
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Card style - just border */
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+.card:hover {
+  border-color: var(--fg-muted);
+}
+
+/* Button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.btn:hover {
+  background: var(--border);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--accent-muted);
+}
+
+/* Input */
+input[type="text"], input[type="search"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 8px 12px;
+  font-size: 13px;
+  width: 100%;
+}
+input::placeholder {
+  color: var(--fg-muted);
+}
+input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Code block */
+.code-block {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+/* Terminal prompt style */
+.prompt::before {
+  content: '$ ';
+  color: var(--success);
+}
+
+/* Tree/list style */
+.tree-item {
+  padding: 4px 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--border);
+  font-size: 13px;
+}
+.tree-item:hover {
+  background: var(--bg-secondary);
+}
+
+/* Tab navigation */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--fg);
+}
+.tab.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
+/* Status bar style footer */
+.status-bar {
+  font-size: 12px;
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+/* No animations - instant (except for specific highlight animations) */
+*:not(.highlighted-code-line) {
+  animation: none !important;
+  transition: all 0.1s !important;
+}
+
+/* Monaco Editor - Locate in code highlight */
+.highlighted-code-line {
+  background: rgba(250, 204, 21, 0.25) !important;
+  animation: highlight-pulse 0.5s ease-in-out 3 !important;
+}
+
+.highlighted-code-glyph {
+  background: #facc15 !important;
+  width: 4px !important;
+  margin-left: 3px !important;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    background: rgba(250, 204, 21, 0.15);
+  }
+  50% {
+    background: rgba(250, 204, 21, 0.35);
+  }
+}
+
+/* Tutorial Flash Highlight - for SmartText clicks */
+.tutorial-flash-line {
+  background: rgba(139, 92, 246, 0.3) !important;
+  animation: tutorial-flash-pulse 0.6s ease-out !important;
+}
+
+.tutorial-flash-glyph {
+  background: #8b5cf6 !important;
+  width: 4px !important;
+  margin-left: 3px !important;
+}
+
+.tutorial-flash-inline {
+  background: rgba(139, 92, 246, 0.4) !important;
+  border-radius: 2px !important;
+  animation: tutorial-flash-pulse 0.8s ease-out !important;
+}
+
+@keyframes tutorial-flash-pulse {
+  0% {
+    background: rgba(139, 92, 246, 0.5);
+  }
+  100% {
+    background: rgba(139, 92, 246, 0.1);
+  }
+}
+
+/* Fade in animation for tips */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}

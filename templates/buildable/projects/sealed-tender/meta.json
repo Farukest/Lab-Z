@@ -1,0 +1,48 @@
+{
+  "name": "sealed-tender",
+  "version": "1.0.0",
+  "description": "Sealed-bid procurement auction - bids encrypted until deadline",
+  "author": "Lab-Z",
+  "tags": ["auction", "procurement", "bidding", "privacy"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "BID_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for bid amounts"
+    },
+    "EXTERNAL_BID_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for bid input"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_tenders", "_bids", "_bidders", "_tenderCount"],
+    "functions": ["createTender", "submitBid", "requestWinnerReveal", "getLowestBidHandle", "finalizeWinnerReveal", "awardContract", "cancelTender", "getTender"],
+    "events": ["TenderCreated", "BidSubmitted", "WinnerReadyForReveal", "WinnerRevealed", "ContractAwarded", "TenderCancelled"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[BID_TYPE]], [[EXTERNAL_BID_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["lt", "lte", "gt", "gte", "min", "eq", "ne", "select", "allowThis", "allow", "fromExternal", "asEuint64", "makePubliclyDecryptable", "checkSignatures"]
+}

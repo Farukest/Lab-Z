@@ -1,0 +1,18 @@
+{
+  "id": "blind-match",
+  "name": "Blind Matching",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["matching", "dating", "privacy", "mutual", "discovery"],
+  "description": "Mutual interest matching without revealing preferences",
+  "longDescription": "A matching system where two parties can discover mutual interest without revealing their preferences if there's no match. Uses FHE.and to check if both parties expressed interest - only mutual matches are revealed. Perfect for dating apps, business partnerships, or any scenario requiring private preference matching.",
+  "files": [
+    { "path": "contracts/BlindMatch.sol", "source": "BlindMatch.sol" },
+    { "path": "test/BlindMatch.test.ts", "source": "BlindMatch.test.ts" }
+  ],
+  "fheOperations": ["and", "eq", "allowThis", "allow", "fromExternal", "makePubliclyDecryptable"],
+  "fheTypes": ["ebool", "externalEbool"],
+  "relatedTemplates": ["age-gate", "salary-proof"],
+  "prerequisites": ["boolean", "encryption-single"],
+  "nextSteps": ["dark-pool"]
+}

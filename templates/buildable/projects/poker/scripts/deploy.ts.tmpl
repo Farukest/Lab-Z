@@ -1,0 +1,40 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const minBuyIn = 1000; // Minimum buy-in amount
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Minimum Buy-in:", minBuyIn);
+
+  const PokerFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const poker = await PokerFactory.deploy(minBuyIn);
+
+  await poker.waitForDeployment();
+
+  const address = await poker.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nGame Flow:");
+  console.log("  1. Create game: createGame(buyInAmount)");
+  console.log("  2. Players join: joinGame(gameId)");
+  console.log("  3. Deal cards: dealCards(gameId) - starts the game");
+  console.log("  4. Betting rounds: placeBet(gameId, encryptedAmount)");
+  console.log("  5. Fold option: fold(gameId)");
+  console.log("  6. Showdown: showdown(gameId) - after river betting");
+  console.log("\nPrivacy Features:");
+  console.log("  - Cards are encrypted (only you can see your hand)");
+  console.log("  - Community cards revealed progressively (flop/turn/river)");
+  console.log("  - Bet amounts are encrypted");
+  console.log("  - Random card generation uses FHE.random()");
+  console.log("\nFHE Operations Used:");
+  console.log("  - random: Generate unpredictable cards");
+  console.log("  - rem: Map random to card values (0-51)");
+  console.log("  - add: Accumulate pot");
+  console.log("  - gt/gte: Compare bets and hands");
+  console.log("  - select: Choose based on conditions");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -1,0 +1,89 @@
+{
+  "name": "admin/ownable",
+  "version": "1.0.0",
+  "description": "Adds single-owner access control with ownership transfer",
+  "author": "Lab-Z",
+
+  "category": "admin",
+  "tags": ["access-control", "ownership", "admin"],
+
+  "compatibleWith": ["counter"],
+  "incompatibleWith": ["admin/ownable2step", "admin/multisig"],
+  "requires": [],
+
+  "requiresSlots": [
+    "STATE_VARIABLES",
+    "ERRORS",
+    "EVENTS",
+    "MODIFIERS",
+    "CONSTRUCTOR_BODY",
+    "INCREMENT_MODIFIERS",
+    "DECREMENT_MODIFIERS",
+    "EXTERNAL_FUNCTIONS"
+  ],
+
+  "provides": {
+    "stateVariables": ["_owner"],
+    "functions": ["owner", "transferOwnership", "renounceOwnership"],
+    "modifiers": ["onlyOwner"],
+    "events": ["OwnershipTransferred"],
+    "errors": ["OwnableUnauthorizedAccount", "OwnableInvalidOwner"]
+  },
+
+  "exclusive": true,
+
+  "semantics": {
+    "access": "restrictive",
+    "mutability": "adds-state",
+    "gas": "low"
+  },
+
+  "injections": {
+    "STATE_VARIABLES": {
+      "content": "./inject/state.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "ERRORS": {
+      "content": "./inject/errors.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "EVENTS": {
+      "content": "./inject/events.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "MODIFIERS": {
+      "content": "./inject/modifiers.sol",
+      "mode": "append",
+      "order": 50
+    },
+    "CONSTRUCTOR_BODY": {
+      "content": "_owner = msg.sender;\n        emit OwnershipTransferred(address(0), msg.sender);",
+      "mode": "append",
+      "order": 10
+    },
+    "INCREMENT_MODIFIERS": {
+      "content": "onlyOwner",
+      "mode": "append",
+      "order": 10
+    },
+    "DECREMENT_MODIFIERS": {
+      "content": "onlyOwner",
+      "mode": "append",
+      "order": 10
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "./inject/functions.sol",
+      "mode": "append",
+      "order": 50
+    }
+  },
+
+  "estimatedSize": 1200,
+  "estimatedGas": {
+    "deployment": 100000,
+    "perCall": 2500
+  }
+}

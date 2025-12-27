@@ -1,0 +1,44 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const boxPrice = ethers.parseEther("0.1"); // 0.1 ETH per box
+  const maxSupply = 10000;
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Box Price:", ethers.formatEther(boxPrice), "ETH");
+  console.log("  Max Supply:", maxSupply);
+
+  const MysteryBoxFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const mysteryBox = await MysteryBoxFactory.deploy(boxPrice, maxSupply);
+
+  await mysteryBox.waitForDeployment();
+
+  const address = await mysteryBox.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nRarity Tiers:");
+  console.log("  - Legendary (5%):  rarity 0-5");
+  console.log("  - Epic (15%):      rarity 6-20");
+  console.log("  - Rare (25%):      rarity 21-45");
+  console.log("  - Common (55%):    rarity 46-100");
+  console.log("\nHow It Works:");
+  console.log("  1. Purchase: purchaseBox() - pay ETH, get encrypted rarity");
+  console.log("  2. Reveal: revealBox(boxId) - see your rarity value");
+  console.log("  3. Check tier: getRarityTier(boxId) - get tier booleans");
+  console.log("  4. Transfer: transferBox(boxId, to) - trade with others");
+  console.log("\nFairness Guarantees:");
+  console.log("  - Rarity assigned at purchase using FHE.random()");
+  console.log("  - No one can see rarity until reveal (not even owner)");
+  console.log("  - Probabilities are fixed in contract");
+  console.log("  - Provably fair - verifiable on-chain");
+  console.log("\nFHE Operations Used:");
+  console.log("  - random: Generate unpredictable rarity");
+  console.log("  - rem: Map to 0-100 range");
+  console.log("  - lte/gt: Determine tier thresholds");
+  console.log("  - and: Combine tier conditions");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

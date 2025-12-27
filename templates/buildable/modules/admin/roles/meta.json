@@ -1,0 +1,49 @@
+{
+  "name": "admin/roles",
+  "version": "1.0.0",
+  "description": "Role-based access control with admin, operator, and custom roles",
+  "category": "admin",
+  "compatibleWith": ["counter", "voting", "token", "auction"],
+  "incompatibleWith": ["admin/ownable"],
+  "requires": [],
+  "requiresSlots": ["ERRORS", "EVENTS", "STATE_VARIABLES", "MODIFIERS", "CONSTRUCTOR_BODY", "EXTERNAL_FUNCTIONS"],
+  "provides": {
+    "functions": ["grantRole", "revokeRole", "hasRole", "getRoleAdmin"],
+    "events": ["RoleGranted", "RoleRevoked"],
+    "modifiers": ["onlyRole"],
+    "stateVariables": ["_roles", "DEFAULT_ADMIN_ROLE", "OPERATOR_ROLE"]
+  },
+  "exclusive": true,
+  "injections": {
+    "ERRORS": {
+      "content": "file:inject/errors.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "EVENTS": {
+      "content": "file:inject/events.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "STATE_VARIABLES": {
+      "content": "file:inject/state.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "MODIFIERS": {
+      "content": "file:inject/modifiers.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "CONSTRUCTOR_BODY": {
+      "content": "file:inject/constructor.sol",
+      "mode": "append",
+      "order": 10
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "file:inject/functions.sol",
+      "mode": "append",
+      "order": 10
+    }
+  }
+}

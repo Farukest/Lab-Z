@@ -1,0 +1,54 @@
+{
+  "name": "lottery",
+  "version": "1.0.0",
+  "description": "Provably fair encrypted lottery - operator cannot manipulate winner selection",
+  "author": "Lab-Z",
+  "tags": ["gaming", "gambling", "random", "fairness"],
+
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_ENTER", "description": "Before lottery entry logic", "required": false },
+    { "name": "POST_ENTER", "description": "After lottery entry logic", "required": false },
+    { "name": "ENTER_MODIFIERS", "description": "Modifiers for enter function", "required": false },
+    { "name": "PRE_DRAW", "description": "Before draw logic", "required": false },
+    { "name": "POST_DRAW", "description": "After draw logic", "required": false },
+    { "name": "DRAW_MODIFIERS", "description": "Modifiers for draw function", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+
+  "typeParams": {
+    "TICKET_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64"],
+      "default": "euint64",
+      "description": "Encrypted type for ticket/random numbers"
+    },
+    "EXTERNAL_TICKET_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for inputs"
+    }
+  },
+
+  "exposes": {
+    "variables": ["_participants", "_ticketPrice", "_encryptedWinnerIndex", "_revealedWinnerIndex", "_isDrawn", "_isRevealed"],
+    "functions": ["enter", "draw", "requestWinnerReveal", "finalizeWinnerReveal", "claimPrize", "getWinner"],
+    "events": ["LotteryEntered", "WinnerDrawn", "WinnerReadyForReveal", "WinnerRevealed", "PrizeClaimed"]
+  },
+
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[TICKET_TYPE]], [[EXTERNAL_TICKET_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ],
+
+  "fheOperations": ["random", "rem", "asEuint64", "allowThis", "makePubliclyDecryptable", "checkSignatures"]
+}

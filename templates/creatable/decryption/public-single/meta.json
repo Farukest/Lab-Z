@@ -1,0 +1,48 @@
+{
+  "id": "decryption-public-single",
+  "name": "Public Decrypt Single Value",
+  "category": "decryption",
+  "difficulty": "intermediate",
+  "tags": ["decryption", "public", "makePubliclyDecryptable", "checkSignatures", "async", "3-step", "reveal", "KMS", "proof"],
+  "description": "3-step async public decryption: the CURRENT pattern for revealing encrypted values to everyone",
+  "longDescription": "This CRITICAL example teaches the 3-step async public decryption pattern in FHEVM. The old Gateway/Oracle callback pattern has been REMOVED. Learn how to: (1) request reveal with FHE.makePubliclyDecryptable(), (2) decrypt off-chain with relayer-sdk publicDecrypt(), and (3) finalize with FHE.checkSignatures(). Use this when you need to reveal values publicly like lottery results, auction winners, or voting tallies.",
+  "blocks": [
+    {
+      "id": "step1-request",
+      "type": "function",
+      "lines": [73, 92],
+      "explanation": "STEP 1: Call FHE.makePubliclyDecryptable() to mark the encrypted value for public decryption. This enables off-chain services to decrypt it.",
+      "searchTerms": ["step 1", "request", "makePubliclyDecryptable", "reveal", "adim 1"]
+    },
+    {
+      "id": "step2-handle",
+      "type": "function",
+      "lines": [94, 109],
+      "explanation": "STEP 2 (off-chain): Return the encrypted handle for off-chain decryption. Client uses fhevmInstance.publicDecrypt([handle]) to get clearValue and proof.",
+      "searchTerms": ["step 2", "handle", "off-chain", "publicDecrypt", "relayer"]
+    },
+    {
+      "id": "step3-finalize",
+      "type": "function",
+      "lines": [111, 155],
+      "explanation": "STEP 3: Finalize with proof from KMS. FHE.checkSignatures() verifies the proof is valid. If valid, the decrypted value is stored on-chain publicly.",
+      "searchTerms": ["step 3", "finalize", "checkSignatures", "proof", "verify", "KMS"]
+    },
+    {
+      "id": "proof-verification",
+      "type": "code",
+      "lines": [138, 148],
+      "explanation": "Build ciphertext and cleartext arrays for verification. FHE.checkSignatures() takes three params: ciphertext handles, encoded cleartexts, and the proof from KMS.",
+      "searchTerms": ["verify", "proof", "checkSignatures", "ciphertext", "cleartext"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/PublicDecryptSingle.sol", "source": "PublicDecryptSingle.sol" },
+    { "path": "test/PublicDecryptSingle.test.ts", "source": "PublicDecryptSingle.test.ts" }
+  ],
+  "fheOperations": ["fromExternal", "makePubliclyDecryptable", "checkSignatures", "allowThis"],
+  "fheTypes": ["euint64", "externalEuint64"],
+  "relatedTemplates": ["decryption-user-single", "decryption-public-multiple", "lottery", "auction"],
+  "prerequisites": ["encryption-single", "decryption-user-single"],
+  "nextSteps": ["decryption-public-multiple", "lottery"]
+}

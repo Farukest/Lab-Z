@@ -1,0 +1,33 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const ticketPrice = ethers.parseEther("0.1"); // 0.1 ETH per ticket
+  const duration = 24 * 60 * 60; // 24 hours
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Ticket Price:", ethers.formatEther(ticketPrice), "ETH");
+  console.log("  Duration:", duration, "seconds");
+
+  const LotteryFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const lottery = await LotteryFactory.deploy(ticketPrice, duration);
+
+  await lottery.waitForDeployment();
+
+  const address = await lottery.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  // Get end time
+  const endTime = await lottery.getEndTime();
+  const endDate = new Date(Number(endTime) * 1000);
+  console.log("  Lottery ends at:", endDate.toISOString());
+
+  console.log("\nUsage:");
+  console.log("  1. Participants call enter() with", ethers.formatEther(ticketPrice), "ETH");
+  console.log("  2. After enough participants, anyone can call draw()");
+  console.log("  3. Winner calls claimPrize() with their encrypted index");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

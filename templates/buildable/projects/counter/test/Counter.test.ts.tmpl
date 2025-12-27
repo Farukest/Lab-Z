@@ -1,0 +1,112 @@
+import { expect } from "chai";
+import hre from "hardhat";
+import { createInstance, type FhevmInstance } from "@fhevm/sdk";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let contract: any;
+  let contractAddress: string;
+  let fhevm: FhevmInstance;
+  let signers: any[];
+
+  before(async function () {
+    // Get signers
+    signers = await hre.ethers.getSigners();
+
+    // Deploy contract
+    const Factory = await hre.ethers.getContractFactory("{{CONTRACT_NAME}}");
+    contract = await Factory.deploy();
+    await contract.waitForDeployment();
+    contractAddress = await contract.getAddress();
+
+    // Create FHEVM instance
+    fhevm = await createInstance({
+      networkUrl: hre.network.config.url || "http://localhost:8545",
+      gatewayUrl: "http://localhost:7077",
+    });
+  });
+
+  describe("Increment", function () {
+    it("should increment the counter with encrypted value", async function () {
+      const [signer] = signers;
+
+      // Encrypt the value to add
+      const valueToAdd = 5;
+      const encrypted = await fhevm.encrypt32(valueToAdd);
+
+      // Call increment
+      const tx = await contract.connect(signer).increment(
+        encrypted.handles[0],
+        encrypted.inputProof
+      );
+      await tx.wait();
+
+      // Get the encrypted count
+      const encryptedCount = await contract.getCount();
+
+      // Request decryption (in real scenario, would use gateway)
+      expect(encryptedCount).to.not.equal(0n);
+    });
+
+    it("should allow multiple increments", async function () {
+      const [signer] = signers;
+
+      // First increment
+      const encrypted1 = await fhevm.encrypt32(10);
+      await contract.connect(signer).increment(
+        encrypted1.handles[0],
+        encrypted1.inputProof
+      );
+
+      // Second increment
+      const encrypted2 = await fhevm.encrypt32(20);
+      await contract.connect(signer).increment(
+        encrypted2.handles[0],
+        encrypted2.inputProof
+      );
+
+      const encryptedCount = await contract.getCount();
+      expect(encryptedCount).to.not.equal(0n);
+    });
+  });
+
+  describe("Decrement", function () {
+    it("should decrement the counter with encrypted value", async function () {
+      const [signer] = signers;
+
+      // First add some value
+      const addValue = await fhevm.encrypt32(100);
+      await contract.connect(signer).increment(
+        addValue.handles[0],
+        addValue.inputProof
+      );
+
+      // Then decrement
+      const subValue = await fhevm.encrypt32(30);
+      await contract.connect(signer).decrement(
+        subValue.handles[0],
+        subValue.inputProof
+      );
+
+      const encryptedCount = await contract.getCount();
+      expect(encryptedCount).to.not.equal(0n);
+    });
+  });
+
+  describe("Access Control", function () {
+    it("should grant access to caller after increment", async function () {
+      const [signer] = signers;
+
+      const encrypted = await fhevm.encrypt32(1);
+      await contract.connect(signer).increment(
+        encrypted.handles[0],
+        encrypted.inputProof
+      );
+
+      // Caller should be able to get the count
+      const count = await contract.connect(signer).getCount();
+      expect(count).to.not.equal(0n);
+    });
+  });
+
+  {{TEST_EXTENSIONS}}
+});

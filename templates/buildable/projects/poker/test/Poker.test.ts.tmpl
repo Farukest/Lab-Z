@@ -1,0 +1,191 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let poker: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let player1: HardhatEthersSigner;
+  let player2: HardhatEthersSigner;
+  let player3: HardhatEthersSigner;
+
+  const MIN_BUY_IN = 1000;
+
+  beforeEach(async function () {
+    [owner, player1, player2, player3] = await ethers.getSigners();
+
+    const PokerFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    poker = await PokerFactory.deploy(MIN_BUY_IN);
+    await poker.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct minimum buy-in", async function () {
+      expect(await poker.minBuyIn()).to.equal(MIN_BUY_IN);
+    });
+
+    it("Should start with zero games", async function () {
+      expect(await poker.getGameCount()).to.equal(0);
+    });
+  });
+
+  describe("Game Creation", function () {
+    it("Should create a game with correct buy-in", async function () {
+      const buyIn = 5000;
+      await expect(poker.createGame(buyIn))
+        .to.emit(poker, "GameCreated")
+        .withArgs(0, owner.address, buyIn);
+
+      const [playerCount, phase, gameBuyIn] = await poker.getGame(0);
+      expect(playerCount).to.equal(1);
+      expect(phase).to.equal(0); // Waiting
+      expect(gameBuyIn).to.equal(buyIn);
+    });
+
+    it("Should reject buy-in below minimum", async function () {
+      await expect(poker.createGame(MIN_BUY_IN - 1))
+        .to.be.revertedWith("Buy-in too low");
+    });
+
+    it("Should increment game count", async function () {
+      await poker.createGame(MIN_BUY_IN);
+      await poker.createGame(MIN_BUY_IN);
+      expect(await poker.getGameCount()).to.equal(2);
+    });
+  });
+
+  describe("Joining Game", function () {
+    beforeEach(async function () {
+      await poker.createGame(MIN_BUY_IN);
+    });
+
+    it("Should allow players to join", async function () {
+      await expect(poker.connect(player1).joinGame(0))
+        .to.emit(poker, "PlayerJoined")
+        .withArgs(0, player1.address, 1);
+
+      const [playerCount] = await poker.getGame(0);
+      expect(playerCount).to.equal(2);
+    });
+
+    it("Should reject joining non-existent game", async function () {
+      await expect(poker.connect(player1).joinGame(999))
+        .to.be.revertedWithCustomError(poker, "GameNotFound");
+    });
+
+    it("Should reject joining same game twice", async function () {
+      await poker.connect(player1).joinGame(0);
+      await expect(poker.connect(player1).joinGame(0))
+        .to.be.revertedWithCustomError(poker, "AlreadyInGame");
+    });
+
+    it("Should reject joining full game", async function () {
+      // Fill the game (6 players max)
+      await poker.connect(player1).joinGame(0);
+      await poker.connect(player2).joinGame(0);
+      await poker.connect(player3).joinGame(0);
+
+      // Create 3 more accounts to fill remaining slots
+      const signers = await ethers.getSigners();
+      await poker.connect(signers[4]).joinGame(0);
+      await poker.connect(signers[5]).joinGame(0);
+
+      // 7th player should be rejected
+      await expect(poker.connect(signers[6]).joinGame(0))
+        .to.be.revertedWithCustomError(poker, "GameFull");
+    });
+  });
+
+  describe("Dealing Cards", function () {
+    beforeEach(async function () {
+      await poker.createGame(MIN_BUY_IN);
+      await poker.connect(player1).joinGame(0);
+    });
+
+    it("Should deal cards and start game", async function () {
+      await expect(poker.dealCards(0))
+        .to.emit(poker, "CardsDealt")
+        .withArgs(0);
+
+      const [, phase] = await poker.getGame(0);
+      expect(phase).to.equal(1); // PreFlop
+    });
+
+    it("Should reject dealing with insufficient players", async function () {
+      await poker.createGame(MIN_BUY_IN); // Game 1 with only creator
+
+      await expect(poker.dealCards(1))
+        .to.be.revertedWithCustomError(poker, "InsufficientPlayers");
+    });
+
+    it("Should reject dealing twice", async function () {
+      await poker.dealCards(0);
+      await expect(poker.dealCards(0))
+        .to.be.revertedWithCustomError(poker, "GameAlreadyStarted");
+    });
+  });
+
+  describe("Folding", function () {
+    beforeEach(async function () {
+      await poker.createGame(MIN_BUY_IN);
+      await poker.connect(player1).joinGame(0);
+      await poker.dealCards(0);
+    });
+
+    it("Should allow player to fold on their turn", async function () {
+      // Player 1 is first to act after dealer (owner)
+      await expect(poker.connect(player1).fold(0))
+        .to.emit(poker, "PlayerFolded")
+        .withArgs(0, player1.address);
+
+      expect(await poker.hasPlayerFolded(0, player1.address)).to.equal(true);
+    });
+
+    it("Should reject fold from non-player", async function () {
+      await expect(poker.connect(player2).fold(0))
+        .to.be.revertedWithCustomError(poker, "NotInGame");
+    });
+  });
+
+  describe("View Functions", function () {
+    beforeEach(async function () {
+      await poker.createGame(MIN_BUY_IN);
+      await poker.connect(player1).joinGame(0);
+    });
+
+    it("Should correctly identify players in game", async function () {
+      expect(await poker.isPlayerInGame(0, owner.address)).to.equal(true);
+      expect(await poker.isPlayerInGame(0, player1.address)).to.equal(true);
+      expect(await poker.isPlayerInGame(0, player2.address)).to.equal(false);
+    });
+
+    it("Should correctly track folded status", async function () {
+      await poker.dealCards(0);
+      expect(await poker.hasPlayerFolded(0, player1.address)).to.equal(false);
+
+      await poker.connect(player1).fold(0);
+      expect(await poker.hasPlayerFolded(0, player1.address)).to.equal(true);
+    });
+  });
+
+  describe("Game Lifecycle", function () {
+    it("Should handle complete game flow", async function () {
+      // Create and join
+      await poker.createGame(MIN_BUY_IN);
+      await poker.connect(player1).joinGame(0);
+      await poker.connect(player2).joinGame(0);
+
+      // Deal
+      await poker.dealCards(0);
+
+      // Player folds, resulting in winner
+      await poker.connect(player1).fold(0);
+      await poker.connect(player2).fold(0);
+
+      // Owner should win by default
+      const [, phase] = await poker.getGame(0);
+      expect(phase).to.equal(6); // Finished
+    });
+  });
+});

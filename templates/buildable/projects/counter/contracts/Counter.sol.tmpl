@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+pragma solidity ^0.8.24;
+
+{{IMPORTS}}
+
+/// @title {{CONTRACT_NAME}} - Encrypted Counter
+/// @notice A simple counter using FHE for encrypted arithmetic
+/// @dev Generated with Lab-Z Composable Templates
+contract {{CONTRACT_NAME}} is {{INHERITS}} {
+
+    // ============ Errors ============
+
+{{ERRORS}}
+
+    // ============ Events ============
+
+{{EVENTS}}
+
+    // ============ State Variables ============
+
+    /// @dev The encrypted counter value
+    [[COUNTER_TYPE]] private _count;
+
+{{STATE_VARIABLES}}
+
+    // ============ Modifiers ============
+
+{{MODIFIERS}}
+
+    // ============ Constructor ============
+
+    constructor({{CONSTRUCTOR_PARAMS}}) {
+        {{CONSTRUCTOR_BODY}}
+    }
+
+    // ============ External Functions ============
+
+    /// @notice Increment the counter by an encrypted value
+    /// @param encryptedValue The encrypted value to add
+    /// @param inputProof Zero-knowledge proof for the input
+    function increment(
+        [[EXTERNAL_TYPE]] encryptedValue,
+        bytes calldata inputProof
+    ) external {{INCREMENT_MODIFIERS}} {
+        {{PRE_INCREMENT}}
+
+        // Convert external input to internal encrypted value
+        [[COUNTER_TYPE]] eValue = FHE.fromExternal(encryptedValue, inputProof);
+
+        // Perform encrypted addition
+        _count = FHE.add(_count, eValue);
+
+        {{POST_INCREMENT}}
+
+        // Set ACL permissions
+        FHE.allowThis(_count);
+        FHE.allow(_count, msg.sender);
+        {{ACL_INCREMENT}}
+
+        {{EMIT_INCREMENT}}
+    }
+
+    /// @notice Decrement the counter by an encrypted value
+    /// @param encryptedValue The encrypted value to subtract
+    /// @param inputProof Zero-knowledge proof for the input
+    function decrement(
+        [[EXTERNAL_TYPE]] encryptedValue,
+        bytes calldata inputProof
+    ) external {{DECREMENT_MODIFIERS}} {
+        {{PRE_DECREMENT}}
+
+        // Convert external input to internal encrypted value
+        [[COUNTER_TYPE]] eValue = FHE.fromExternal(encryptedValue, inputProof);
+
+        // Perform encrypted subtraction
+        _count = FHE.sub(_count, eValue);
+
+        {{POST_DECREMENT}}
+
+        // Set ACL permissions
+        FHE.allowThis(_count);
+        FHE.allow(_count, msg.sender);
+        {{ACL_DECREMENT}}
+
+        {{EMIT_DECREMENT}}
+    }
+
+{{EXTERNAL_FUNCTIONS}}
+
+    // ============ View Functions ============
+
+    /// @notice Get the encrypted counter value
+    /// @return The encrypted counter handle
+    function getCount() external view returns ([[COUNTER_TYPE]]) {
+        return _count;
+    }
+
+{{VIEW_FUNCTIONS}}
+
+    // ============ Internal Functions ============
+
+{{INTERNAL_FUNCTIONS}}
+}

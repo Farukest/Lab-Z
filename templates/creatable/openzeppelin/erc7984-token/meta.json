@@ -1,0 +1,55 @@
+{
+  "id": "erc7984-token",
+  "name": "ERC7984 Confidential Token",
+  "category": "openzeppelin",
+  "difficulty": "intermediate",
+  "tags": ["ERC7984", "token", "confidential", "OpenZeppelin", "transfer", "mint", "burn", "operator"],
+  "description": "A confidential ERC7984 token implementation using OpenZeppelin's confidential contracts library",
+  "longDescription": "This example demonstrates how to create a confidential token using OpenZeppelin's ERC7984 implementation. ERC7984 is the confidential token standard that keeps balances and transfer amounts encrypted. The token supports minting, burning, confidential transfers, and operator approvals with time-based expiry.",
+  "blocks": [
+    {
+      "id": "inheritance",
+      "type": "import",
+      "lines": [1, 10],
+      "explanation": "Imports OpenZeppelin's ERC7984 base contract along with Ownable for access control. ERC7984 provides all the confidential token functionality.",
+      "searchTerms": ["import", "ERC7984", "Ownable", "OpenZeppelin"]
+    },
+    {
+      "id": "constructor",
+      "type": "function",
+      "lines": [15, 25],
+      "explanation": "Constructor initializes the token with name, symbol, decimals, and contract URI. Optionally mints initial supply to the owner.",
+      "searchTerms": ["constructor", "initialize", "mint", "initial supply"]
+    },
+    {
+      "id": "mint",
+      "type": "function",
+      "lines": [27, 35],
+      "explanation": "Owner-only function to mint new tokens. Supports both visible amount minting (for public allocations) and confidential minting (for private allocations).",
+      "searchTerms": ["mint", "create", "supply", "owner"]
+    },
+    {
+      "id": "confidential-transfer",
+      "type": "function",
+      "lines": [40, 55],
+      "explanation": "Transfer tokens with encrypted amount. The actual transfer amount is never revealed on-chain, only the sender and recipient can see it.",
+      "searchTerms": ["transfer", "confidential", "encrypted", "send"]
+    },
+    {
+      "id": "operators",
+      "type": "function",
+      "lines": [60, 75],
+      "explanation": "Operator system allows delegated transfers with time-based expiry. Unlike ERC20 allowances, operators have full transfer capability within their validity period.",
+      "searchTerms": ["operator", "approve", "delegation", "expiry"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/ERC7984Example.sol", "source": "ERC7984Example.sol" },
+    { "path": "test/ERC7984Example.test.ts", "source": "ERC7984Example.test.ts" }
+  ],
+  "fheOperations": ["confidentialTransfer", "confidentialMint", "confidentialBurn", "setOperator"],
+  "fheTypes": ["euint64"],
+  "relatedTemplates": ["erc7984-wrapper", "erc7984-swap"],
+  "prerequisites": ["counter", "encryption-single"],
+  "nextSteps": ["erc7984-wrapper", "lottery-erc7984"]
+}

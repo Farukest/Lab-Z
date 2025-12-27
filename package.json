@@ -1,0 +1,27 @@
+{
+  "name": "labz",
+  "version": "1.0.0",
+  "description": "Lab-Z - Composable FHEVM Smart Contract Generator",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "cli": "pnpm --filter @labz/cli",
+    "web": "pnpm --filter @labz/web",
+    "core": "pnpm --filter @labz/core",
+    "docs:generate": "npx ts-node scripts/generate-docs.ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.2",
+    "fs-extra": "^11.2.0",
+    "ts-node": "^10.9.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@9.15.1",
+  "engines": {
+    "node": ">=18"
+  }
+}

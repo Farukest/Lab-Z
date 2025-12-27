@@ -1,0 +1,62 @@
+{
+  "name": "acl/transient",
+  "version": "1.0.0",
+  "description": "Adds transient (temporary) access control for encrypted counter via FHE.allowTransient()",
+  "author": "Lab-Z",
+
+  "category": "acl",
+  "tags": ["access-control", "permissions", "temporary", "fhe"],
+
+  "compatibleWith": ["counter"],
+  "incompatibleWith": [],
+  "requires": [],
+  "enhances": ["acl/sharing"],
+
+  "requiresSlots": ["ACL_INCREMENT", "ACL_DECREMENT", "EXTERNAL_FUNCTIONS"],
+  "requiresTypes": [],
+
+  "provides": {
+    "stateVariables": [],
+    "functions": ["grantTransientAccess"],
+    "modifiers": [],
+    "events": ["TransientAccessGranted"],
+    "errors": []
+  },
+
+  "exclusive": false,
+
+  "semantics": {
+    "access": "permissive",
+    "mutability": "stateless",
+    "gas": "low"
+  },
+
+  "injections": {
+    "EVENTS": {
+      "content": "./inject/events.sol",
+      "mode": "append",
+      "order": 100
+    },
+    "ACL_INCREMENT": {
+      "content": "FHE.allowTransient(_count, msg.sender);",
+      "mode": "append",
+      "order": 100
+    },
+    "ACL_DECREMENT": {
+      "content": "FHE.allowTransient(_count, msg.sender);",
+      "mode": "append",
+      "order": 100
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "./inject/functions.sol",
+      "mode": "append",
+      "order": 100
+    }
+  },
+
+  "estimatedSize": 500,
+  "estimatedGas": {
+    "deployment": 50000,
+    "perCall": 5000
+  }
+}

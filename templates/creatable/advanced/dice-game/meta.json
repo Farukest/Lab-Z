@@ -1,0 +1,18 @@
+{
+  "id": "dice-game",
+  "name": "Dice Game",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["gambling", "random", "dice", "privacy", "fairness"],
+  "description": "Provably fair dice game with encrypted bets and random rolls",
+  "longDescription": "A dice game where bets are encrypted and dice rolls use verifiable randomness. Neither the house nor players can predict or manipulate outcomes. Uses FHE.mod for random range generation and encrypted bet comparisons.",
+  "files": [
+    { "path": "contracts/DiceGame.sol", "source": "DiceGame.sol" },
+    { "path": "test/DiceGame.test.ts", "source": "DiceGame.test.ts" }
+  ],
+  "fheOperations": ["mod", "add", "gt", "lte", "select", "allowThis", "allow", "fromExternal"],
+  "fheTypes": ["euint8", "euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["lottery", "poker", "mystery-box"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["poker"]
+}

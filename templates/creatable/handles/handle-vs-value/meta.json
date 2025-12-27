@@ -1,0 +1,61 @@
+{
+  "id": "handle-vs-value",
+  "name": "Handle vs Value",
+  "category": "handles",
+  "difficulty": "beginner",
+  "tags": ["handles", "reference", "value", "determinism", "comparison", "educational"],
+  "description": "Understanding that FHE handles are references, not values",
+  "longDescription": "This educational template demonstrates the critical difference between handles and values in FHEVM. Handles are 256-bit references to encrypted data, not copies of values. Key concepts covered: assignment creates aliases (not copies), handle creation is deterministic (same value = same handle), operations create new handles (even for same resulting value), and the difference between raw handle comparison vs encrypted value comparison (FHE.eq). Essential knowledge for avoiding common bugs in FHE development.",
+  "sections": [
+    { "id": "assignment", "title": "Assignment", "description": "Reference not copy" },
+    { "id": "determinism", "title": "Determinism", "description": "Same value = same handle" },
+    { "id": "operations", "title": "Operations", "description": "New handles" },
+    { "id": "comparison", "title": "Compare", "description": "Handle vs Value" }
+  ],
+  "blocks": [
+    {
+      "id": "assignment-not-copy",
+      "type": "function",
+      "lines": [78, 110],
+      "explanation": "Demonstrates that b = a makes both point to the same handle, not a copy.",
+      "searchTerms": ["assignment", "copy", "alias", "reference"]
+    },
+    {
+      "id": "determinism",
+      "type": "function",
+      "lines": [118, 162],
+      "explanation": "Shows that same value encrypted twice produces the same handle (deterministic).",
+      "searchTerms": ["determinism", "same", "value", "consistent"]
+    },
+    {
+      "id": "operations-new-handles",
+      "type": "function",
+      "lines": [168, 210],
+      "explanation": "Demonstrates that FHE operations create NEW handles, different from direct creation.",
+      "searchTerms": ["operation", "new", "add", "different"]
+    },
+    {
+      "id": "operation-determinism",
+      "type": "function",
+      "lines": [216, 250],
+      "explanation": "Shows that same operation on same inputs = same handle (operation determinism).",
+      "searchTerms": ["operation", "determinism", "same", "inputs"]
+    },
+    {
+      "id": "encrypted-comparison",
+      "type": "function",
+      "lines": [290, 320],
+      "explanation": "Compares raw handle equality vs FHE.eq() value equality. Different handles can have equal values.",
+      "searchTerms": ["comparison", "eq", "value", "equal"]
+    }
+  ],
+  "files": [
+    { "path": "contracts/HandleVsValue.sol", "source": "HandleVsValue.sol" },
+    { "path": "test/HandleVsValue.test.ts", "source": "HandleVsValue.test.ts" }
+  ],
+  "fheOperations": ["FHE.asEuint64", "FHE.add", "FHE.eq", "FHE.allow", "FHE.allowThis"],
+  "fheTypes": ["euint64", "ebool"],
+  "relatedTemplates": ["handle-journey", "observatory"],
+  "prerequisites": ["handle-journey"],
+  "nextSteps": ["observatory", "symbolic-execution"]
+}

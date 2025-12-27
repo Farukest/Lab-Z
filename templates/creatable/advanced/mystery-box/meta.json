@@ -1,0 +1,18 @@
+{
+  "id": "mystery-box",
+  "name": "Mystery Box NFT",
+  "category": "advanced",
+  "difficulty": "intermediate",
+  "tags": ["nft", "random", "lootbox", "gaming", "collectibles"],
+  "description": "NFT mystery boxes with encrypted rarity reveals",
+  "longDescription": "Mystery box NFT system where the contents/rarity are encrypted until reveal. Uses encrypted random selection for fair distribution. Buyers can choose when to reveal their box contents. Demonstrates encrypted NFT metadata and staged reveal patterns.",
+  "files": [
+    { "path": "contracts/MysteryBox.sol", "source": "MysteryBox.sol" },
+    { "path": "test/MysteryBox.test.ts", "source": "MysteryBox.test.ts" }
+  ],
+  "fheOperations": ["mod", "select", "eq", "allowThis", "allow", "makePubliclyDecryptable"],
+  "fheTypes": ["euint8", "euint64", "ebool"],
+  "relatedTemplates": ["lottery", "dice-game"],
+  "prerequisites": ["encryption-single"],
+  "nextSteps": ["poker"]
+}

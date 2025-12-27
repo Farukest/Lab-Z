@@ -1,0 +1,48 @@
+{
+  "name": "token",
+  "version": "1.0.0",
+  "description": "Encrypted ERC20-like token with confidential balances and private transfers",
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_TRANSFER", "description": "Before transfer logic", "required": false },
+    { "name": "POST_TRANSFER", "description": "After transfer logic", "required": false },
+    { "name": "TRANSFER_MODIFIERS", "description": "Modifiers for transfer function", "required": false },
+    { "name": "PRE_MINT", "description": "Before mint logic", "required": false },
+    { "name": "POST_MINT", "description": "After mint logic", "required": false },
+    { "name": "MINT_MODIFIERS", "description": "Modifiers for mint function", "required": false },
+    { "name": "ACL_TRANSFER", "description": "ACL permissions after transfer", "required": false },
+    { "name": "ACL_MINT", "description": "ACL permissions after mint", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+  "typeParams": {
+    "BALANCE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint32", "euint64", "euint128"],
+      "default": "euint64",
+      "description": "Encrypted type for token balances"
+    },
+    "EXTERNAL_BALANCE_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint32", "externalEuint64", "externalEuint128"],
+      "default": "externalEuint64",
+      "description": "External encrypted type for amount input"
+    }
+  },
+  "exposes": {
+    "variables": ["_balances", "_totalSupply", "_name", "_symbol"],
+    "functions": ["transfer", "mint", "balanceOf", "name", "symbol", "totalSupply"],
+    "events": ["Transfer", "Mint"]
+  },
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[BALANCE_TYPE]], [[EXTERNAL_BALANCE_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ]
+}

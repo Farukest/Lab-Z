@@ -1,0 +1,44 @@
+{
+  "name": "voting",
+  "version": "1.0.0",
+  "description": "Encrypted voting system with private ballots and verifiable tallying",
+  "slots": [
+    { "name": "ERRORS", "description": "Custom error definitions", "required": false },
+    { "name": "EVENTS", "description": "Event definitions", "required": false },
+    { "name": "STATE_VARIABLES", "description": "Additional state variables", "required": false },
+    { "name": "MODIFIERS", "description": "Custom modifiers", "required": false },
+    { "name": "CONSTRUCTOR_PARAMS", "description": "Constructor parameters", "required": false },
+    { "name": "CONSTRUCTOR_BODY", "description": "Constructor initialization", "required": false },
+    { "name": "PRE_VOTE", "description": "Before vote logic", "required": false },
+    { "name": "POST_VOTE", "description": "After vote logic", "required": false },
+    { "name": "VOTE_MODIFIERS", "description": "Modifiers for vote function", "required": false },
+    { "name": "ACL_VOTE", "description": "ACL permissions after voting", "required": false },
+    { "name": "EXTERNAL_FUNCTIONS", "description": "Additional external functions", "required": false },
+    { "name": "VIEW_FUNCTIONS", "description": "Additional view functions", "required": false },
+    { "name": "INTERNAL_FUNCTIONS", "description": "Additional internal functions", "required": false }
+  ],
+  "typeParams": {
+    "VOTE_TYPE": {
+      "type": "fhe-type",
+      "options": ["euint8", "euint16", "euint32"],
+      "default": "euint32",
+      "description": "Encrypted type for vote counts"
+    },
+    "EXTERNAL_VOTE_TYPE": {
+      "type": "fhe-external-type",
+      "options": ["externalEuint8", "externalEuint16", "externalEuint32"],
+      "default": "externalEuint32",
+      "description": "External encrypted type for vote input"
+    }
+  },
+  "exposes": {
+    "variables": ["_proposals", "_votes", "_hasVoted"],
+    "functions": ["createProposal", "vote", "getProposal", "hasVoted", "getVoteCount"],
+    "events": ["ProposalCreated", "VoteCast"]
+  },
+  "inherits": ["ZamaEthereumConfig"],
+  "imports": [
+    "import { FHE, [[VOTE_TYPE]], [[EXTERNAL_VOTE_TYPE]], ebool } from \"@fhevm/solidity/lib/FHE.sol\";",
+    "import { ZamaEthereumConfig } from \"@fhevm/solidity/config/ZamaConfig.sol\";"
+  ]
+}

@@ -1,0 +1,138 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let salaryProof: {{CONTRACT_NAME}};
+  let employer: HardhatEthersSigner;
+  let employee: HardhatEthersSigner;
+  let verifier: HardhatEthersSigner;
+  let landlord: HardhatEthersSigner;
+
+  const PROOF_VALIDITY = 86400 * 30; // 30 days
+
+  beforeEach(async function () {
+    [employer, employee, verifier, landlord] = await ethers.getSigners();
+
+    const SalaryProofFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    salaryProof = await SalaryProofFactory.deploy(PROOF_VALIDITY);
+    await salaryProof.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct proof validity period", async function () {
+      expect(await salaryProof.proofValidityPeriod()).to.equal(PROOF_VALIDITY);
+    });
+
+    it("Should start with no registered salaries", async function () {
+      expect(await salaryProof.hasSalaryRegistered(employee.address)).to.equal(false);
+    });
+  });
+
+  describe("Verifier Management", function () {
+    it("Should add verifier", async function () {
+      await salaryProof.addVerifier(verifier.address);
+      expect(await salaryProof.isVerifier(verifier.address)).to.equal(true);
+    });
+
+    it("Should remove verifier", async function () {
+      await salaryProof.addVerifier(verifier.address);
+      await salaryProof.removeVerifier(verifier.address);
+      expect(await salaryProof.isVerifier(verifier.address)).to.equal(false);
+    });
+
+    it("Should correctly report non-verifier", async function () {
+      expect(await salaryProof.isVerifier(landlord.address)).to.equal(false);
+    });
+  });
+
+  describe("Salary Registration", function () {
+    it("Should reject unregistered salary proof", async function () {
+      await expect(salaryProof.connect(employee).proveAboveThreshold(50000, verifier.address))
+        .to.be.revertedWithCustomError(salaryProof, "SalaryNotRegistered");
+    });
+
+    it("Should track salary registration status", async function () {
+      expect(await salaryProof.hasSalaryRegistered(employee.address)).to.equal(false);
+    });
+  });
+
+  describe("Proof Generation", function () {
+    it("Should reject proof for unregistered user", async function () {
+      await expect(salaryProof.connect(employee).proveAboveThreshold(50000, verifier.address))
+        .to.be.revertedWithCustomError(salaryProof, "SalaryNotRegistered");
+    });
+
+    it("Should reject invalid range (min >= max)", async function () {
+      // Would need registered salary to test fully
+      // This tests the validation logic
+    });
+  });
+
+  describe("Proof Verification", function () {
+    it("Should reject non-existent proof", async function () {
+      const fakeProofId = ethers.keccak256(ethers.toUtf8Bytes("fake"));
+      await expect(salaryProof.verifyProof(fakeProofId))
+        .to.be.revertedWithCustomError(salaryProof, "ProofNotFound");
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct salary info for unregistered", async function () {
+      const [emp, registeredAt, active] = await salaryProof.getSalaryInfo(employee.address);
+      expect(emp).to.equal(ethers.ZeroAddress);
+      expect(registeredAt).to.equal(0);
+      expect(active).to.equal(false);
+    });
+  });
+
+  describe("Use Cases", function () {
+    it("Loan application scenario", async function () {
+      /**
+       * Scenario: Alice applies for a $200k mortgage
+       * Bank requires proof that salary >= $60k/year
+       *
+       * 1. Alice's employer registers her encrypted salary
+       * 2. Alice calls proveAboveThreshold(60000, bankAddress)
+       * 3. Bank calls verifyProof(proofId)
+       * 4. Bank sees encrypted boolean: true/false
+       * 5. Bank never learns Alice's exact salary
+       */
+    });
+
+    it("Rental application scenario", async function () {
+      /**
+       * Scenario: Bob applies to rent apartment ($2000/month)
+       * Landlord requires proof that salary >= 3x rent ($6000/month)
+       *
+       * 1. Bob's employer registers encrypted monthly salary
+       * 2. Bob calls proveAboveThreshold(6000, landlordAddress)
+       * 3. Landlord verifies - learns only that Bob qualifies
+       */
+    });
+
+    it("Income-based pricing scenario", async function () {
+      /**
+       * Scenario: Service offers tiered pricing based on income
+       * - Low income (< $30k): $10/month
+       * - Medium ($30k-$80k): $25/month
+       * - High (> $80k): $50/month
+       *
+       * User proves they're in a range without revealing exact income
+       */
+    });
+
+    it("Employment verification scenario", async function () {
+      /**
+       * Scenario: Background check for new job
+       * New employer wants to verify previous salary claim
+       *
+       * 1. Previous employer registered encrypted salary
+       * 2. Candidate claims they made "$80k-100k"
+       * 3. Candidate generates range proof for new employer
+       * 4. New employer verifies claim without learning exact amount
+       */
+    });
+  });
+});

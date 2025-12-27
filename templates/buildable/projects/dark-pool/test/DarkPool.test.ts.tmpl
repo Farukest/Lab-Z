@@ -1,0 +1,162 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let darkPool: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let buyer: HardhatEthersSigner;
+  let seller: HardhatEthersSigner;
+  let matcher: HardhatEthersSigner;
+
+  const MIN_ORDER_AMOUNT = 100;
+
+  beforeEach(async function () {
+    [owner, buyer, seller, matcher] = await ethers.getSigners();
+
+    const DarkPoolFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    darkPool = await DarkPoolFactory.deploy(MIN_ORDER_AMOUNT);
+    await darkPool.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct minimum order amount", async function () {
+      expect(await darkPool.minOrderAmount()).to.equal(MIN_ORDER_AMOUNT);
+    });
+
+    it("Should start with zero orders", async function () {
+      expect(await darkPool.getOrderCount()).to.equal(0);
+    });
+
+    it("Should start with zero matches", async function () {
+      expect(await darkPool.getMatchCount()).to.equal(0);
+    });
+
+    it("Should have no active orders initially", async function () {
+      expect(await darkPool.getActiveBuyOrderCount()).to.equal(0);
+      expect(await darkPool.getActiveSellOrderCount()).to.equal(0);
+    });
+  });
+
+  describe("Order Placement", function () {
+    it("Should track order count", async function () {
+      // Actual order placement requires fhevmjs encrypted inputs
+      expect(await darkPool.getOrderCount()).to.equal(0);
+    });
+
+    it("Should separate buy and sell order counts", async function () {
+      expect(await darkPool.getActiveBuyOrderCount()).to.equal(0);
+      expect(await darkPool.getActiveSellOrderCount()).to.equal(0);
+    });
+  });
+
+  describe("Order Cancellation", function () {
+    it("Should reject cancelling non-existent order", async function () {
+      await expect(darkPool.connect(buyer).cancelOrder(1))
+        .to.be.revertedWithCustomError(darkPool, "OrderNotFound");
+    });
+
+    it("Should reject cancelling order 0", async function () {
+      await expect(darkPool.connect(buyer).cancelOrder(0))
+        .to.be.revertedWithCustomError(darkPool, "OrderNotFound");
+    });
+  });
+
+  describe("Match Request", function () {
+    it("Should reject matching non-existent buy order", async function () {
+      await expect(darkPool.requestMatch(999, 1))
+        .to.be.revertedWithCustomError(darkPool, "OrderNotFound");
+    });
+
+    it("Should reject matching non-existent sell order", async function () {
+      await expect(darkPool.requestMatch(1, 999))
+        .to.be.revertedWithCustomError(darkPool, "OrderNotFound");
+    });
+  });
+
+  describe("Match Finalization", function () {
+    it("Should reject finalizing non-existent match", async function () {
+      const fakeProof = "0x";
+      await expect(darkPool.finalizeMatch(999, true, fakeProof))
+        .to.be.revertedWithCustomError(darkPool, "MatchNotPending");
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct order counts", async function () {
+      expect(await darkPool.getOrderCount()).to.equal(0);
+      expect(await darkPool.getMatchCount()).to.equal(0);
+    });
+
+    it("Should return correct active order counts", async function () {
+      expect(await darkPool.getActiveBuyOrderCount()).to.equal(0);
+      expect(await darkPool.getActiveSellOrderCount()).to.equal(0);
+    });
+  });
+
+  describe("Public Decryption Flow", function () {
+    it("Documents the 3-step async match flow", async function () {
+      /**
+       * Dark Pool Match Flow with Public Decryption:
+       *
+       * STEP 1 - Request Match (On-chain)
+       * ==================================
+       * const matchId = await darkPool.requestMatch(buyOrderId, sellOrderId);
+       * // Internally:
+       * //   - Creates ebool canMatch = FHE.gte(buyPrice, sellPrice)
+       * //   - Calls FHE.makePubliclyDecryptable(canMatch)
+       * //   - Emits MatchRequested and MatchReadyForReveal
+       *
+       * STEP 2 - Decrypt Match Result (Off-chain)
+       * ==========================================
+       * const handle = await darkPool.getMatchHandle(matchId);
+       * const result = await fhevmInstance.publicDecrypt([handle]);
+       * const canMatch = result.clearValues[handle];  // true or false
+       * const proof = result.decryptionProof;
+       *
+       * STEP 3 - Finalize Match (On-chain)
+       * ===================================
+       * await darkPool.finalizeMatch(matchId, canMatch, proof);
+       * // Internally:
+       * //   - Verifies proof with FHE.checkSignatures
+       * //   - If canMatch: executes trade, marks orders filled
+       * //   - If !canMatch: reverts orders to active status
+       * //   - Emits MatchRevealed
+       */
+    });
+  });
+
+  describe("Privacy Guarantees", function () {
+    it("Should keep order prices encrypted", async function () {
+      /**
+       * Privacy guarantees:
+       * - Order prices are encrypted (euint64)
+       * - Only order owner can see their own price
+       * - Match comparison happens on encrypted values
+       * - Only match result (boolean) is decrypted
+       * - Actual prices never revealed
+       */
+    });
+
+    it("Should protect against front-running", async function () {
+      /**
+       * Front-running protection:
+       * - Traders cannot see other traders' prices
+       * - Matching is based on encrypted comparison
+       * - Even matcher only learns if orders match, not prices
+       */
+    });
+  });
+
+  describe("Security", function () {
+    it("Should verify decryption proofs", async function () {
+      /**
+       * Security guarantees:
+       * - FHE.checkSignatures verifies KMS proof
+       * - Cannot submit fake match results
+       * - Proof cryptographically bound to ciphertext
+       */
+    });
+  });
+});

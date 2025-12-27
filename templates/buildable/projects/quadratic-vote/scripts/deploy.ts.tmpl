@@ -1,0 +1,48 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const initialCredits = 100; // Credits per voter
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Initial Credits per Voter:", initialCredits);
+
+  const QVFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const qv = await QVFactory.deploy(initialCredits);
+
+  await qv.waitForDeployment();
+
+  const address = await qv.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nQuadratic Voting Explained:");
+  console.log("  - Cost of N votes = N² credits");
+  console.log("  - 1 vote = 1 credit");
+  console.log("  - 2 votes = 4 credits");
+  console.log("  - 3 votes = 9 credits");
+  console.log("  - 10 votes = 100 credits");
+  console.log("\nWhy Quadratic Voting?");
+  console.log("  - Prevents whale dominance");
+  console.log("  - Rewards broad support over deep pockets");
+  console.log("  - More democratic than 1-token-1-vote");
+  console.log("\nWorkflow:");
+  console.log("  1. Create proposal: createProposal(description, duration)");
+  console.log("  2. Allocate credits: allocateCredits(voter, encryptedAmount)");
+  console.log("  3. Vote: castVote(proposalId, support, encryptedVotes)");
+  console.log("  4. After deadline: tallyVotes(proposalId)");
+  console.log("  5. Get results: getResults(proposalId)");
+  console.log("\nPrivacy Features:");
+  console.log("  - Individual votes are encrypted");
+  console.log("  - Credit balances are encrypted");
+  console.log("  - Only final tally can be revealed");
+  console.log("\nFHE Operations Used:");
+  console.log("  - mul: Calculate vote cost (N * N)");
+  console.log("  - add: Accumulate votes");
+  console.log("  - sub: Deduct credits");
+  console.log("  - gte: Check sufficient credits");
+  console.log("  - select: Conditional operations");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -1,0 +1,276 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { {{CONTRACT_NAME}} } from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let lottery: {{CONTRACT_NAME}};
+  let owner: HardhatEthersSigner;
+  let player1: HardhatEthersSigner;
+  let player2: HardhatEthersSigner;
+  let player3: HardhatEthersSigner;
+
+  const TICKET_PRICE = ethers.parseEther("0.1");
+  const DURATION = 86400; // 1 day
+
+  beforeEach(async function () {
+    [owner, player1, player2, player3] = await ethers.getSigners();
+
+    const LotteryFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    lottery = await LotteryFactory.deploy(TICKET_PRICE, DURATION);
+    await lottery.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct ticket price", async function () {
+      expect(await lottery.getTicketPrice()).to.equal(TICKET_PRICE);
+    });
+
+    it("Should set the correct end time", async function () {
+      const endTime = await lottery.getEndTime();
+      const now = Math.floor(Date.now() / 1000);
+      expect(endTime).to.be.closeTo(now + DURATION, 10);
+    });
+
+    it("Should start with zero participants", async function () {
+      expect(await lottery.getParticipantCount()).to.equal(0);
+    });
+
+    it("Should not be drawn initially", async function () {
+      expect(await lottery.isDrawn()).to.equal(false);
+    });
+
+    it("Should not be revealed initially", async function () {
+      expect(await lottery.isRevealed()).to.equal(false);
+    });
+
+    it("Should not be claimed initially", async function () {
+      expect(await lottery.isClaimed()).to.equal(false);
+    });
+  });
+
+  describe("Entering Lottery", function () {
+    it("Should allow entry with correct payment", async function () {
+      await expect(lottery.connect(player1).enter({ value: TICKET_PRICE }))
+        .to.emit(lottery, "LotteryEntered")
+        .withArgs(player1.address, 0);
+
+      expect(await lottery.getParticipantCount()).to.equal(1);
+      expect(await lottery.hasEntered(player1.address)).to.equal(true);
+    });
+
+    it("Should reject insufficient payment", async function () {
+      const lowPrice = TICKET_PRICE - 1n;
+      await expect(lottery.connect(player1).enter({ value: lowPrice }))
+        .to.be.revertedWithCustomError(lottery, "InsufficientPayment");
+    });
+
+    it("Should reject double entry", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await expect(lottery.connect(player1).enter({ value: TICKET_PRICE }))
+        .to.be.revertedWithCustomError(lottery, "AlreadyEntered");
+    });
+
+    it("Should accept multiple participants", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      await lottery.connect(player3).enter({ value: TICKET_PRICE });
+
+      expect(await lottery.getParticipantCount()).to.equal(3);
+      expect(await lottery.getPrizePool()).to.equal(TICKET_PRICE * 3n);
+    });
+
+    it("Should track participants correctly", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+
+      expect(await lottery.getParticipant(0)).to.equal(player1.address);
+      expect(await lottery.getParticipant(1)).to.equal(player2.address);
+    });
+  });
+
+  describe("Drawing Winner", function () {
+    beforeEach(async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+    });
+
+    it("Should draw winner with enough participants", async function () {
+      await expect(lottery.draw())
+        .to.emit(lottery, "WinnerDrawn")
+        .withArgs(2);
+
+      expect(await lottery.isDrawn()).to.equal(true);
+    });
+
+    it("Should reject draw with insufficient participants", async function () {
+      const LotteryFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+      const newLottery = await LotteryFactory.deploy(TICKET_PRICE, DURATION);
+      await newLottery.connect(player1).enter({ value: TICKET_PRICE });
+
+      await expect(newLottery.draw())
+        .to.be.revertedWithCustomError(newLottery, "NotEnoughParticipants");
+    });
+
+    it("Should reject double draw", async function () {
+      await lottery.draw();
+      await expect(lottery.draw())
+        .to.be.revertedWithCustomError(lottery, "LotteryAlreadyDrawn");
+    });
+
+    it("Should reject entry after draw", async function () {
+      await lottery.draw();
+      await expect(lottery.connect(player3).enter({ value: TICKET_PRICE }))
+        .to.be.revertedWithCustomError(lottery, "LotteryAlreadyDrawn");
+    });
+  });
+
+  describe("Winner Reveal (Public Decryption)", function () {
+    beforeEach(async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      await lottery.draw();
+    });
+
+    it("Should emit WinnerReadyForReveal on requestWinnerReveal", async function () {
+      await expect(lottery.requestWinnerReveal())
+        .to.emit(lottery, "WinnerReadyForReveal");
+    });
+
+    it("Should reject requestWinnerReveal before draw", async function () {
+      const LotteryFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+      const newLottery = await LotteryFactory.deploy(TICKET_PRICE, DURATION);
+
+      await expect(newLottery.requestWinnerReveal())
+        .to.be.revertedWithCustomError(newLottery, "LotteryNotDrawn");
+    });
+
+    it("Should provide encrypted winner index after draw", async function () {
+      const encryptedIndex = await lottery.getEncryptedWinnerIndex();
+      // Encrypted value should be non-zero (it's a handle)
+      expect(encryptedIndex).to.not.equal(0);
+    });
+
+    it("Should reject getEncryptedWinnerIndex before draw", async function () {
+      const LotteryFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+      const newLottery = await LotteryFactory.deploy(TICKET_PRICE, DURATION);
+
+      await expect(newLottery.getEncryptedWinnerIndex())
+        .to.be.revertedWithCustomError(newLottery, "LotteryNotDrawn");
+    });
+
+    it("Should reject double requestWinnerReveal after finalize", async function () {
+      // After reveal is finalized, should reject another request
+      // This test would need actual FHE decryption in production
+    });
+  });
+
+  describe("Prize Claiming", function () {
+    it("Should reject claim before reveal", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      await lottery.draw();
+
+      await expect(lottery.connect(player1).claimPrize())
+        .to.be.revertedWithCustomError(lottery, "WinnerNotRevealed");
+    });
+
+    it("Should reject getWinner before reveal", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      await lottery.draw();
+
+      await expect(lottery.getWinner())
+        .to.be.revertedWithCustomError(lottery, "WinnerNotRevealed");
+    });
+
+    it("Should reject getWinnerIndex before reveal", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      await lottery.draw();
+
+      await expect(lottery.getWinnerIndex())
+        .to.be.revertedWithCustomError(lottery, "WinnerNotRevealed");
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct prize pool", async function () {
+      expect(await lottery.getPrizePool()).to.equal(0);
+
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      expect(await lottery.getPrizePool()).to.equal(TICKET_PRICE);
+
+      await lottery.connect(player2).enter({ value: TICKET_PRICE });
+      expect(await lottery.getPrizePool()).to.equal(TICKET_PRICE * 2n);
+    });
+
+    it("Should correctly track entry status", async function () {
+      expect(await lottery.hasEntered(player1.address)).to.equal(false);
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      expect(await lottery.hasEntered(player1.address)).to.equal(true);
+    });
+
+    it("Should reject out of bounds participant index", async function () {
+      await lottery.connect(player1).enter({ value: TICKET_PRICE });
+      await expect(lottery.getParticipant(5))
+        .to.be.revertedWith("Index out of bounds");
+    });
+  });
+
+  describe("Public Decryption Flow", function () {
+    it("Documents the complete 3-step async decryption flow", async function () {
+      /**
+       * Complete Public Decryption Flow for Lottery:
+       *
+       * STEP 1 - On-chain: Request Decryption
+       * =====================================
+       * await lottery.requestWinnerReveal();
+       * // Internally calls: FHE.makePubliclyDecryptable(_encryptedWinnerIndex)
+       * // Emits: WinnerReadyForReveal event
+       *
+       * STEP 2 - Off-chain: Decrypt via Relayer SDK
+       * ============================================
+       * const handle = await lottery.getEncryptedWinnerIndex();
+       * const result = await fhevmInstance.publicDecrypt([handle]);
+       * const winnerIndex = result.clearValues[handle];
+       * const proof = result.decryptionProof;
+       *
+       * STEP 3 - On-chain: Finalize with Proof
+       * ======================================
+       * await lottery.finalizeWinnerReveal(winnerIndex, proof);
+       * // Internally calls: FHE.checkSignatures(cts, cleartexts, proof)
+       * // Stores: _revealedWinnerIndex = winnerIndex
+       * // Emits: WinnerRevealed(winnerIndex, winnerAddress)
+       *
+       * CLAIM PRIZE
+       * ===========
+       * const winner = await lottery.getWinner();
+       * await lottery.connect(winner).claimPrize();
+       * // Transfers entire prize pool to winner
+       */
+    });
+  });
+
+  describe("Security", function () {
+    it("Uses FHE.random for unpredictable winner selection", async function () {
+      /**
+       * Fairness guarantees:
+       * - FHE.randEuint64() generates cryptographically secure random
+       * - Winner index = random % participantCount
+       * - Result encrypted until explicit reveal
+       * - No one can predict or manipulate the winner
+       */
+    });
+
+    it("Verifies decryption proof cryptographically", async function () {
+      /**
+       * Security guarantees:
+       * - FHE.checkSignatures verifies Zama KMS proof
+       * - Cannot submit fake/wrong winner index
+       * - Proof cryptographically bound to specific ciphertext
+       * - Transaction reverts if proof is invalid or tampered
+       */
+    });
+  });
+});

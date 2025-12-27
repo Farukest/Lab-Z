@@ -1,0 +1,84 @@
+{
+  "name": "security/pausable",
+  "version": "1.0.0",
+  "description": "Adds pause/unpause functionality to stop operations in emergencies",
+  "author": "Lab-Z",
+
+  "category": "security",
+  "tags": ["security", "emergency", "pause"],
+
+  "compatibleWith": ["counter"],
+  "incompatibleWith": [],
+  "requires": [],
+  "enhances": ["admin/ownable"],
+
+  "requiresSlots": [
+    "STATE_VARIABLES",
+    "ERRORS",
+    "EVENTS",
+    "MODIFIERS",
+    "INCREMENT_MODIFIERS",
+    "DECREMENT_MODIFIERS",
+    "EXTERNAL_FUNCTIONS"
+  ],
+
+  "provides": {
+    "stateVariables": ["_paused"],
+    "functions": ["pause", "unpause", "paused"],
+    "modifiers": ["whenNotPaused", "whenPaused"],
+    "events": ["Paused", "Unpaused"],
+    "errors": ["EnforcedPause", "ExpectedPause"]
+  },
+
+  "exclusive": false,
+
+  "semantics": {
+    "access": "restrictive",
+    "mutability": "adds-state",
+    "gas": "low"
+  },
+
+  "injections": {
+    "STATE_VARIABLES": {
+      "content": "./inject/state.sol",
+      "mode": "append",
+      "order": 20
+    },
+    "ERRORS": {
+      "content": "./inject/errors.sol",
+      "mode": "append",
+      "order": 60
+    },
+    "EVENTS": {
+      "content": "./inject/events.sol",
+      "mode": "append",
+      "order": 60
+    },
+    "MODIFIERS": {
+      "content": "./inject/modifiers.sol",
+      "mode": "append",
+      "order": 60
+    },
+    "INCREMENT_MODIFIERS": {
+      "content": "whenNotPaused",
+      "mode": "append",
+      "order": 20
+    },
+    "DECREMENT_MODIFIERS": {
+      "content": "whenNotPaused",
+      "mode": "append",
+      "order": 20
+    },
+    "EXTERNAL_FUNCTIONS": {
+      "content": "./inject/functions.sol",
+      "mode": "append",
+      "order": 60
+    }
+  },
+
+  "estimatedSize": 800,
+  "estimatedGas": {
+    "deployment": 80000,
+    "perCall": 2300
+  }
+}

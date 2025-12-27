@@ -1,0 +1,18 @@
+{
+  "id": "sealed-tender",
+  "name": "Sealed Tender",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "tags": ["auction", "procurement", "bidding", "privacy", "government"],
+  "description": "Sealed-bid procurement auction - bids encrypted until deadline",
+  "longDescription": "A sealed-bid procurement system where vendors submit encrypted bids that remain private until the deadline. Uses FHE.lt/gt for encrypted comparisons to find the lowest bidder. Demonstrates the public decryption flow: requestWinnerReveal triggers async decryption, finalizeWinnerReveal completes the process. Critical for government tenders and corporate procurement.",
+  "files": [
+    { "path": "contracts/SealedTender.sol", "source": "SealedTender.sol" },
+    { "path": "test/SealedTender.test.ts", "source": "SealedTender.test.ts" }
+  ],
+  "fheOperations": ["lt", "gt", "min", "eq", "select", "allowThis", "allow", "fromExternal", "asEuint64", "makePubliclyDecryptable"],
+  "fheTypes": ["euint64", "externalEuint64", "ebool"],
+  "relatedTemplates": ["auction", "prediction-market"],
+  "prerequisites": ["decryption-public-single"],
+  "nextSteps": ["dark-pool"]
+}
