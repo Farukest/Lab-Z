@@ -10,6 +10,16 @@
   Choose from <b>44 standalone templates</b> or compose custom contracts with <b>16 bases + 13 modules</b>.
 </p>
 
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@0xflydev/labz"><img src="https://img.shields.io/npm/v/@0xflydev/labz?color=CB3837&logo=npm" alt="npm"></a>
+  <a href="https://docs.zama.ai/fhevm"><img src="https://img.shields.io/badge/Built%20with-Zama%20FHEVM-yellow" alt="Built with FHEVM"></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-000000?logo=next.js" alt="Next.js"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript" alt="TypeScript"></a>
+  <a href="https://soliditylang.org/"><img src="https://img.shields.io/badge/Solidity-0.8.24-363636?logo=solidity" alt="Solidity"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0000,50:FFCC00,100:FFCC0000&height=6&section=header" width="100%"></p>
 
 
