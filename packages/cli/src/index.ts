@@ -37,14 +37,19 @@ program.addCommand(testCommand);
 // Default action (create) - for running `labz <template>` without 'create' keyword
 // Note: For --add and --merge, use `labz create` command directly
 program
-  .argument('[template]', 'Template(s) to generate - comma-separated, last is project name')
+  .argument('[template]', 'Template ID or comma-separated list')
+  .argument('[projectName]', 'Project name (optional)')
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('-y, --yes', 'Skip prompts and use defaults')
-  .action(async (template, options) => {
-    if (template) {
+  .option('-i, --interactive', 'Interactive mode with category selection')
+  .option('--git', 'Initialize git repository')
+  .option('--install', 'Run npm install after creation')
+  .option('--open', 'Open project in VS Code')
+  .action(async (template, projectName, options) => {
+    if (template || options.interactive) {
       // Delegate to create command
       const { executeCreate } = await import('./commands/create');
-      await executeCreate(template, options);
+      await executeCreate(template, projectName, options);
     } else {
       program.help();
     }

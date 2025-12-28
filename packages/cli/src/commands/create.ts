@@ -15,7 +15,8 @@ import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, forma
 
 export const createCommand = new Command('create')
   .description('Create a new FHEVM example project')
-  .argument('[template]', 'Template ID(s) - comma-separated, last is project name')
+  .argument('[template]', 'Template ID or comma-separated list')
+  .argument('[projectName]', 'Project name (optional, defaults to template id)')
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .option('-l, --list', 'List available templates')
@@ -23,10 +24,10 @@ export const createCommand = new Command('create')
   .option('--git', 'Initialize git repository')
   .option('--install', 'Run npm install after creation')
   .option('--open', 'Open project in VS Code')
-  .option('--add <templates>', 'Add more templates (comma-separated, last is project name)', collectAddOptions, [])
+  .option('--add <templates>', 'Add more templates (comma-separated)', collectAddOptions, [])
   .option('-m, --merge', 'Merge all templates into single files')
-  .action(async (template, options) => {
-    await executeCreate(template, options);
+  .action(async (template, projectName, options) => {
+    await executeCreate(template, projectName, options);
   });
 
 // Collect multiple --add options
@@ -36,6 +37,7 @@ function collectAddOptions(value: string, previous: string[]): string[] {
 
 export async function executeCreate(
   templateArg?: string,
+  projectNameArg?: string,
   options: { output?: string; yes?: boolean; list?: boolean; interactive?: boolean; git?: boolean; install?: boolean; open?: boolean; add?: string[]; merge?: boolean } = {}
 ) {
   printBanner();
@@ -59,9 +61,12 @@ export async function executeCreate(
     // Check for --merge or -m in process.argv
     const shouldMerge = options.merge || process.argv.includes('--merge') || process.argv.includes('-m');
 
+    // Check for --interactive flag early (needed for arg parsing)
+    const isInteractive = options.interactive || process.argv.includes('--interactive') || process.argv.includes('-i');
+
     // Parse templates from first argument (comma-separated, spaces ignored)
     let templateIds: string[] = [];
-    let projectName: string | undefined;
+    let projectName: string | undefined = projectNameArg;
 
     // Add templates from --add flag (could be string or array)
     let addTemplates: string[] = [];
@@ -80,21 +85,35 @@ export async function executeCreate(
       // Parse comma-separated templates (ignore spaces)
       const parts = templateArg.split(',').map(s => s.trim()).filter(Boolean);
       if (parts.length > 0) {
-        if (hasAddFlag) {
+        if (parts.length === 1 && !hasAddFlag) {
+          // Single template: labz create counter [my-counter]
+          // In interactive mode, first arg is project name (not template)
+          if (isInteractive && !projectName) {
+            projectName = parts[0];
+          }
+          templateIds = [];
+          // projectName already set from projectNameArg if provided
+          // If not provided, will be set later to template id
+        } else if (hasAddFlag) {
           // With --add: all parts from first arg are templates
           templateIds = parts;
-          // Last item from --add is project name
-          projectName = addTemplates.pop();
+          // Add templates from --add
           templateIds = [...templateIds, ...addTemplates];
+          // projectName from second argument or last template id
         } else {
-          // Without --add: last part is project name, rest are templates
-          projectName = parts.pop();
+          // Multi-template comma syntax: labz create counter,add,my-project
+          // Last part is project name, rest are templates
+          if (!projectName) {
+            projectName = parts.pop();
+          }
           templateIds = parts;
         }
       }
     } else if (hasAddFlag) {
-      // No first arg, only --add: last item is project name
-      projectName = addTemplates.pop();
+      // No first arg, only --add: last item is project name if no projectNameArg
+      if (!projectName) {
+        projectName = addTemplates.pop();
+      }
       templateIds = addTemplates;
     }
 
@@ -134,9 +153,6 @@ export async function executeCreate(
       }
       return;
     }
-
-    // Check for --interactive flag
-    const isInteractive = options.interactive || process.argv.includes('--interactive') || process.argv.includes('-i');
 
     // Determine if this is multi-template mode
     const isMultiTemplate = templateIds.length > 0;
@@ -332,8 +348,13 @@ export async function executeCreate(
     // SINGLE TEMPLATE MODE (existing behavior)
     let selectedTemplate: string | undefined;
 
-    // If no templates and no project name, use interactive selection
-    if (!projectName) {
+    // Use templateArg as template if provided (but not in interactive mode)
+    if (templateArg && !templateArg.includes(',') && !isInteractive) {
+      selectedTemplate = templateArg;
+    }
+
+    // If no template selected, use interactive or prompt selection
+    if (!selectedTemplate) {
       if (isInteractive) {
         // Interactive mode: First select category, then template
         const availableCategories = CATEGORIES.filter((cat) => hub.getTemplatesByCategory(cat.id).length > 0);
@@ -427,9 +448,6 @@ export async function executeCreate(
           choices: templateChoices,
         });
       }
-    } else {
-      // Project name provided as single argument - treat as template id
-      selectedTemplate = projectName;
     }
 
     // Verify template exists
@@ -440,9 +458,11 @@ export async function executeCreate(
       process.exit(1);
     }
 
-    // Interactive project name if not provided
-    let finalProjectName = projectName;
-    if (!forceYes) {
+    // Determine project name
+    let finalProjectName = projectName || template.id;
+
+    // Only ask for project name if not provided and not in forceYes mode
+    if (!projectName && !forceYes) {
       const useDefault = await confirm({
         message: `Use default name ${chalk.greenBright(template.id)}?`,
         default: true,
@@ -476,7 +496,6 @@ export async function executeCreate(
       console.log('');
       console.log('');
     }
-    finalProjectName = finalProjectName || template.id;
 
     // Output directory (use override from process.argv if available)
     const outputDir = path.resolve(outputOverride || options.output || '.');
