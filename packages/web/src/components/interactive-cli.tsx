@@ -16,7 +16,7 @@ interface LogLine {
 
 // Available commands and templates for autocomplete
 const COMMANDS = ["labz", "clear", "ls", "pwd", "whoami", "date", "echo", "exit", "help"];
-const LABZ_COMMANDS = ["create", "build", "--help", "-h"];
+const LABZ_COMMANDS = ["create", "build", "list", "search", "info", "--help", "-h"];
 const BUILD_FLAGS = ["--with", "-w", "--list-bases", "--list-modules"];
 
 export function InteractiveCLI({ isOpen, onClose, initialCommand = "" }: InteractiveCLIProps) {
@@ -171,6 +171,9 @@ export function InteractiveCLI({ isOpen, onClose, initialCommand = "" }: Interac
     addLog("LABZ COMMANDS:", "output");
     addLog("  labz create <template> [name]    Create project from template", "dim");
     addLog("  labz build <base> [name]         Build with composable modules", "dim");
+    addLog("  labz list                        List all templates", "dim");
+    addLog("  labz search <keyword>            Search templates by keyword", "dim");
+    addLog("  labz info <template>             Show template details", "dim");
     addLog("  labz create --list               List all templates (" + templates.length + " available)", "dim");
     addLog("  labz build --list-bases          List base templates (" + bases.length + " available)", "dim");
     addLog("  labz build --list-modules        List modules (" + modules.length + " available)", "dim");
@@ -189,11 +192,12 @@ export function InteractiveCLI({ isOpen, onClose, initialCommand = "" }: Interac
     addLog("  help                             Show this help", "dim");
     addLog("", "output");
     addLog("EXAMPLES:", "output");
-    addLog("  labz create counter my-counter", "success");
-    addLog("  labz create prediction-market my-market", "success");
-    addLog("  labz build counter my-project", "success");
-    addLog("  labz build counter -w functions/encrypted-add", "success");
-    addLog("  labz build token -w admin/ownable -w security/pausable", "success");
+    addLog("  labz list                                   # List all templates", "success");
+    addLog("  labz list basics                            # List only basics category", "success");
+    addLog("  labz search counter                         # Search for 'counter'", "success");
+    addLog("  labz info counter                           # Show counter details", "success");
+    addLog("  labz create counter my-counter              # Create counter project", "success");
+    addLog("  labz build token -w admin/ownable           # Build with module", "success");
     addLog("", "output");
     addLog("TIP: Use Tab for autocomplete", "dim");
     addLog("", "output");
@@ -411,8 +415,126 @@ export function InteractiveCLI({ isOpen, onClose, initialCommand = "" }: Interac
       return;
     }
 
+    // Handle list
+    if (command === "list") {
+      setIsRunning(true);
+      try {
+        const category = args.template as string | undefined; // Use template position for category filter
+        const url = category ? `/api/cli/list?category=${category}` : "/api/cli/list";
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok) {
+          addLog(`Error: ${data.error}`, "error");
+        } else {
+          addLog("", "output");
+          addLog(`Found ${data.stats.total} templates:`, "success");
+          addLog("", "output");
+
+          // Group by category
+          for (const [cat, items] of Object.entries(data.grouped as Record<string, any[]>)) {
+            addLog(`[${cat}]`, "success");
+            for (const t of items) {
+              const diffBadge = t.difficulty === "beginner" ? "●" : t.difficulty === "advanced" ? "◆" : "○";
+              addLog(`  ${diffBadge} ${t.id} - ${t.description.slice(0, 50)}`, "dim");
+            }
+            addLog("", "output");
+          }
+        }
+      } catch (e) {
+        addLog(`Error: ${e}`, "error");
+      }
+      setIsRunning(false);
+      return;
+    }
+
+    // Handle search
+    if (command === "search") {
+      if (!args.template) {
+        addLog("Error: Search keyword is required", "error");
+        addLog("Usage: labz search <keyword>", "dim");
+        return;
+      }
+
+      setIsRunning(true);
+      try {
+        const res = await fetch(`/api/cli/search?q=${encodeURIComponent(args.template as string)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          addLog(`Error: ${data.error}`, "error");
+        } else {
+          addLog("", "output");
+          if (data.results.length === 0) {
+            addLog(`No templates found for "${args.template}"`, "dim");
+          } else {
+            addLog(`Found ${data.total} templates matching "${args.template}":`, "success");
+            addLog("", "output");
+            for (const r of data.results) {
+              addLog(`  ${r.id} (${r.category})`, "success");
+              addLog(`    ${r.description}`, "dim");
+              addLog(`    Matched in: ${r.matchedIn.join(", ")}`, "dim");
+            }
+          }
+          addLog("", "output");
+        }
+      } catch (e) {
+        addLog(`Error: ${e}`, "error");
+      }
+      setIsRunning(false);
+      return;
+    }
+
+    // Handle info
+    if (command === "info") {
+      if (!args.template) {
+        addLog("Error: Template ID is required", "error");
+        addLog("Usage: labz info <template-id>", "dim");
+        return;
+      }
+
+      setIsRunning(true);
+      try {
+        const res = await fetch(`/api/cli/info?id=${encodeURIComponent(args.template as string)}&code=false`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          addLog(`Error: ${data.error}`, "error");
+        } else {
+          const t = data.template;
+          addLog("", "output");
+          addLog(`Template: ${t.name}`, "success");
+          addLog(`ID: ${t.id}`, "dim");
+          addLog(`Category: ${t.category}`, "dim");
+          addLog(`Difficulty: ${t.difficulty}`, "dim");
+          addLog("", "output");
+          addLog(`Description:`, "output");
+          addLog(`  ${t.description}`, "dim");
+          addLog("", "output");
+          if (t.fheOperations.length > 0) {
+            addLog(`FHE Operations:`, "output");
+            addLog(`  ${t.fheOperations.join(", ")}`, "success");
+          }
+          if (t.fheTypes.length > 0) {
+            addLog(`FHE Types:`, "output");
+            addLog(`  ${t.fheTypes.join(", ")}`, "success");
+          }
+          addLog("", "output");
+          addLog(`Lines: ${data.summary.lines.contract} (contract) + ${data.summary.lines.test} (test)`, "dim");
+          addLog("", "output");
+          addLog(`CLI Command:`, "output");
+          addLog(`  ${t.cliCommand}`, "success");
+          addLog("", "output");
+        }
+      } catch (e) {
+        addLog(`Error: ${e}`, "error");
+      }
+      setIsRunning(false);
+      return;
+    }
+
     addLog(`Unknown command: ${command}`, "error");
-    addLog("Available commands: create, build", "dim");
+    addLog("Available commands: create, build, list, search, info", "dim");
   };
 
   // Get autocomplete suggestions
