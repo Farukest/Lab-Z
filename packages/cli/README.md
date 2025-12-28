@@ -40,7 +40,7 @@
 - **44 standalone templates** across 9 categories (basics, encryption, decryption, acl, input-proofs, anti-patterns, handles, openzeppelin, advanced)
 - **16 composable base templates** for DeFi, gaming, voting, and identity
 - **13 feature modules** for ACL, admin, security, and FHE operations
-- **9 OpenZeppelin ERC7984** confidential contract examples
+- **9 OpenZeppelin ERC7984 + FHEVM** production-ready confidential contracts
 - **9-phase validation pipeline** preventing incompatible module combinations
 - **CLI with 6 commands**, interactive mode, and visual composer
 
@@ -498,19 +498,19 @@ labz build token erc7984-defi --with acl/token-sharing --with functions/encrypte
 
 ### <img src="https://img.shields.io/badge/◆_OpenZeppelin_ERC7984-FFD966?style=flat-square" height="68" width="23%">
 
-▸ Production-ready confidential contract examples using OpenZeppelin's ERC7984 standard.
+▸ Production-ready confidential contracts combining OpenZeppelin's battle-tested patterns with Zama FHEVM encryption.
 
-| Template | Description |
-|----------|-------------|
-| erc7984-token | Reference ERC7984 implementation |
-| erc7984-wrapper | Wrap ERC20 into confidential ERC7984 |
-| swap-erc7984-to-erc20 | Bridge confidential to public |
-| swap-erc7984-to-erc7984 | Confidential token swap |
-| lottery-erc7984 | Lottery with ERC7984 tokens |
-| amm-erc7984 | AMM with confidential liquidity |
-| escrow-erc7984 | Confidential escrow with disputes |
-| prediction-market-erc7984 | Prediction market with private bets |
-| vesting-wallet | Token vesting with cliff schedule |
+| Template | OpenZeppelin | FHEVM Operations |
+|----------|--------------|------------------|
+| erc7984-token | ERC7984, Ownable2Step | FHE.add, FHE.allow, FHE.isInitialized |
+| erc7984-wrapper | ERC7984ERC20Wrapper | FHE.asEuint64, FHE.allowTransient |
+| swap-erc7984-to-erc20 | Ownable, ReentrancyGuard | FHE.sub, public decryption |
+| swap-erc7984-to-erc7984 | ReentrancyGuard | FHE.add, FHE.sub, FHE.allowTransient |
+| lottery-erc7984 | Ownable, ReentrancyGuard | FHE.randEuint64, encrypted tickets |
+| amm-erc7984 | Ownable, ReentrancyGuard | FHE.mul, FHE.div, encrypted liquidity |
+| escrow-erc7984 | ReentrancyGuard | FHE.select, encrypted disputes |
+| prediction-market-erc7984 | Ownable, ReentrancyGuard | FHE.add, encrypted positions |
+| vesting-wallet | Ownable, ReentrancyGuard | euint128, encrypted schedules |
 
 ### ▎Usage Examples
 
