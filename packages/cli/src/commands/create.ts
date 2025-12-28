@@ -7,6 +7,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import * as path from 'path';
+import { execSync, spawn } from 'child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import { createHub, type Category, CATEGORIES } from '@0xflydev/labz-core';
 import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner } from '../utils';
@@ -18,6 +19,10 @@ export const createCommand = new Command('create')
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .option('-l, --list', 'List available templates')
+  .option('-i, --interactive', 'Interactive mode with category selection')
+  .option('--git', 'Initialize git repository')
+  .option('--install', 'Run npm install after creation')
+  .option('--open', 'Open project in VS Code')
   .action(async (template, projectName, options) => {
     await executeCreate(template, projectName, options);
   });
@@ -25,11 +30,11 @@ export const createCommand = new Command('create')
 export async function executeCreate(
   templateId?: string,
   projectName?: string,
-  options: { output?: string; yes?: boolean; list?: boolean } = {}
+  options: { output?: string; yes?: boolean; list?: boolean; interactive?: boolean; git?: boolean; install?: boolean; open?: boolean } = {}
 ) {
   printBanner();
 
-  const spinner = ora('Initializing Lab-Z...').start();
+  const spinner = ora('Loading templates...').start();
 
   try {
     // Check for --yes or -y in process.argv as workaround for Commander issue
@@ -51,7 +56,7 @@ export async function executeCreate(
     const hub = createHub(templatesDir, baseTemplatePath);
     await hub.init();
 
-    spinner.succeed('Lab-Z initialized');
+    spinner.succeed('Ready\n');
 
     const templates = hub.getAllTemplates();
 
@@ -82,18 +87,105 @@ export async function executeCreate(
       return;
     }
 
+    // Check for --interactive flag
+    const isInteractive = options.interactive || process.argv.includes('--interactive') || process.argv.includes('-i');
+
     // Interactive template selection if not provided
     let selectedTemplate = templateId;
     if (!selectedTemplate) {
-      const templateChoices = templates.map((t) => ({
-        name: `${t.name} (${t.difficulty}) - ${t.description}`,
-        value: t.id,
-      }));
+      if (isInteractive) {
+        // Interactive mode: First select category, then template
+        const availableCategories = CATEGORIES.filter((cat) => hub.getTemplatesByCategory(cat.id).length > 0);
+        const maxNameLen = Math.max(...availableCategories.map((c) => c.name.length));
+        const categoryChoices = availableCategories.map((cat, idx) => {
+          const count = hub.getTemplatesByCategory(cat.id).length;
+          const num = String(idx + 1).padStart(2, ' ');
+          const name = cat.name.padEnd(maxNameLen, ' ');
+          return {
+            name: `${num}. ${name}  (${count})`,
+            value: cat.id,
+          };
+        });
 
-      selectedTemplate = await select({
-        message: 'Select a template:',
-        choices: templateChoices,
-      });
+        // Loop for back navigation
+        let selectedCategoryId: string | null = null;
+        while (!selectedTemplate) {
+          // Category selection
+          if (!selectedCategoryId) {
+            selectedCategoryId = await select({
+              message: chalk.hex('#D97706')('Choose Category'),
+              choices: categoryChoices,
+              theme: {
+                prefix: { idle: chalk.hex('#E5A00D')('?'), done: '' },
+                style: {
+                  message: (text: string, status: string) => status === 'done' ? '' : text,
+                  answer: () => '',
+                },
+              },
+            });
+
+            // Clear the prompt line
+            process.stdout.write('\x1b[1A\x1b[2K');
+            const selectedCat = availableCategories.find((c) => c.id === selectedCategoryId);
+            console.log(`  ${chalk.green('Selected Category:')} ${chalk.greenBright(selectedCat?.name)}`);
+            console.log('');
+            console.log('');
+            console.log('');
+          }
+
+          // Template selection with Back option
+          const categoryTemplates = hub.getTemplatesByCategory(selectedCategoryId as Category);
+          const maxTemplateLen = Math.max(...categoryTemplates.map((t) => t.name.length));
+          const templateChoices = [
+            { name: chalk.yellow('  <- Back'), value: '__BACK__' },
+            ...categoryTemplates.map((t, idx) => {
+              const num = String(idx + 1).padStart(2, ' ');
+              const name = t.name.padEnd(maxTemplateLen, ' ');
+              return {
+                name: `${num}. ${name}  ${t.description}`,
+                value: t.id,
+              };
+            }),
+          ];
+
+          const templateSelection = await select({
+            message: chalk.cyan('Choose Template'),
+            choices: templateChoices,
+            theme: {
+              prefix: { idle: chalk.cyanBright('?'), done: '' },
+              style: {
+                message: (text: string, status: string) => status === 'done' ? '' : text,
+                answer: () => '',
+              },
+            },
+          });
+
+          if (templateSelection === '__BACK__') {
+            console.log('');
+            selectedCategoryId = null;
+          } else {
+            selectedTemplate = templateSelection;
+            // Clear the prompt line
+            process.stdout.write('\x1b[1A\x1b[2K');
+            const selectedTmpl = categoryTemplates.find((t) => t.id === selectedTemplate);
+            console.log(`  ${chalk.green('Selected Template:')} ${chalk.greenBright(selectedTmpl?.name)}`);
+            console.log('');
+            console.log('');
+            console.log('');
+          }
+        }
+      } else {
+        // Normal mode: show all templates
+        const templateChoices = templates.map((t) => ({
+          name: `${t.name} (${t.difficulty}) - ${t.description}`,
+          value: t.id,
+        }));
+
+        selectedTemplate = await select({
+          message: 'Select a template:',
+          choices: templateChoices,
+        });
+      }
     }
 
     // Verify template exists
@@ -107,10 +199,38 @@ export async function executeCreate(
     // Interactive project name if not provided
     let finalProjectName = projectName;
     if (!finalProjectName && !forceYes) {
-      finalProjectName = await input({
-        message: 'Project name:',
-        default: template.id,
+      const useDefault = await confirm({
+        message: `Use default name ${chalk.greenBright(template.id)}?`,
+        default: true,
+        theme: {
+          prefix: { idle: chalk.hex('#22C55E')('?'), done: '' },
+          style: {
+            message: (text: string, status: string) => status === 'done' ? '' : text,
+            answer: () => '',
+          },
+        },
       });
+
+      // Clear the prompt line
+      process.stdout.write('\x1b[1A\x1b[2K');
+
+      if (!useDefault) {
+        finalProjectName = await input({
+          message: 'Enter project name:',
+          theme: { prefix: { idle: chalk.hex('#22C55E')('>') } },
+        });
+        // Clear input prompt line
+        process.stdout.write('\x1b[1A\x1b[2K');
+      } else {
+        finalProjectName = template.id;
+      }
+
+      // Show selected project name like category/template
+      console.log('');
+      console.log(`  ${chalk.green('Selected Project:')} ${chalk.greenBright(finalProjectName)}`);
+      console.log('');
+      console.log('');
+      console.log('');
     }
     finalProjectName = finalProjectName || template.id;
 
@@ -119,16 +239,17 @@ export async function executeCreate(
 
     // Confirm
     if (!forceYes) {
-      console.log(formatInfo('\nProject configuration:'));
+      console.log(chalk.bold('  Project Summary'));
+      console.log(chalk.dim('  ---------------'));
       console.log(`  Template:    ${chalk.cyan(template.name)}`);
       console.log(`  Project:     ${chalk.cyan(finalProjectName)}`);
       console.log(`  Output:      ${chalk.cyan(path.join(outputDir, finalProjectName))}`);
-      console.log(`  Category:    ${chalk.cyan(template.category)}`);
-      console.log(`  Difficulty:  ${chalk.cyan(template.difficulty)}`);
+      console.log('');
 
       const confirmed = await confirm({
-        message: 'Create project?',
+        message: 'Create this project?',
         default: true,
+        theme: { prefix: { idle: chalk.hex('#22C55E')('?') } },
       });
 
       if (!confirmed) {
@@ -154,14 +275,68 @@ export async function executeCreate(
 
     generateSpinner.succeed('Project generated successfully!');
 
-    // Print success message
-    console.log(formatSuccess(`\n✨ Created ${finalProjectName} at ${result.outputPath}\n`));
+    const projectPath = result.outputPath!;
 
-    console.log(chalk.bold('Next steps:\n'));
-    console.log(`  cd ${finalProjectName}`);
-    console.log('  npm install');
-    console.log('  npx hardhat test');
-    console.log('');
+    // Check for post-create flags
+    const shouldGit = options.git || process.argv.includes('--git');
+    const shouldInstall = options.install || process.argv.includes('--install');
+    const shouldOpen = options.open || process.argv.includes('--open');
+
+    // Git init
+    if (shouldGit) {
+      const gitSpinner = ora('Initializing git repository...').start();
+      try {
+        execSync('git init', { cwd: projectPath, stdio: 'pipe' });
+        execSync('git add .', { cwd: projectPath, stdio: 'pipe' });
+        execSync('git commit -m "Initial commit - Lab-Z template: ' + selectedTemplate + '"', { cwd: projectPath, stdio: 'pipe' });
+        gitSpinner.succeed('Git repository initialized');
+      } catch (error) {
+        gitSpinner.fail('Failed to initialize git');
+      }
+    }
+
+    // npm install
+    if (shouldInstall) {
+      const installSpinner = ora('Installing dependencies...').start();
+      try {
+        execSync('npm install', { cwd: projectPath, stdio: 'pipe' });
+        installSpinner.succeed('Dependencies installed');
+      } catch (error) {
+        installSpinner.fail('Failed to install dependencies');
+      }
+    }
+
+    // Open in VS Code
+    if (shouldOpen) {
+      const openSpinner = ora('Opening in VS Code...').start();
+      try {
+        execSync(`code "${projectPath}"`, { stdio: 'pipe' });
+        openSpinner.succeed('Opened in VS Code');
+      } catch (error) {
+        openSpinner.fail('Failed to open VS Code (is it installed?)');
+      }
+    }
+
+    // Print success message
+    console.log(formatSuccess(`\n  Created ${finalProjectName} at ${result.outputPath}\n`));
+
+    // Show next steps (skip steps that were already done)
+    const nextSteps: string[] = [];
+    if (!shouldInstall || !shouldOpen) {
+      nextSteps.push(`cd ${finalProjectName}`);
+    }
+    if (!shouldInstall) {
+      nextSteps.push('npm install');
+    }
+    nextSteps.push('npx hardhat test');
+
+    if (nextSteps.length > 0) {
+      console.log(chalk.bold('Next steps:\n'));
+      for (const step of nextSteps) {
+        console.log(`  ${step}`);
+      }
+      console.log('');
+    }
 
     // Show related templates
     const related = hub.getRelated(selectedTemplate, 3);

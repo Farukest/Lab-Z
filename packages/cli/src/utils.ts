@@ -70,9 +70,20 @@ export function getBaseTemplatePath(): string {
  * Print the CLI banner
  */
 export function printBanner(): void {
+  const orange = chalk.hex('#D97706');
+  const amber = chalk.hex('#F5B014');
+
   console.log('');
-  console.log(chalk.cyan('  ⚡ labz'));
-  console.log(chalk.dim('  fhe smart contract generator'));
+  console.log(orange('   _           _           _____'));
+  console.log(orange('  | |         | |         |__  /'));
+  console.log(amber('  | |    __ _ | |__   ___   / / '));
+  console.log(amber('  | |   / _` || \'_ \\ |___| / / '));
+  console.log(orange('  | |__ |(_| || |_) |     / /__ '));
+  console.log(orange('  |____|\\__,_||_.__/     /_____|'));
+  console.log('');
+  console.log(chalk.dim('  FHE Smart Contract Generator'));
+  console.log('');
+  console.log('');
   console.log('');
 }
 

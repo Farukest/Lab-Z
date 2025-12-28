@@ -175,19 +175,20 @@ labz build token my-token --with acl/transient --with functions/encrypted-add
 labz create [template] [project-name] [options]
 
   -o, --output <dir>    # Output directory (default: current)
-  #    ↑
-  #    └── Example: labz create auction my-auction --output ./my-projects
-  #    └── Explanation: Generate project in a custom folder
-
   -l, --list            # List available templates
-  #    ↑
-  #    └── Example: labz create --list
-  #    └── Explanation: Show all 44 standalone templates grouped by category
-
   -y, --yes             # Skip prompts
-  #    ↑
-  #    └── Example: labz create auction my-auction -y
-  #    └── Explanation: Auto-confirm for scripting/CI pipelines
+  -i, --interactive     # Interactive mode with category selection
+  --git                 # Initialize git repository
+  --install             # Run npm install after creation
+  --open                # Open project in VS Code
+```
+
+**Examples:**
+```bash
+labz create --list                              # Show all 44 templates
+labz create counter my-counter -y               # Quick create, skip prompts
+labz create -i                                  # Interactive category selection
+labz create auction my-auction --git --install  # Full setup with git + deps
 ```
 
 ### ▎labz build
