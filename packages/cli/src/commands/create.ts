@@ -7,6 +7,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import { execSync, spawn } from 'child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import { createHub, type Category, CATEGORIES } from '@0xflydev/labz-core';
@@ -14,8 +15,7 @@ import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, forma
 
 export const createCommand = new Command('create')
   .description('Create a new FHEVM example project')
-  .argument('[template]', 'Template ID to use')
-  .argument('[project-name]', 'Name of the project')
+  .argument('[template]', 'Template ID(s) - comma-separated, last is project name')
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .option('-l, --list', 'List available templates')
@@ -23,14 +23,20 @@ export const createCommand = new Command('create')
   .option('--git', 'Initialize git repository')
   .option('--install', 'Run npm install after creation')
   .option('--open', 'Open project in VS Code')
-  .action(async (template, projectName, options) => {
-    await executeCreate(template, projectName, options);
+  .option('--add <templates>', 'Add more templates (comma-separated, last is project name)', collectAddOptions, [])
+  .option('-m, --merge', 'Merge all templates into single files')
+  .action(async (template, options) => {
+    await executeCreate(template, options);
   });
 
+// Collect multiple --add options
+function collectAddOptions(value: string, previous: string[]): string[] {
+  return previous.concat(value.split(',').map(s => s.trim()).filter(Boolean));
+}
+
 export async function executeCreate(
-  templateId?: string,
-  projectName?: string,
-  options: { output?: string; yes?: boolean; list?: boolean; interactive?: boolean; git?: boolean; install?: boolean; open?: boolean } = {}
+  templateArg?: string,
+  options: { output?: string; yes?: boolean; list?: boolean; interactive?: boolean; git?: boolean; install?: boolean; open?: boolean; add?: string[]; merge?: boolean } = {}
 ) {
   printBanner();
 
@@ -48,6 +54,48 @@ export async function executeCreate(
       outputOverride = process.argv[oIndex + 1];
     } else if (outputIndex !== -1 && process.argv[outputIndex + 1] && !process.argv[outputIndex + 1].startsWith('-')) {
       outputOverride = process.argv[outputIndex + 1];
+    }
+
+    // Check for --merge or -m in process.argv
+    const shouldMerge = options.merge || process.argv.includes('--merge') || process.argv.includes('-m');
+
+    // Parse templates from first argument (comma-separated, spaces ignored)
+    let templateIds: string[] = [];
+    let projectName: string | undefined;
+
+    // Add templates from --add flag (could be string or array)
+    let addTemplates: string[] = [];
+    if (options.add) {
+      if (Array.isArray(options.add)) {
+        addTemplates = options.add;
+      } else {
+        // String - split by comma
+        addTemplates = (options.add as string).split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    const hasAddFlag = addTemplates.length > 0;
+
+    if (templateArg) {
+      // Parse comma-separated templates (ignore spaces)
+      const parts = templateArg.split(',').map(s => s.trim()).filter(Boolean);
+      if (parts.length > 0) {
+        if (hasAddFlag) {
+          // With --add: all parts from first arg are templates
+          templateIds = parts;
+          // Last item from --add is project name
+          projectName = addTemplates.pop();
+          templateIds = [...templateIds, ...addTemplates];
+        } else {
+          // Without --add: last part is project name, rest are templates
+          projectName = parts.pop();
+          templateIds = parts;
+        }
+      }
+    } else if (hasAddFlag) {
+      // No first arg, only --add: last item is project name
+      projectName = addTemplates.pop();
+      templateIds = addTemplates;
     }
 
     // Initialize hub
@@ -90,9 +138,202 @@ export async function executeCreate(
     // Check for --interactive flag
     const isInteractive = options.interactive || process.argv.includes('--interactive') || process.argv.includes('-i');
 
-    // Interactive template selection if not provided
-    let selectedTemplate = templateId;
-    if (!selectedTemplate) {
+    // Determine if this is multi-template mode
+    const isMultiTemplate = templateIds.length > 0;
+
+    // MULTI-TEMPLATE MODE
+    if (isMultiTemplate) {
+      // Verify all templates exist
+      const validatedTemplates: Array<{ id: string; template: ReturnType<typeof hub.getTemplate> }> = [];
+      for (const tid of templateIds) {
+        const t = hub.getTemplate(tid);
+        if (!t) {
+          console.log(formatError(`Template not found: ${tid}`));
+          console.log(formatInfo('Run with --list to see available templates'));
+          process.exit(1);
+        }
+        validatedTemplates.push({ id: tid, template: t });
+      }
+
+      // Use project name or default to first template id
+      const finalProjectName = projectName || templateIds[0];
+      const outputDir = path.resolve(outputOverride || options.output || '.');
+      const projectPath = path.join(outputDir, finalProjectName);
+
+      // Confirm
+      if (!forceYes) {
+        console.log(chalk.bold('  Multi-Template Project'));
+        console.log(chalk.dim('  ----------------------'));
+        console.log(`  Templates:   ${chalk.cyan(templateIds.join(', '))}`);
+        console.log(`  Project:     ${chalk.cyan(finalProjectName)}`);
+        console.log(`  Output:      ${chalk.cyan(projectPath)}`);
+        console.log(`  Mode:        ${shouldMerge ? chalk.yellow('Merged') : chalk.green('Separate files')}`);
+        console.log('');
+
+        const confirmed = await confirm({
+          message: 'Create this project?',
+          default: true,
+          theme: { prefix: { idle: chalk.hex('#22C55E')('?') } },
+        });
+
+        if (!confirmed) {
+          console.log(formatInfo('Cancelled'));
+          return;
+        }
+      }
+
+      // Generate project
+      const generateSpinner = ora('Generating multi-template project...').start();
+
+      try {
+        // Check if output directory already exists
+        if (await fs.pathExists(projectPath)) {
+          generateSpinner.fail('Failed to generate project');
+          console.log(formatError(`Directory already exists: ${projectPath}`));
+          process.exit(1);
+        }
+
+        // Copy base template
+        const baseTemplatePath = getBaseTemplatePath();
+        await fs.copy(baseTemplatePath, projectPath);
+
+        // Prepare directories
+        const contractDir = path.join(projectPath, 'contracts');
+        const testDir = path.join(projectPath, 'test');
+        await fs.ensureDir(contractDir);
+        await fs.ensureDir(testDir);
+
+        if (shouldMerge) {
+          // MERGE MODE: Combine all contracts and tests into single files
+          let mergedContracts = '';
+          let mergedTests = '';
+          const importSet = new Set<string>();
+          const testImportSet = new Set<string>();
+
+          for (const { template } of validatedTemplates) {
+            if (!template) continue;
+
+            // Extract and dedupe imports from contract
+            const contractLines = template.contractCode.split('\n');
+            const contractImports: string[] = [];
+            const contractBody: string[] = [];
+
+            for (const line of contractLines) {
+              if (line.trim().startsWith('import ') || line.trim().startsWith('// SPDX')) {
+                if (!importSet.has(line.trim())) {
+                  importSet.add(line.trim());
+                  contractImports.push(line);
+                }
+              } else if (line.trim().startsWith('pragma ')) {
+                if (!importSet.has(line.trim())) {
+                  importSet.add(line.trim());
+                  contractImports.push(line);
+                }
+              } else {
+                contractBody.push(line);
+              }
+            }
+
+            if (mergedContracts === '') {
+              mergedContracts = contractImports.join('\n') + '\n\n';
+            }
+            mergedContracts += contractBody.join('\n') + '\n\n';
+
+            // Extract and dedupe imports from test
+            if (template.testCode) {
+              const testLines = template.testCode.split('\n');
+              const testImports: string[] = [];
+              const testBody: string[] = [];
+
+              for (const line of testLines) {
+                if (line.trim().startsWith('import ')) {
+                  if (!testImportSet.has(line.trim())) {
+                    testImportSet.add(line.trim());
+                    testImports.push(line);
+                  }
+                } else {
+                  testBody.push(line);
+                }
+              }
+
+              if (mergedTests === '') {
+                mergedTests = testImports.join('\n') + '\n\n';
+              }
+              mergedTests += testBody.join('\n') + '\n\n';
+            }
+          }
+
+          // Write merged files
+          const contractName = finalProjectName.charAt(0).toUpperCase() + finalProjectName.slice(1).replace(/-/g, '');
+          await fs.writeFile(path.join(contractDir, `${contractName}.sol`), mergedContracts.trim());
+          if (mergedTests) {
+            await fs.writeFile(path.join(testDir, `${contractName}.test.ts`), mergedTests.trim());
+          }
+        } else {
+          // SEPARATE MODE: Each template gets its own files
+          for (const { template } of validatedTemplates) {
+            if (!template) continue;
+
+            // Extract contract name
+            const contractMatch = template.contractCode.match(/contract\s+(\w+)/);
+            const contractName = contractMatch ? contractMatch[1] : 'Contract';
+
+            // Write contract file
+            await fs.writeFile(
+              path.join(contractDir, `${contractName}.sol`),
+              template.contractCode
+            );
+
+            // Write test file
+            if (template.testCode) {
+              await fs.writeFile(
+                path.join(testDir, `${contractName}.test.ts`),
+                template.testCode
+              );
+            }
+          }
+        }
+
+        // Update package.json
+        const packageJsonPath = path.join(projectPath, 'package.json');
+        if (await fs.pathExists(packageJsonPath)) {
+          const packageJson = await fs.readJson(packageJsonPath);
+          packageJson.name = finalProjectName;
+          packageJson.description = `Multi-template project: ${templateIds.join(', ')}`;
+          await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+        }
+
+        // Generate README
+        const readmeContent = generateMultiTemplateReadme(finalProjectName, validatedTemplates.map(v => v.template!), shouldMerge);
+        await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
+
+        generateSpinner.succeed('Project generated successfully!');
+
+        // Post-create actions
+        await handlePostCreate(projectPath, templateIds.join(','), options, forceYes);
+
+        // Print success
+        console.log(formatSuccess(`\n  Created ${finalProjectName} at ${projectPath}\n`));
+        console.log(chalk.bold('Next steps:\n'));
+        console.log(`  cd ${finalProjectName}`);
+        console.log('  npm install');
+        console.log('  npx hardhat test');
+        console.log('');
+
+      } catch (error) {
+        generateSpinner.fail('Failed to generate project');
+        console.log(formatError(error instanceof Error ? error.message : String(error)));
+        process.exit(1);
+      }
+
+      return;
+    }
+
+    // SINGLE TEMPLATE MODE (existing behavior)
+    let selectedTemplate: string | undefined;
+
+    // If no templates and no project name, use interactive selection
+    if (!projectName) {
       if (isInteractive) {
         // Interactive mode: First select category, then template
         const availableCategories = CATEGORIES.filter((cat) => hub.getTemplatesByCategory(cat.id).length > 0);
@@ -186,10 +427,13 @@ export async function executeCreate(
           choices: templateChoices,
         });
       }
+    } else {
+      // Project name provided as single argument - treat as template id
+      selectedTemplate = projectName;
     }
 
     // Verify template exists
-    const template = hub.getTemplate(selectedTemplate);
+    const template = hub.getTemplate(selectedTemplate!);
     if (!template) {
       console.log(formatError(`Template not found: ${selectedTemplate}`));
       console.log(formatInfo('Run with --list to see available templates'));
@@ -198,7 +442,7 @@ export async function executeCreate(
 
     // Interactive project name if not provided
     let finalProjectName = projectName;
-    if (!finalProjectName && !forceYes) {
+    if (!forceYes) {
       const useDefault = await confirm({
         message: `Use default name ${chalk.greenBright(template.id)}?`,
         default: true,
@@ -262,7 +506,7 @@ export async function executeCreate(
     const generateSpinner = ora('Generating project...').start();
 
     const result = await hub.generate({
-      templateId: selectedTemplate,
+      templateId: selectedTemplate!,
       outputDir,
       projectName: finalProjectName,
     });
@@ -277,50 +521,15 @@ export async function executeCreate(
 
     const projectPath = result.outputPath!;
 
-    // Check for post-create flags
-    const shouldGit = options.git || process.argv.includes('--git');
-    const shouldInstall = options.install || process.argv.includes('--install');
-    const shouldOpen = options.open || process.argv.includes('--open');
-
-    // Git init
-    if (shouldGit) {
-      const gitSpinner = ora('Initializing git repository...').start();
-      try {
-        execSync('git init', { cwd: projectPath, stdio: 'pipe' });
-        execSync('git add .', { cwd: projectPath, stdio: 'pipe' });
-        execSync('git commit -m "Initial commit - Lab-Z template: ' + selectedTemplate + '"', { cwd: projectPath, stdio: 'pipe' });
-        gitSpinner.succeed('Git repository initialized');
-      } catch (error) {
-        gitSpinner.fail('Failed to initialize git');
-      }
-    }
-
-    // npm install
-    if (shouldInstall) {
-      const installSpinner = ora('Installing dependencies...').start();
-      try {
-        execSync('npm install', { cwd: projectPath, stdio: 'pipe' });
-        installSpinner.succeed('Dependencies installed');
-      } catch (error) {
-        installSpinner.fail('Failed to install dependencies');
-      }
-    }
-
-    // Open in VS Code
-    if (shouldOpen) {
-      const openSpinner = ora('Opening in VS Code...').start();
-      try {
-        execSync(`code "${projectPath}"`, { stdio: 'pipe' });
-        openSpinner.succeed('Opened in VS Code');
-      } catch (error) {
-        openSpinner.fail('Failed to open VS Code (is it installed?)');
-      }
-    }
+    // Post-create actions
+    await handlePostCreate(projectPath, selectedTemplate!, options, forceYes);
 
     // Print success message
     console.log(formatSuccess(`\n  Created ${finalProjectName} at ${result.outputPath}\n`));
 
     // Show next steps (skip steps that were already done)
+    const shouldInstall = options.install || process.argv.includes('--install');
+    const shouldOpen = options.open || process.argv.includes('--open');
     const nextSteps: string[] = [];
     if (!shouldInstall || !shouldOpen) {
       nextSteps.push(`cd ${finalProjectName}`);
@@ -339,7 +548,7 @@ export async function executeCreate(
     }
 
     // Show related templates
-    const related = hub.getRelated(selectedTemplate, 3);
+    const related = hub.getRelated(selectedTemplate!, 3);
     if (related.length > 0) {
       console.log(formatInfo('Related templates:'));
       for (const r of related) {
@@ -352,4 +561,145 @@ export async function executeCreate(
     console.log(formatError(error instanceof Error ? error.message : String(error)));
     process.exit(1);
   }
+}
+
+/**
+ * Handle post-create actions (git, npm install, VS Code)
+ */
+async function handlePostCreate(
+  projectPath: string,
+  templateInfo: string,
+  options: { git?: boolean; install?: boolean; open?: boolean },
+  forceYes: boolean
+): Promise<void> {
+  const shouldGit = options.git || process.argv.includes('--git');
+  const shouldInstall = options.install || process.argv.includes('--install');
+  const shouldOpen = options.open || process.argv.includes('--open');
+
+  // Git init
+  if (shouldGit) {
+    const gitSpinner = ora('Initializing git repository...').start();
+    try {
+      execSync('git init', { cwd: projectPath, stdio: 'pipe' });
+      execSync('git add .', { cwd: projectPath, stdio: 'pipe' });
+      execSync(`git commit -m "Initial commit - Lab-Z template: ${templateInfo}"`, { cwd: projectPath, stdio: 'pipe' });
+      gitSpinner.succeed('Git repository initialized');
+    } catch (error) {
+      gitSpinner.fail('Failed to initialize git');
+    }
+  }
+
+  // npm install
+  if (shouldInstall) {
+    const installSpinner = ora('Installing dependencies...').start();
+    try {
+      execSync('npm install', { cwd: projectPath, stdio: 'pipe' });
+      installSpinner.succeed('Dependencies installed');
+    } catch (error) {
+      installSpinner.fail('Failed to install dependencies');
+    }
+  }
+
+  // Open in VS Code
+  if (shouldOpen) {
+    const openSpinner = ora('Opening in VS Code...').start();
+    try {
+      execSync(`code "${projectPath}"`, { stdio: 'pipe' });
+      openSpinner.succeed('Opened in VS Code');
+    } catch (error) {
+      openSpinner.fail('Failed to open VS Code (is it installed?)');
+    }
+  }
+}
+
+/**
+ * Generate README for multi-template projects
+ */
+function generateMultiTemplateReadme(
+  projectName: string,
+  templates: Array<{ id: string; name: string; description: string; difficulty: string; category: string; contractCode: string }>,
+  isMerged: boolean
+): string {
+  let readme = `# ${projectName}
+
+Multi-template FHEVM project generated with Lab-Z.
+
+## Included Templates
+
+`;
+
+  for (const t of templates) {
+    const difficultyEmoji = {
+      beginner: '🟢',
+      intermediate: '🟡',
+      advanced: '🔴',
+    }[t.difficulty] || '🟡';
+
+    readme += `### ${t.name}
+
+${difficultyEmoji} **${t.difficulty}** | **${t.category}**
+
+${t.description}
+
+`;
+  }
+
+  readme += `## Quick Start
+
+\`\`\`bash
+# Install dependencies
+npm install
+
+# Run tests
+npx hardhat test
+
+# Compile contracts
+npx hardhat compile
+\`\`\`
+
+## Project Structure
+
+`;
+
+  if (isMerged) {
+    readme += `This project uses **merged mode** - all contracts are combined into a single file.
+
+\`\`\`
+contracts/
+  ${projectName.charAt(0).toUpperCase() + projectName.slice(1).replace(/-/g, '')}.sol  # All contracts merged
+test/
+  ${projectName.charAt(0).toUpperCase() + projectName.slice(1).replace(/-/g, '')}.test.ts  # All tests merged
+\`\`\`
+`;
+  } else {
+    readme += `This project uses **separate mode** - each template has its own files.
+
+\`\`\`
+contracts/
+`;
+    for (const t of templates) {
+      const contractMatch = t.contractCode.match(/contract\s+(\w+)/);
+      const contractName = contractMatch ? contractMatch[1] : 'Contract';
+      readme += `  ${contractName}.sol
+`;
+    }
+    readme += `test/
+`;
+    for (const t of templates) {
+      const contractMatch = t.contractCode.match(/contract\s+(\w+)/);
+      const contractName = contractMatch ? contractMatch[1] : 'Contract';
+      readme += `  ${contractName}.test.ts
+`;
+    }
+    readme += `\`\`\`
+`;
+  }
+
+  readme += `
+---
+
+Generated with [Lab-Z](https://github.com/Lab-Z)
+`;
+
+  return readme;
 }

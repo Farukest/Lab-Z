@@ -34,17 +34,17 @@ program.addCommand(doctorCommand);
 program.addCommand(deployCommand);
 program.addCommand(testCommand);
 
-// Default action (create)
+// Default action (create) - for running `labz <template>` without 'create' keyword
+// Note: For --add and --merge, use `labz create` command directly
 program
-  .argument('[template]', 'Template to generate')
-  .argument('[project-name]', 'Name of the project')
+  .argument('[template]', 'Template(s) to generate - comma-separated, last is project name')
   .option('-o, --output <dir>', 'Output directory', '.')
   .option('-y, --yes', 'Skip prompts and use defaults')
-  .action(async (template, projectName, options) => {
+  .action(async (template, options) => {
     if (template) {
       // Delegate to create command
       const { executeCreate } = await import('./commands/create');
-      await executeCreate(template, projectName, options);
+      await executeCreate(template, options);
     } else {
       program.help();
     }
