@@ -126,6 +126,10 @@ cd my-market && npm install && npx hardhat test
 
 ↳ **What you get:** A complete standalone Hardhat project with contract, tests, and configuration.
 
+
+https://github.com/user-attachments/assets/427f8036-4430-47ea-b43a-c7cf2fba0d29
+
+
 ### ▎Option 2: Quick Start for Custom Build with `build`
 
 ▸ Use `build` for composable contracts with modules:
