@@ -89,7 +89,7 @@ pnpm build
 ```bash
 labz create --list
 #      ↑       ↑
-#      │       └── Show all 39 available templates grouped by category
+#      │       └── Show all 44 available templates grouped by category
 #      │
 #      └── Standalone project generator (labz = Lab-Z CLI)
 

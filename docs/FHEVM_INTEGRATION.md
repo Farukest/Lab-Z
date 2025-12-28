@@ -62,6 +62,286 @@ einput + proof               updated euint64                 cleartext + proof
 FHE.fromExternal()           FHE.allowThis()                 checkSignatures()
 ```
 
+### ▎Encryption Flow (Client to Contract)
+
+▸ Complete flow of encrypting user input and sending to contract.
+
+```
++------------------+
+|   USER (Client)  |
+|   value: 1000    |
++------------------+
+         |
+         | Step 1: Create encrypted input
+         v
++------------------------------------------+
+|  const input = fhevm.createEncryptedInput |
+|      (contractAddress, userAddress)       |
++------------------------------------------+
+         |
+         | Step 2: Add value(s) to encrypt
+         v
++------------------------------------------+
+|  input.add64(1000n)                       |
+|  input.add8(5)        // multiple values  |
+|  input.addBool(true)  // if needed        |
++------------------------------------------+
+         |
+         | Step 3: Generate encrypted data + ZK proof
+         v
++------------------------------------------+
+|  const { handles, inputProof } =          |
+|      await input.encrypt()                |
+|                                           |
+|  handles[0] --> encrypted 1000            |
+|  handles[1] --> encrypted 5               |
+|  handles[2] --> encrypted true            |
+|  inputProof --> ZK proof for ALL values   |
++------------------------------------------+
+         |
+         | Step 4: Send to contract
+         v
++------------------------------------------+
+|  await contract.deposit(                  |
+|      handles[0],   // externalEuint64     |
+|      handles[1],   // externalEuint8      |
+|      inputProof    // bytes calldata      |
+|  )                                        |
++------------------------------------------+
+         |
+         | Step 5: Contract receives & validates
+         v
++------------------------------------------+
+|  CONTRACT (Solidity)                      |
+|  ---------------------------------------- |
+|  function deposit(                        |
+|      externalEuint64 amount,              |
+|      externalEuint8 option,               |
+|      bytes calldata inputProof            |
+|  ) external {                             |
+|      // Validate proof & convert          |
+|      euint64 amt = FHE.fromExternal(      |
+|          amount, inputProof);             |
+|      euint8 opt = FHE.fromExternal(       |
+|          option, inputProof);             |
+|                                           |
+|      // Now use encrypted values          |
+|      _balance = FHE.add(_balance, amt);   |
+|                                           |
+|      // Set permissions                   |
+|      FHE.allowThis(_balance);             |
+|      FHE.allow(_balance, msg.sender);     |
+|  }                                        |
++------------------------------------------+
+         |
+         v
++------------------+
+|  euint64 stored  |
+|  in contract     |
++------------------+
+```
+
+### ▎Decryption Flow (Private vs Public)
+
+▸ Two different decryption patterns for different use cases.
+
+```
+                          +------------------+
+                          |  euint64 handle  |
+                          |  (encrypted)     |
+                          +------------------+
+                                   |
+                 +-----------------+-----------------+
+                 |                                   |
+                 v                                   v
+    +------------------------+         +---------------------------+
+    |    PRIVATE DECRYPT     |         |     PUBLIC DECRYPT        |
+    |    (User Only)         |         |     (Everyone)            |
+    +------------------------+         +---------------------------+
+                 |                                   |
+                 v                                   v
+    +------------------------+         +---------------------------+
+    | REQUIREMENT:           |         | STEP 1: Mark for reveal   |
+    | FHE.allow(handle,user) |         | FHE.makePubliclyDecrypt-  |
+    | must be called first   |         |     able(handle)          |
+    +------------------------+         +---------------------------+
+                 |                                   |
+                 v                                   v
+    +------------------------+         +---------------------------+
+    | CLIENT SIDE:           |         | STEP 2: Off-chain decrypt |
+    | const value = await    |         | const result = await      |
+    |   fhevm.userDecrypt-   |         |   fhevm.publicDecrypt(    |
+    |   Euint(               |         |     [handle]              |
+    |     FhevmType.euint64, |         |   );                      |
+    |     handle,            |         | const clear = result      |
+    |     contractAddress,   |         |   .clearValues[handle];   |
+    |     signer             |         | const proof = result      |
+    |   );                   |         |   .decryptionProof;       |
+    +------------------------+         +---------------------------+
+                 |                                   |
+                 v                                   v
+    +------------------------+         +---------------------------+
+    | RESULT:                |         | STEP 3: Finalize on-chain |
+    | Only this user sees    |         | await contract.finalize(  |
+    | the decrypted value    |         |   clearValue,             |
+    | (off-chain only)       |         |   proof                   |
+    |                        |         | );                        |
+    | Value stays private!   |         |                           |
+    +------------------------+         | // Contract verifies:     |
+                                       | FHE.checkSignatures(      |
+                                       |   cts, cleartexts, proof  |
+                                       | );                        |
+                                       | // Now public on-chain!   |
+                                       +---------------------------+
+                                                    |
+                                                    v
+                                       +---------------------------+
+                                       | RESULT:                   |
+                                       | Value is now PUBLIC       |
+                                       | Everyone can see it       |
+                                       | Stored on-chain           |
+                                       +---------------------------+
+
++----------------------------------------------------------------------------+
+|                         USE CASE EXAMPLES                                   |
++----------------------------------------------------------------------------+
+| PRIVATE:                          | PUBLIC:                                 |
+| - User's token balance            | - Auction winner reveal                 |
+| - Personal voting choice          | - Lottery result                        |
+| - Private health data             | - Game outcome                          |
+| - Encrypted credentials           | - Final tally after voting ends         |
++----------------------------------------------------------------------------+
+```
+
+### ▎ACL Permission Flow
+
+▸ Three types of permissions for encrypted values.
+
+```
++============================================================================+
+|                         ACL PERMISSION TYPES                                |
++============================================================================+
+
+1. FHE.allowThis(handle)
+   ----------------------
+   +------------------+          +------------------+
+   |    Contract A    |  ------> |    Contract A    |
+   |  (current tx)    |          |  (future txs)    |
+   +------------------+          +------------------+
+
+   Purpose: Contract grants ITSELF permission to use handle in FUTURE transactions
+   Duration: Permanent (until handle changes)
+   Use case: Storing encrypted state variables
+
+   Example:
+   +-----------------------------------------------------------------+
+   | function deposit(externalEuint64 amt, bytes calldata proof) {   |
+   |     euint64 value = FHE.fromExternal(amt, proof);               |
+   |     _balance = FHE.add(_balance, value);                        |
+   |                                                                  |
+   |     FHE.allowThis(_balance);  // <-- Contract can use _balance  |
+   |                               //     in next transaction        |
+   | }                                                                |
+   +-----------------------------------------------------------------+
+
+
+2. FHE.allow(handle, address)
+   ---------------------------
+   +------------------+          +------------------+
+   |    Contract      |  ------> |      User        |
+   |                  |          | (or any address) |
+   +------------------+          +------------------+
+
+   Purpose: Grant permanent decryption permission to an address
+   Duration: Permanent
+   Use case: User needs to decrypt their own data
+
+   Example:
+   +-----------------------------------------------------------------+
+   | function deposit(externalEuint64 amt, bytes calldata proof) {   |
+   |     euint64 value = FHE.fromExternal(amt, proof);               |
+   |     _balances[msg.sender] = value;                              |
+   |                                                                  |
+   |     FHE.allow(value, msg.sender);  // <-- User can decrypt      |
+   |                                    //     their balance         |
+   | }                                                                |
+   +-----------------------------------------------------------------+
+
+
+3. FHE.allowTransient(handle, address)
+   ------------------------------------
+   +------------------+          +------------------+
+   |    Contract A    |  ------> |    Contract B    |
+   |  (this tx only)  |          |  (this tx only)  |
+   +------------------+          +------------------+
+            |                             |
+            +-----------------------------+
+                    Same Transaction
+
+   Purpose: Temporary permission for cross-contract calls
+   Duration: Current transaction ONLY (expires after tx)
+   Use case: Passing encrypted values between contracts
+
+   Example:
+   +-----------------------------------------------------------------+
+   | // Contract A: Transfer to Contract B                           |
+   | function transferToVault(euint64 amount) external {             |
+   |     FHE.allowTransient(amount, address(vault));  // Temporary   |
+   |     vault.deposit(amount);  // Vault can use it in this tx      |
+   | }                                                                |
+   |                                                                  |
+   | // Contract B (Vault): Receives the value                       |
+   | function deposit(euint64 amount) external {                     |
+   |     _vaultBalance = FHE.add(_vaultBalance, amount);             |
+   |     FHE.allowThis(_vaultBalance);  // Vault keeps it            |
+   | }                                                                |
+   +-----------------------------------------------------------------+
+
+
++============================================================================+
+|                         PERMISSION CHECK FUNCTIONS                          |
++============================================================================+
+
+FHE.isAllowed(handle, address) --> bool
+   Check if address has permission for handle
+
+FHE.isSenderAllowed(handle) --> bool
+   Check if msg.sender has permission for handle
+
+
++============================================================================+
+|                         COMMON PATTERNS                                     |
++============================================================================+
+
+Pattern: Store & Grant Access
+-----------------------------
+euint64 value = FHE.fromExternal(input, proof);
+_data[msg.sender] = value;
+FHE.allowThis(value);           // Contract can use later
+FHE.allow(value, msg.sender);   // User can decrypt
+
+
+Pattern: After FHE Operations
+-----------------------------
+euint64 newBalance = FHE.add(oldBalance, deposit);
+// IMPORTANT: Result of FHE.add is NEW handle, needs NEW permissions!
+FHE.allowThis(newBalance);
+FHE.allow(newBalance, msg.sender);
+
+
+Pattern: Cross-Contract Transfer
+--------------------------------
+// Sender contract
+FHE.allowTransient(amount, receiverContract);
+IReceiver(receiverContract).receive(amount);
+
+// Receiver contract
+function receive(euint64 amount) external {
+    _balance = FHE.add(_balance, amount);
+    FHE.allowThis(_balance);
+}
+```
+
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0020,50:FFCC0060,100:FFCC0020&height=4&section=header" width="100%"></p>
 
 ### <img src="https://img.shields.io/badge/◆_FHE_Type_System-FFD966?style=flat-square" height="68" width="17%">
@@ -99,6 +379,22 @@ euint32 small = FHE.asEuint32(largeValue);  // May truncate
 
 // Boolean conversion
 ebool flag = FHE.asEbool(euint8Value);  // 0 = false, non-zero = true
+
+// Address conversion
+eaddress encAddr = FHE.asEaddress(msg.sender);
+```
+
+### ▎Utility Functions
+
+```solidity
+// Check if encrypted value is initialized (not bytes32(0))
+bool initialized = FHE.isInitialized(encryptedValue);
+
+// Example: Check if user has a balance
+function hasBalance(address account) external view returns (bool) {
+    euint64 balance = _balances[account];
+    return FHE.isInitialized(balance);
+}
 ```
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0020,50:FFCC0060,100:FFCC0020&height=4&section=header" width="100%"></p>
@@ -366,11 +662,20 @@ function method(
 
 ### <img src="https://img.shields.io/badge/◆_Decryption_Patterns-FFD966?style=flat-square" height="68" width="20%">
 
-### ▎Pattern 1: Private Decryption
+### ▎Pattern 1: Private Decryption (User Decrypt)
 
-▸ User decrypts their own values using their EIP-712 signature.
+▸ User decrypts their own values using their private key. Requires `FHE.allow()` permission.
 
 ```solidity
+// Contract: Store value and grant permission
+function deposit(externalEuint64 amount, bytes calldata proof) external {
+    euint64 value = FHE.fromExternal(amount, proof);
+    _balances[msg.sender] = FHE.add(_balances[msg.sender], value);
+
+    FHE.allowThis(_balances[msg.sender]);
+    FHE.allow(_balances[msg.sender], msg.sender);  // REQUIRED for user decrypt
+}
+
 // Contract: Return encrypted handle
 function getMyBalance() external view returns (euint64) {
     return _balances[msg.sender];
@@ -378,9 +683,37 @@ function getMyBalance() external view returns (euint64) {
 ```
 
 ```typescript
-// Client: Decrypt with signature
+import { FhevmType } from "@fhevm/sdk";
+
+// Client: Decrypt with userDecryptEuint
 const encryptedBalance = await contract.getMyBalance();
-const balance = await fhevmInstance.decrypt(encryptedBalance, signer);
+
+// For euint8/16/32/64 - use userDecryptEuint
+const balance = await fhevm.userDecryptEuint(
+    FhevmType.euint64,      // Type of encrypted value
+    encryptedBalance,        // The encrypted handle
+    contractAddress,         // Contract that stores the value
+    signer                   // User's signer (must have FHE.allow permission)
+);
+
+// For ebool - use userDecryptEbool
+const flag = await fhevm.userDecryptEbool(
+    encryptedFlag,
+    contractAddress,
+    signer
+);
+```
+
+**FhevmType enum:**
+```typescript
+FhevmType.ebool
+FhevmType.euint8
+FhevmType.euint16
+FhevmType.euint32
+FhevmType.euint64
+FhevmType.euint128
+FhevmType.euint256
+FhevmType.eaddress
 ```
 
 ### ▎Pattern 2: Public Decryption (3-Step)
@@ -1082,14 +1415,14 @@ euint32 counter;  // For values up to 4 billion
 
 ### <img src="https://img.shields.io/badge/◆_Version_Compatibility-FFD966?style=flat-square" height="68" width="22%">
 
-### ▎FHEVM API Changes
+### ▎FHEVM API Changes (fhevm-solidity)
 
-| Version | Change | Migration |
-|---------|--------|-----------|
-| 0.5.x | FHE.gte -> FHE.ge | Rename all gte calls to ge |
-| 0.5.x | FHE.lte -> FHE.le | Rename all lte calls to le |
-| 0.5.x | fromExternal requires proof | Add inputProof parameter |
-| 0.5.x | div/rem require plaintext | Ensure divisors are uint, not euint |
+| Change | Migration |
+|--------|-----------|
+| TFHE -> FHE library rename | Replace all TFHE.xxx with FHE.xxx |
+| Package rename | Use @fhevm/solidity instead of fhevm |
+| fromExternal requires proof | Add inputProof parameter |
+| div/rem require plaintext | Ensure divisors are uint, not euint |
 
 ### ▎Solidity Imports
 
