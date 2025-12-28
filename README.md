@@ -42,7 +42,7 @@
 - **13 feature modules** for ACL, admin, security, and FHE operations
 - **9 OpenZeppelin ERC7984 + FHEVM** production-ready confidential contracts
 - **9-phase validation pipeline** preventing incompatible module combinations
-- **CLI with 8 commands**, interactive mode, and visual composer
+- **CLI with 9 commands**, interactive mode, and visual composer
 
 ### ▎CLI Commands
 
@@ -56,6 +56,7 @@
 | `compose` | - |
 | `doctor` | `-p, --path` |
 | `deploy` | `-n, --network` `--verify` `--no-compile` `-y, --yes` |
+| `test` | `--keep` `-y, --yes` |
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>
 
@@ -414,6 +415,28 @@ labz deploy [contract] [options]
   -y, --yes                 # Skip confirmation prompts
   #    ↑
   #    └── Example: labz deploy -n mainnet -y
+  #    └── Explanation: Auto-confirm for CI/CD pipelines
+```
+
+### ▎labz test
+
+▸ Test a template in a temporary directory.
+
+```bash
+labz test <template> [options]
+#     ↑       ↑
+#     │       └── Template ID to test
+#     │
+#     └── Generate, install, compile in temp folder
+
+  --keep                    # Keep the temporary directory after test
+  #  ↑
+  #  └── Example: labz test counter --keep
+  #  └── Explanation: Preserve project for manual testing
+
+  -y, --yes                 # Skip confirmation prompts
+  #    ↑
+  #    └── Example: labz test counter -y
   #    └── Explanation: Auto-confirm for CI/CD pipelines
 ```
 
