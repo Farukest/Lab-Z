@@ -12,6 +12,9 @@ import { searchCommand } from './commands/search';
 import { infoCommand } from './commands/info';
 import { composeCommand } from './commands/compose';
 import { buildCommand } from './commands/build';
+import { doctorCommand } from './commands/doctor';
+import { deployCommand } from './commands/deploy';
+import { testCommand } from './commands/test';
 
 const program = new Command();
 
@@ -27,6 +30,9 @@ program.addCommand(listCommand);
 program.addCommand(searchCommand);
 program.addCommand(infoCommand);
 program.addCommand(composeCommand);
+program.addCommand(doctorCommand);
+program.addCommand(deployCommand);
+program.addCommand(testCommand);
 
 // Default action (create)
 program

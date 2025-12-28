@@ -42,7 +42,20 @@
 - **13 feature modules** for ACL, admin, security, and FHE operations
 - **9 OpenZeppelin ERC7984 + FHEVM** production-ready confidential contracts
 - **9-phase validation pipeline** preventing incompatible module combinations
-- **CLI with 6 commands**, interactive mode, and visual composer
+- **CLI with 8 commands**, interactive mode, and visual composer
+
+### ▎CLI Commands
+
+| Command | Options |
+|---------|---------|
+| `create` | `-i, --interactive` `--git` `--install` `--open` `-o, --output` `-l, --list` `-y, --yes` |
+| `build` | `-i, --interactive` `-w, --with` `-t, --type` `--list-bases` `--list-modules` `--check` `--preview` `--dry-run` `-o, --output` `-y, --yes` |
+| `list` | `-c, --category` `-d, --difficulty` `-t, --tag` |
+| `search` | `-c, --category` `-d, --difficulty` `-b, --blocks` `-l, --limit` |
+| `info` | `-c, --code` `-t, --test` `-b, --blocks` |
+| `compose` | - |
+| `doctor` | `-p, --path` |
+| `deploy` | `-n, --network` `--verify` `--no-compile` `-y, --yes` |
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>
 
@@ -349,22 +362,60 @@ labz compose [contract-name]
 
 <img width="1231" height="680" alt="image" src="https://github.com/user-attachments/assets/b3f752c4-8536-41ca-97c4-a21b50535ed8" />
 
+### ▎labz doctor
 
-### ▎CLI Options Summary
+▸ Check FHEVM development environment.
 
-| Command | Options |
-|---------|---------|
-| `create` | `-o, --output` `-l, --list` `-y, --yes` |
-| `build` | `-w, --with` `-t, --type` `-o, --output` `--list-bases` `--list-modules` `--check` `--preview` `--dry-run` `-i, --interactive` `-y, --yes` |
-| `list` | `-c, --category` `-d, --difficulty` `-t, --tag` |
-| `search` | `-c, --category` `-d, --difficulty` `-b, --blocks` `-l, --limit` |
-| `info` | `-c, --code` `-t, --test` `-b, --blocks` |
-| `compose` | - |
+```bash
+labz doctor [options]
+#     ↑
+#     └── Diagnose your FHEVM development setup
 
-<p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>
+  -p, --path <dir>          # Project directory to check
+  #      ↑
+  #      └── Example: labz doctor -p ./my-project
+  #      └── Explanation: Check a specific project directory
 
+# Checks performed:
+# - Node.js version (>=18)
+# - npm installation
+# - FHEVM dependencies (@fhevm/solidity, @fhevm/hardhat-plugin)
+# - Hardhat config with FHEVM plugin
+# - .env file and environment variables
+# - node_modules installation
+```
 
+### ▎labz deploy
 
+▸ Deploy contracts to network.
+
+```bash
+labz deploy [contract] [options]
+#     ↑         ↑
+#     │         └── Contract name (auto-detect if not specified)
+#     │
+#     └── Deploy contracts to blockchain
+
+  -n, --network <network>   # Target network (default: localhost)
+  #        ↑
+  #        └── Example: labz deploy -n sepolia
+  #        └── Networks: localhost, hardhat, sepolia, mainnet
+
+  --verify                  # Verify contract on explorer
+  #   ↑
+  #   └── Example: labz deploy -n sepolia --verify
+  #   └── Explanation: Verify on Etherscan after deployment
+
+  --no-compile              # Skip compilation step
+  #      ↑
+  #      └── Example: labz deploy --no-compile
+  #      └── Explanation: Use existing compiled artifacts
+
+  -y, --yes                 # Skip confirmation prompts
+  #    ↑
+  #    └── Example: labz deploy -n mainnet -y
+  #    └── Explanation: Auto-confirm for CI/CD pipelines
+```
 
 ### <img src="https://img.shields.io/badge/◆_Standalone_Templates-FFD966?style=flat-square" height="68" width="22%">
 
