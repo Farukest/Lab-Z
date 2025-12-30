@@ -23,6 +23,7 @@ export default function HomePage() {
   const [cliOpen, setCliOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const [showMoreExamples, setShowMoreExamples] = useState(false);
 
   // Load pinned templates from localStorage
   useEffect(() => {
@@ -203,6 +204,45 @@ export default function HomePage() {
               <span style={{ color: 'var(--success)' }}>$</span>
               <code>npx create-labz counter my-project</code>
             </div>
+
+            {/* More Examples - Collapsible */}
+            {showMoreExamples && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                <div style={{ marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// quick start with standalone templates</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ color: 'var(--success)' }}>$</span>
+                  <code>labz create prediction-market my-market</code>
+                </div>
+                <div style={{ marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// or compose custom contracts with modules</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--success)' }}>$</span>
+                  <code>labz build auction my-auction --with acl/auction-sharing</code>
+                </div>
+              </div>
+            )}
+
+            {/* View More Toggle */}
+            <button
+              onClick={() => setShowMoreExamples(!showMoreExamples)}
+              style={{
+                marginTop: '12px',
+                padding: '4px 0',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--fg-muted)',
+                fontSize: '11px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              {showMoreExamples ? '- hide examples' : '+ view more examples'}
+            </button>
           </div>
 
           {/* CLI Launcher Button */}

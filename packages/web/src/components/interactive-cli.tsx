@@ -206,11 +206,21 @@ export function InteractiveCLI({ isOpen, onClose, initialCommand = "" }: Interac
   const runCommand = async () => {
     if (!input.trim() || isRunning) return;
 
-    const cmd = input.trim();
+    let cmd = input.trim();
     setHistory(prev => [...prev, cmd]);
     setHistoryIndex(-1);
     addLog(`user@labz:~$ ${cmd}`, "input");
     setInput("");
+
+    // Convert npx commands to labz commands
+    // npx create-labz <template> [name] -> labz create <template> [name]
+    // npx labz <command> -> labz <command>
+    if (cmd.startsWith("npx create-labz")) {
+      const args = cmd.replace("npx create-labz", "").trim();
+      cmd = args ? `labz create ${args}` : "labz create";
+    } else if (cmd.startsWith("npx labz")) {
+      cmd = cmd.replace("npx labz", "labz");
+    }
 
     const parsed = parseCommand(cmd);
 
