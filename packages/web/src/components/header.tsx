@@ -143,7 +143,7 @@ export function Header() {
 
           {/* GitHub */}
           <a
-            href="https://github.com/Lab-Z"
+            href="https://github.com/Farukest/Lab-Z"
             target="_blank"
             rel="noopener noreferrer"
             style={{
