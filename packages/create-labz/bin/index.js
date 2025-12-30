@@ -37,20 +37,21 @@ async function selectTemplate() {
 
     const renderMenu = () => {
       // Move cursor up to redraw
-      if (selectedIndex > 0 || selectedIndex === 0) {
-        process.stdout.write(`\x1b[${TEMPLATES.length}A`);
-      }
+      process.stdout.write(`\x1b[${TEMPLATES.length}A`);
 
       TEMPLATES.forEach((t, i) => {
         const isSelected = i === selectedIndex;
         const prefix = isSelected ? `${COLORS.cyan}>${COLORS.reset}` : ' ';
+        const paddedName = t.name.padEnd(15);
         const name = isSelected
-          ? `${COLORS.cyan}${COLORS.bright}${t.name}${COLORS.reset}`
-          : `${COLORS.dim}${t.name}${COLORS.reset}`;
+          ? `${COLORS.cyan}${COLORS.bright}${paddedName}${COLORS.reset}`
+          : `${COLORS.dim}${paddedName}${COLORS.reset}`;
         const desc = isSelected
           ? `${COLORS.gray}${t.description}${COLORS.reset}`
           : `${COLORS.dim}${t.description}${COLORS.reset}`;
-        console.log(`  ${prefix} ${name.padEnd(25)} ${desc}`);
+        // Clear line before printing
+        process.stdout.write('\x1b[2K');
+        console.log(`  ${prefix} ${name} ${desc}`);
       });
     };
 
@@ -59,13 +60,14 @@ async function selectTemplate() {
     TEMPLATES.forEach((t, i) => {
       const isSelected = i === 0;
       const prefix = isSelected ? `${COLORS.cyan}>${COLORS.reset}` : ' ';
+      const paddedName = t.name.padEnd(15);
       const name = isSelected
-        ? `${COLORS.cyan}${COLORS.bright}${t.name}${COLORS.reset}`
-        : `${COLORS.dim}${t.name}${COLORS.reset}`;
+        ? `${COLORS.cyan}${COLORS.bright}${paddedName}${COLORS.reset}`
+        : `${COLORS.dim}${paddedName}${COLORS.reset}`;
       const desc = isSelected
         ? `${COLORS.gray}${t.description}${COLORS.reset}`
         : `${COLORS.dim}${t.description}${COLORS.reset}`;
-      console.log(`  ${prefix} ${name.padEnd(25)} ${desc}`);
+      console.log(`  ${prefix} ${name} ${desc}`);
     });
 
     readline.emitKeypressEvents(process.stdin);
