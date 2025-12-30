@@ -585,10 +585,14 @@ function printSuccessSummary(opts: {
   console.log(chalk.gray(`┌${hr}┐`));
   console.log(b + chalk.green.bold(' ✓ Project Created') + ' '.repeat(W - 18) + b);
   console.log(chalk.gray(`├${hr}┤`));
-  console.log(row(`Template:    ${opts.templateId}`));
-  console.log(row(`Project:     ${opts.projectName}`));
-  console.log(row(`Category:    ${opts.category}`));
-  console.log(row(`Path:        ${shortPath}`));
+  const lbl1 = `Template:    ${opts.templateId}`;
+  const lbl2 = `Project:     ${opts.projectName}`;
+  const lbl3 = `Category:    ${opts.category}`;
+  const lbl4 = `Path:        ${shortPath}`;
+  console.log(b + ` ${chalk.yellow('Template:')}    ${opts.templateId}` + ' '.repeat(W - lbl1.length - 1) + b);
+  console.log(b + ` ${chalk.yellow('Project:')}     ${opts.projectName}` + ' '.repeat(W - lbl2.length - 1) + b);
+  console.log(b + ` ${chalk.yellow('Category:')}    ${opts.category}` + ' '.repeat(W - lbl3.length - 1) + b);
+  console.log(b + ` ${chalk.yellow('Path:')}        ${shortPath}` + ' '.repeat(W - lbl4.length - 1) + b);
   console.log(chalk.gray(`├${hr}┤`));
   console.log(b + chalk.bold(' Next Steps') + ' '.repeat(W - 11) + b);
   console.log(row(''));
