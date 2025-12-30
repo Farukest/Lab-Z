@@ -51,6 +51,7 @@ my-project/
 ├── hardhat.config.ts
 └── package.json
 ```
+![CLI-SHORT-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e73d27b7-b14a-4ace-9a3f-f7a454e95a00)
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>
 
