@@ -11,7 +11,7 @@ import * as fs from 'fs-extra';
 import { execSync, spawn } from 'child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import { createHub, type Category, CATEGORIES } from '@0xflydev/labz-core';
-import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner } from '../utils';
+import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner, printProjectSummary } from '../utils';
 
 export const createCommand = new Command('create')
   .description('Create a new FHEVM example project')
@@ -326,18 +326,19 @@ export async function executeCreate(
         const readmeContent = generateMultiTemplateReadme(finalProjectName, validatedTemplates.map(v => v.template!), shouldMerge);
         await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
 
-        generateSpinner.succeed('Project generated successfully!');
+        generateSpinner.succeed('Done');
 
         // Post-create actions
         await handlePostCreate(projectPath, templateIds.join(','), options, forceYes);
 
-        // Print success
-        console.log(formatSuccess(`\n  Created ${finalProjectName} at ${projectPath}\n`));
-        console.log(chalk.bold('Next steps:\n'));
-        console.log(`  cd ${finalProjectName}`);
-        console.log('  npm install');
-        console.log('  npx hardhat test');
-        console.log('');
+        // Print summary box
+        printProjectSummary({
+          projectName: finalProjectName,
+          templateId: templateIds.join(', '),
+          templateName: `${templateIds.length} templates`,
+          category: 'Multi-template',
+          outputPath: projectPath,
+        });
 
       } catch (error) {
         generateSpinner.fail('Failed to generate project');
@@ -539,44 +540,25 @@ export async function executeCreate(
       process.exit(1);
     }
 
-    generateSpinner.succeed('Project generated successfully!');
+    generateSpinner.succeed('Done');
 
     const projectPath = result.outputPath!;
 
     // Post-create actions
     await handlePostCreate(projectPath, selectedTemplate!, options, forceYes);
 
-    // Print success message
-    console.log(formatSuccess(`\n  Created ${finalProjectName} at ${result.outputPath}\n`));
-
-    // Show next steps (skip steps that were already done)
-    const shouldInstall = options.install || process.argv.includes('--install');
-    const shouldOpen = options.open || process.argv.includes('--open');
-    const nextSteps: string[] = [];
-    if (!shouldInstall || !shouldOpen) {
-      nextSteps.push(`cd ${finalProjectName}`);
-    }
-    if (!shouldInstall) {
-      nextSteps.push('npm install');
-    }
-    nextSteps.push('npx hardhat test');
-
-    if (nextSteps.length > 0) {
-      console.log(chalk.bold('Next steps:\n'));
-      for (const step of nextSteps) {
-        console.log(`  ${step}`);
-      }
-      console.log('');
-    }
-
-    // Show related templates
+    // Get related templates
     const related = hub.getRelated(selectedTemplate!, 3);
-    if (related.length > 0) {
-      console.log(formatInfo('Related templates:'));
-      for (const r of related) {
-        console.log(`  - ${chalk.cyan(r.id)}: ${r.description}`);
-      }
-    }
+
+    // Print summary box
+    printProjectSummary({
+      projectName: finalProjectName,
+      templateId: selectedTemplate!,
+      templateName: template.name,
+      category: template.category,
+      outputPath: projectPath,
+      relatedTemplates: related.map(r => r.id),
+    });
 
   } catch (error) {
     spinner.fail('Error');
