@@ -241,7 +241,7 @@ async function main() {
 
   // Run labz create
   try {
-    execSync(`npx @0xflydev/labz create ${templateId} ${projectName} -y`, {
+    execSync(`npx --yes @0xflydev/labz@latest create ${templateId} ${projectName} -y`, {
       stdio: 'inherit',
       cwd: process.cwd(),
     });

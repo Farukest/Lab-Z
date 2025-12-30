@@ -42,7 +42,7 @@ export async function executeCreate(
 ) {
   printBanner();
 
-  const spinner = ora('Loading templates...').start();
+  const spinner = ora({ text: '', spinner: 'dots' });
 
   try {
     // Check for --yes or -y in process.argv as workaround for Commander issue
@@ -123,7 +123,8 @@ export async function executeCreate(
     const hub = createHub(templatesDir, baseTemplatePath);
     await hub.init();
 
-    spinner.succeed('Ready\n');
+    spinner.stop();
+    spinner.clear();
 
     const templates = hub.getAllTemplates();
 
@@ -525,7 +526,7 @@ export async function executeCreate(
     }
 
     // Generate project
-    const generateSpinner = ora('Generating project...').start();
+    const generateSpinner = ora({ text: '', spinner: 'dots' });
 
     const result = await hub.generate({
       templateId: selectedTemplate!,
@@ -539,7 +540,8 @@ export async function executeCreate(
       process.exit(1);
     }
 
-    generateSpinner.succeed('Project generated successfully!');
+    generateSpinner.stop();
+    generateSpinner.clear();
 
     const projectPath = result.outputPath!;
 
@@ -572,28 +574,28 @@ function printSuccessSummary(opts: {
   path: string;
   related: string[];
 }): void {
-  const width = 54;
-  const top = chalk.gray('┌' + '─'.repeat(width) + '┐');
-  const mid = chalk.gray('├' + '─'.repeat(width) + '┤');
-  const bot = chalk.gray('└' + '─'.repeat(width) + '┘');
-  const side = chalk.gray('│');
+  const W = 48;
+  const hr = '─'.repeat(W);
+  const b = chalk.gray('│');
 
-  const pad = (str: string, len: number) => str + ' '.repeat(Math.max(0, len - str.length));
+  const row = (text: string) => b + ' ' + text.padEnd(W - 1) + b;
+  const shortPath = opts.path.length > 34 ? '...' + opts.path.slice(-31) : opts.path;
 
   console.log('');
-  console.log(top);
-  console.log(`${side}  ${chalk.green.bold('✓ Project Created')}${' '.repeat(width - 19)}${side}`);
-  console.log(mid);
-  console.log(`${side}  ${chalk.gray('Template')}     ${pad(chalk.cyan(opts.templateId), width - 16)}${side}`);
-  console.log(`${side}  ${chalk.gray('Project')}      ${pad(chalk.bold(opts.projectName), width - 16)}${side}`);
-  console.log(`${side}  ${chalk.gray('Category')}     ${pad(opts.category, width - 16)}${side}`);
-  console.log(mid);
-  console.log(`${side}  ${chalk.bold('Next Steps')}${' '.repeat(width - 13)}${side}`);
-  console.log(`${side}${' '.repeat(width)}${side}`);
-  console.log(`${side}  ${chalk.yellow('1.')} cd ${opts.projectName}${' '.repeat(Math.max(0, width - 8 - opts.projectName.length))}${side}`);
-  console.log(`${side}  ${chalk.yellow('2.')} npm install${' '.repeat(width - 16)}${side}`);
-  console.log(`${side}  ${chalk.yellow('3.')} npx hardhat test${' '.repeat(width - 21)}${side}`);
-  console.log(bot);
+  console.log(chalk.gray(`┌${hr}┐`));
+  console.log(b + chalk.green.bold(' ✓ Project Created') + ' '.repeat(W - 18) + b);
+  console.log(chalk.gray(`├${hr}┤`));
+  console.log(row(`Template     ${opts.templateId}`));
+  console.log(row(`Project      ${opts.projectName}`));
+  console.log(row(`Category     ${opts.category}`));
+  console.log(row(`Path         ${shortPath}`));
+  console.log(chalk.gray(`├${hr}┤`));
+  console.log(b + chalk.bold(' Next Steps') + ' '.repeat(W - 11) + b);
+  console.log(row(''));
+  console.log(row(`1. cd ${opts.projectName}`));
+  console.log(row(`2. npm install`));
+  console.log(row(`3. npx hardhat test`));
+  console.log(chalk.gray(`└${hr}┘`));
 
   if (opts.related.length > 0) {
     console.log('');

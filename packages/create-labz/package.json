@@ -1,6 +1,6 @@
 {
   "name": "create-labz",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Create FHEVM smart contract projects with Lab-Z templates",
   "bin": {
     "create-labz": "./bin/index.js"
