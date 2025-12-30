@@ -56,6 +56,13 @@ export class ProjectGenerator {
       // Copy base template
       await fs.copy(this.config.baseTemplatePath, outputPath);
 
+      // Rename gitignore to .gitignore (npm publish excludes .gitignore)
+      const gitignoreSrc = path.join(outputPath, 'gitignore');
+      const gitignoreDest = path.join(outputPath, '.gitignore');
+      if (await fs.pathExists(gitignoreSrc)) {
+        await fs.rename(gitignoreSrc, gitignoreDest);
+      }
+
       // Remove .gitkeep files (no longer needed after copying)
       await this.removeGitkeepFiles(outputPath);
 

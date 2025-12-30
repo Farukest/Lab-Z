@@ -1,6 +1,6 @@
 {
   "name": "@0xflydev/labz-core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lab-Z Core - Template engine, registry, generator, and validation",
   "author": "0xflydev",
   "license": "MIT",
