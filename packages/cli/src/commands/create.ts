@@ -563,7 +563,7 @@ export async function executeCreate(
 }
 
 /**
- * Print success summary in a clean table format
+ * Print success summary in a bordered table format
  */
 function printSuccessSummary(opts: {
   projectName: string;
@@ -572,28 +572,32 @@ function printSuccessSummary(opts: {
   path: string;
   related: string[];
 }): void {
-  const line = chalk.gray('─'.repeat(50));
+  const width = 54;
+  const top = chalk.gray('┌' + '─'.repeat(width) + '┐');
+  const mid = chalk.gray('├' + '─'.repeat(width) + '┤');
+  const bot = chalk.gray('└' + '─'.repeat(width) + '┘');
+  const side = chalk.gray('│');
+
+  const pad = (str: string, len: number) => str + ' '.repeat(Math.max(0, len - str.length));
 
   console.log('');
-  console.log(chalk.green.bold('  ✓ Project Created'));
-  console.log(`  ${line}`);
-  console.log('');
-  console.log(`  ${chalk.gray('Template')}     ${chalk.cyan(opts.templateId)}`);
-  console.log(`  ${chalk.gray('Project')}      ${chalk.bold(opts.projectName)}`);
-  console.log(`  ${chalk.gray('Category')}     ${opts.category}`);
-  console.log(`  ${chalk.gray('Path')}         ${chalk.dim(opts.path)}`);
-  console.log('');
-  console.log(`  ${chalk.bold('Next Steps')}`);
-  console.log(`  ${line}`);
-  console.log('');
-  console.log(`  ${chalk.yellow('1.')} cd ${opts.projectName}`);
-  console.log(`  ${chalk.yellow('2.')} npm install`);
-  console.log(`  ${chalk.yellow('3.')} npx hardhat test`);
-  console.log('');
+  console.log(top);
+  console.log(`${side}  ${chalk.green.bold('✓ Project Created')}${' '.repeat(width - 19)}${side}`);
+  console.log(mid);
+  console.log(`${side}  ${chalk.gray('Template')}     ${pad(chalk.cyan(opts.templateId), width - 16)}${side}`);
+  console.log(`${side}  ${chalk.gray('Project')}      ${pad(chalk.bold(opts.projectName), width - 16)}${side}`);
+  console.log(`${side}  ${chalk.gray('Category')}     ${pad(opts.category, width - 16)}${side}`);
+  console.log(mid);
+  console.log(`${side}  ${chalk.bold('Next Steps')}${' '.repeat(width - 13)}${side}`);
+  console.log(`${side}${' '.repeat(width)}${side}`);
+  console.log(`${side}  ${chalk.yellow('1.')} cd ${opts.projectName}${' '.repeat(Math.max(0, width - 8 - opts.projectName.length))}${side}`);
+  console.log(`${side}  ${chalk.yellow('2.')} npm install${' '.repeat(width - 16)}${side}`);
+  console.log(`${side}  ${chalk.yellow('3.')} npx hardhat test${' '.repeat(width - 21)}${side}`);
+  console.log(bot);
 
   if (opts.related.length > 0) {
-    console.log(`  ${line}`);
-    console.log(`  ${chalk.gray('See also:')} ${opts.related.join(', ')}`);
+    console.log('');
+    console.log(chalk.gray(`  See also: ${opts.related.join(', ')}`));
   }
   console.log('');
 }
