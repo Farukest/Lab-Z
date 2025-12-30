@@ -213,6 +213,9 @@ export async function executeCreate(
         const baseTemplatePath = getBaseTemplatePath();
         await fs.copy(baseTemplatePath, projectPath);
 
+        // Remove .gitkeep files (no longer needed after copying)
+        await removeGitkeepFiles(projectPath);
+
         // Prepare directories
         const contractDir = path.join(projectPath, 'contracts');
         const testDir = path.join(projectPath, 'test');
@@ -627,6 +630,21 @@ async function handlePostCreate(
       openSpinner.succeed('Opened in VS Code');
     } catch (error) {
       openSpinner.fail('Failed to open VS Code (is it installed?)');
+    }
+  }
+}
+
+/**
+ * Remove .gitkeep files from a directory recursively
+ */
+async function removeGitkeepFiles(dir: string): Promise<void> {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await removeGitkeepFiles(fullPath);
+    } else if (entry.name === '.gitkeep') {
+      await fs.remove(fullPath);
     }
   }
 }

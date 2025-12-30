@@ -56,6 +56,9 @@ export class ProjectGenerator {
       // Copy base template
       await fs.copy(this.config.baseTemplatePath, outputPath);
 
+      // Remove .gitkeep files (no longer needed after copying)
+      await this.removeGitkeepFiles(outputPath);
+
       // Copy contract file
       const contractDir = path.join(outputPath, 'contracts');
       await fs.ensureDir(contractDir);
@@ -226,6 +229,21 @@ Generated with [Lab-Z](https://github.com/Lab-Z)
 `;
 
     return readme;
+  }
+
+  /**
+   * Remove .gitkeep files from a directory recursively
+   */
+  private async removeGitkeepFiles(dir: string): Promise<void> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await this.removeGitkeepFiles(fullPath);
+      } else if (entry.name === '.gitkeep') {
+        await fs.remove(fullPath);
+      }
+    }
   }
 
   /**
