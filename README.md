@@ -22,25 +22,40 @@
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0000,50:FFCC00,100:FFCC0000&height=6&section=header" width="100%"></p>
 
-<br>
 
-<p align="center">
-  <b>Get started instantly - no installation required</b>
-</p>
+
+
+### <img src="https://img.shields.io/badge/◆_Get_Started-FFD966?style=flat-square" height="68" width="14%">
+
+▸ **No installation required** - run one command:
 
 ```bash
 npx create-labz
 ```
 
-<p align="center">
-  <i>Select a template, name your project, and start building.</i>
-</p>
+▸ **Or specify template and project name directly:**
 
-<br>
+```bash
+npx create-labz counter my-counter
+npx create-labz auction my-auction
+npx create-labz token my-token
+```
 
-<p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=2&section=header" width="60%"></p>
+▸ **What you get:**
 
-<br>
+```
+my-project/
+├── contracts/        # FHEVM smart contract
+├── test/             # TypeScript test suite
+├── scripts/          # Deployment scripts
+├── hardhat.config.ts
+└── package.json
+```
+
+<p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=4&section=header" width="100%"></p>
+
+
+
 
 ### <img src="https://img.shields.io/badge/◆_Overview-FFD966?style=flat-square" height="68" width="12%">
 
