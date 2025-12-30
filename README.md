@@ -49,7 +49,10 @@ my-project/
 ├── test/             # TypeScript test suite
 ├── scripts/          # Deployment scripts
 ├── hardhat.config.ts
-└── package.json
+├── tsconfig.json
+├── package.json
+├── README.md
+└── .gitignore
 ```
 ![CLI-SHORT-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e73d27b7-b14a-4ace-9a3f-f7a454e95a00)
 
