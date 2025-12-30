@@ -190,18 +190,18 @@ export default function HomePage() {
             textAlign: 'left'
           }}>
             <div style={{ marginBottom: '8px' }}>
-              <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// quick start with standalone templates</span>
+              <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// no installation required</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <span style={{ color: 'var(--success)' }}>$</span>
-              <code>labz create prediction-market my-market</code>
+              <code style={{ color: 'var(--accent)', fontWeight: 500 }}>npx create-labz</code>
             </div>
             <div style={{ marginBottom: '8px' }}>
-              <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// or compose custom contracts with modules</span>
+              <span style={{ color: 'var(--fg-muted)', fontSize: '11px' }}>// or specify template directly</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ color: 'var(--success)' }}>$</span>
-              <code>labz build auction my-auction --with acl/auction-sharing</code>
+              <code>npx create-labz counter my-project</code>
             </div>
           </div>
 
@@ -411,7 +411,7 @@ export default function HomePage() {
             {[
               {
                 title: 'cli tool',
-                desc: 'generate projects from terminal. npx labz build <template>'
+                desc: 'generate projects from terminal. npx create-labz'
               },
               {
                 title: 'web interface',
@@ -633,9 +633,9 @@ export default function HomePage() {
               quick start
             </h4>
             <div className="code-block" style={{ padding: '12px', fontSize: '11px' }}>
-              <div>labz create counter my-counter</div>
-              <div style={{ color: 'var(--fg-muted)', marginTop: '8px' }}>labz build auction --with acl/transient</div>
-              <div style={{ color: 'var(--fg-muted)' }}>labz list --category advanced</div>
+              <div>npx create-labz</div>
+              <div style={{ color: 'var(--fg-muted)', marginTop: '8px' }}>npx create-labz counter my-project</div>
+              <div style={{ color: 'var(--fg-muted)' }}>npx create-labz auction my-auction</div>
             </div>
           </div>
         </div>

@@ -22,8 +22,25 @@
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0000,50:FFCC00,100:FFCC0000&height=6&section=header" width="100%"></p>
 
+<br>
 
+<p align="center">
+  <b>Get started instantly - no installation required</b>
+</p>
 
+```bash
+npx create-labz
+```
+
+<p align="center">
+  <i>Select a template, name your project, and start building.</i>
+</p>
+
+<br>
+
+<p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0015,50:FFCC0045,100:FFCC0015&height=2&section=header" width="60%"></p>
+
+<br>
 
 ### <img src="https://img.shields.io/badge/◆_Overview-FFD966?style=flat-square" height="68" width="12%">
 

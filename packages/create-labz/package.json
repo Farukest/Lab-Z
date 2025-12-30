@@ -1,0 +1,33 @@
+{
+  "name": "create-labz",
+  "version": "1.0.0",
+  "description": "Create FHEVM smart contract projects with Lab-Z templates",
+  "bin": {
+    "create-labz": "./bin/index.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "keywords": [
+    "fhevm",
+    "fhe",
+    "zama",
+    "solidity",
+    "smart-contracts",
+    "privacy",
+    "encryption",
+    "create",
+    "scaffold",
+    "template"
+  ],
+  "author": "Lab-Z",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Farukest/Lab-Z"
+  },
+  "homepage": "https://github.com/Farukest/Lab-Z#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
