@@ -38,10 +38,12 @@ const CATEGORIES = [
     templates: [
       { id: 'token', name: 'token', desc: 'Confidential ERC20 token' },
       { id: 'voting', name: 'voting', desc: 'Private voting system' },
-      { id: 'auction', name: 'auction', desc: 'Sealed-bid auction' },
-      { id: 'dice-game', name: 'dice-game', desc: 'Encrypted dice game' },
-      { id: 'lottery', name: 'lottery', desc: 'Private lottery' },
       { id: 'blind-match', name: 'blind-match', desc: 'Blind matching system' },
+      { id: 'prediction-market', name: 'prediction', desc: 'Encrypted prediction market' },
+      { id: 'sealed-tender', name: 'sealed-tender', desc: 'Sealed tender bidding' },
+      { id: 'mystery-box', name: 'mystery-box', desc: 'NFT mystery box reveal' },
+      { id: 'salary-proof', name: 'salary-proof', desc: 'Prove salary without reveal' },
+      { id: 'age-gate', name: 'age-gate', desc: 'Age verification privacy' },
     ]
   },
   {
