@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor, Github, Blocks, GraduationCap } from "lucide-react";
+import { Sun, Moon, Monitor, Github, Blocks, GraduationCap, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
@@ -124,6 +124,22 @@ export function Header() {
           }}>
             npx Lab-Z create
           </div>
+
+          {/* Docs */}
+          <a
+            href="https://labzee.gitbook.io/flydev-docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '6px',
+              color: 'var(--fg-muted)',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title="Documentation"
+          >
+            <BookOpen style={{ width: '16px', height: '16px' }} />
+          </a>
 
           {/* GitHub */}
           <a
