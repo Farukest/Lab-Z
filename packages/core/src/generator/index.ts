@@ -87,6 +87,26 @@ export class ProjectGenerator {
         await fs.writeFile(testPath, processedTest);
       }
 
+      // Generate deploy script
+      const contractName = this.extractContractName(template.contractCode);
+      const scriptsDir = path.join(outputPath, 'scripts');
+      await fs.ensureDir(scriptsDir);
+      const deployScript = `import { ethers } from "hardhat";
+
+async function main() {
+  const factory = await ethers.getContractFactory("${contractName}");
+  const contract = await factory.deploy();
+  await contract.waitForDeployment();
+  console.log("${contractName} deployed to:", await contract.getAddress());
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+`;
+      await fs.writeFile(path.join(scriptsDir, 'deploy.ts'), deployScript);
+
       // Generate README
       const readmePath = path.join(outputPath, 'README.md');
       const readmeContent = this.generateReadme(template, finalProjectName);
