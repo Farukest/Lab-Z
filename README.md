@@ -41,7 +41,7 @@ npx create-labz auction my-auction
 npx create-labz token my-token
 ```
 
-▸ **What you get:**
+↳ **What you get:**
 
 ```
 my-project/
