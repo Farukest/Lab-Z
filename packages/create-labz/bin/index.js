@@ -28,8 +28,10 @@ const CATEGORIES = [
     name: 'Decryption',
     color: '\x1b[33m', // yellow
     templates: [
-      { id: 'decryption-user-single', name: 'user-decrypt', desc: 'User decrypts single value' },
-      { id: 'decryption-public-single', name: 'public-decrypt', desc: 'Public decryption' },
+      { id: 'decryption-user-single', name: 'user-single', desc: 'User decrypts single value' },
+      { id: 'decryption-user-multiple', name: 'user-multi', desc: 'User decrypts multiple values' },
+      { id: 'decryption-public-single', name: 'public-single', desc: 'Public decrypt single' },
+      { id: 'decryption-public-multiple', name: 'public-multi', desc: 'Public decrypt multiple' },
     ]
   },
   {
@@ -38,12 +40,12 @@ const CATEGORIES = [
     templates: [
       { id: 'token', name: 'token', desc: 'Confidential ERC20 token' },
       { id: 'voting', name: 'voting', desc: 'Private voting system' },
-      { id: 'blind-match', name: 'blind-match', desc: 'Blind matching system' },
-      { id: 'prediction-market', name: 'prediction', desc: 'Encrypted prediction market' },
+      { id: 'blind-match', name: 'blind-match', desc: 'Blind matching' },
+      { id: 'prediction-market', name: 'prediction', desc: 'Prediction market' },
       { id: 'sealed-tender', name: 'sealed-tender', desc: 'Sealed tender bidding' },
-      { id: 'mystery-box', name: 'mystery-box', desc: 'NFT mystery box reveal' },
-      { id: 'salary-proof', name: 'salary-proof', desc: 'Prove salary without reveal' },
-      { id: 'age-gate', name: 'age-gate', desc: 'Age verification privacy' },
+      { id: 'mystery-box', name: 'mystery-box', desc: 'NFT mystery box' },
+      { id: 'salary-proof', name: 'salary-proof', desc: 'Salary proof' },
+      { id: 'age-gate', name: 'age-gate', desc: 'Age verification' },
     ]
   },
   {
