@@ -1,6 +1,6 @@
 {
   "name": "@0xflydev/labz",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Lab-Z CLI - Generate composable FHEVM smart contracts",
   "author": "0xflydev",
   "license": "MIT",
