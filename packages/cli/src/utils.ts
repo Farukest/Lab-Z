@@ -109,59 +109,6 @@ export function formatInfo(message: string): string {
 }
 
 /**
- * Print project created summary box
- */
-export function printProjectSummary(options: {
-  projectName: string;
-  templateId: string;
-  templateName?: string;
-  category?: string;
-  outputPath: string;
-  relatedTemplates?: string[];
-}): void {
-  const { projectName, templateId, templateName, category, outputPath, relatedTemplates } = options;
-
-  const lines: string[] = [];
-
-  // Header
-  lines.push(chalk.green.bold('  Project Created'));
-  lines.push('');
-
-  // Info section
-  const labelWidth = 12;
-  lines.push(`  ${chalk.dim('Template'.padEnd(labelWidth))} ${chalk.cyan(templateName || templateId)}`);
-  lines.push(`  ${chalk.dim('Project'.padEnd(labelWidth))} ${chalk.bold(projectName)}`);
-  if (category) {
-    lines.push(`  ${chalk.dim('Category'.padEnd(labelWidth))} ${category}`);
-  }
-  lines.push(`  ${chalk.dim('Path'.padEnd(labelWidth))} ${chalk.dim(outputPath)}`);
-
-  // Next steps section
-  lines.push('');
-  lines.push(chalk.bold('  Next Steps'));
-  lines.push('');
-  lines.push(`  ${chalk.yellow('1.')} cd ${projectName}`);
-  lines.push(`  ${chalk.yellow('2.')} npm install`);
-  lines.push(`  ${chalk.yellow('3.')} npx hardhat test`);
-
-  const content = lines.join('\n');
-
-  console.log('');
-  console.log(boxen(content, {
-    padding: { top: 1, bottom: 1, left: 1, right: 1 },
-    borderStyle: 'round',
-    borderColor: 'green',
-  }));
-
-  // Related templates outside the box
-  if (relatedTemplates && relatedTemplates.length > 0) {
-    console.log('');
-    console.log(chalk.dim(`  See also: ${relatedTemplates.join(', ')}`));
-  }
-  console.log('');
-}
-
-/**
  * Format warning message
  */
 export function formatWarning(message: string): string {

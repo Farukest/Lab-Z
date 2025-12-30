@@ -11,7 +11,7 @@ import * as fs from 'fs-extra';
 import { execSync, spawn } from 'child_process';
 import { input, select, confirm } from '@inquirer/prompts';
 import { createHub, type Category, CATEGORIES } from '@0xflydev/labz-core';
-import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner, printProjectSummary } from '../utils';
+import { getTemplatesDir, getBaseTemplatePath, formatSuccess, formatError, formatInfo, printBanner } from '../utils';
 
 export const createCommand = new Command('create')
   .description('Create a new FHEVM example project')
@@ -326,19 +326,18 @@ export async function executeCreate(
         const readmeContent = generateMultiTemplateReadme(finalProjectName, validatedTemplates.map(v => v.template!), shouldMerge);
         await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
 
-        generateSpinner.succeed('Done');
+        generateSpinner.succeed('Project generated successfully!');
 
         // Post-create actions
         await handlePostCreate(projectPath, templateIds.join(','), options, forceYes);
 
-        // Print summary box
-        printProjectSummary({
-          projectName: finalProjectName,
-          templateId: templateIds.join(', '),
-          templateName: `${templateIds.length} templates`,
-          category: 'Multi-template',
-          outputPath: projectPath,
-        });
+        // Print success
+        console.log(formatSuccess(`\n  Created ${finalProjectName} at ${projectPath}\n`));
+        console.log(chalk.bold('Next steps:\n'));
+        console.log(`  cd ${finalProjectName}`);
+        console.log('  npm install');
+        console.log('  npx hardhat test');
+        console.log('');
 
       } catch (error) {
         generateSpinner.fail('Failed to generate project');
@@ -540,24 +539,20 @@ export async function executeCreate(
       process.exit(1);
     }
 
-    generateSpinner.succeed('Done');
+    generateSpinner.succeed('Project generated successfully!');
 
     const projectPath = result.outputPath!;
 
     // Post-create actions
     await handlePostCreate(projectPath, selectedTemplate!, options, forceYes);
 
-    // Get related templates
-    const related = hub.getRelated(selectedTemplate!, 3);
-
-    // Print summary box
-    printProjectSummary({
+    // Print success summary
+    printSuccessSummary({
       projectName: finalProjectName,
       templateId: selectedTemplate!,
-      templateName: template.name,
       category: template.category,
-      outputPath: projectPath,
-      relatedTemplates: related.map(r => r.id),
+      path: result.outputPath!,
+      related: hub.getRelated(selectedTemplate!, 3).map(r => r.id),
     });
 
   } catch (error) {
@@ -565,6 +560,42 @@ export async function executeCreate(
     console.log(formatError(error instanceof Error ? error.message : String(error)));
     process.exit(1);
   }
+}
+
+/**
+ * Print success summary in a clean table format
+ */
+function printSuccessSummary(opts: {
+  projectName: string;
+  templateId: string;
+  category: string;
+  path: string;
+  related: string[];
+}): void {
+  const line = chalk.gray('─'.repeat(50));
+
+  console.log('');
+  console.log(chalk.green.bold('  ✓ Project Created'));
+  console.log(`  ${line}`);
+  console.log('');
+  console.log(`  ${chalk.gray('Template')}     ${chalk.cyan(opts.templateId)}`);
+  console.log(`  ${chalk.gray('Project')}      ${chalk.bold(opts.projectName)}`);
+  console.log(`  ${chalk.gray('Category')}     ${opts.category}`);
+  console.log(`  ${chalk.gray('Path')}         ${chalk.dim(opts.path)}`);
+  console.log('');
+  console.log(`  ${chalk.bold('Next Steps')}`);
+  console.log(`  ${line}`);
+  console.log('');
+  console.log(`  ${chalk.yellow('1.')} cd ${opts.projectName}`);
+  console.log(`  ${chalk.yellow('2.')} npm install`);
+  console.log(`  ${chalk.yellow('3.')} npx hardhat test`);
+  console.log('');
+
+  if (opts.related.length > 0) {
+    console.log(`  ${line}`);
+    console.log(`  ${chalk.gray('See also:')} ${opts.related.join(', ')}`);
+  }
+  console.log('');
 }
 
 /**
