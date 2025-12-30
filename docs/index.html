@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab-Z FHEVM Examples</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="FHEVM Example Hub - Privacy-Preserving Smart Contracts">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css">
+  <style>
+    :root {
+      --base-background-color: #0d1117;
+      --sidebar-background: #161b22;
+      --sidebar-nav-link-color: #c9d1d9;
+      --sidebar-nav-link-color--active: #58a6ff;
+      --cover-background-color: #0d1117;
+      --theme-color: #58a6ff;
+    }
+    .markdown-section code {
+      background-color: #21262d;
+      color: #c9d1d9;
+    }
+    .markdown-section pre {
+      background-color: #161b22;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: 'Lab-Z FHEVM Examples',
+      repo: 'https://github.com/0xflydev/labz',
+      loadSidebar: 'SUMMARY.md',
+      subMaxLevel: 3,
+      search: {
+        placeholder: 'Search examples...',
+        noData: 'No Results',
+        paths: 'auto'
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        successText: 'Copied!'
+      },
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next'
+      },
+      auto2top: true,
+      executeScript: true
+    }
+  </script>
+  <!-- Docsify core -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- Search plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <!-- Copy code plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <!-- Pagination plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <!-- Syntax highlighting -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-solidity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+</body>
+</html>

@@ -39,12 +39,14 @@ coverage/
 # Claude memory
 claude.md
 
-# MD files (except README and INTEGRATION)
+# MD files (except README, INTEGRATION, and docs folder)
 *.md
 !README.md
 !**/README.md
 !*INTEGRATION*.md
 !**/*INTEGRATION*.md
+!docs/**/*.md
+!docs/*.md
 
 # Test and temp folders
 _test/
