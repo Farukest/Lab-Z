@@ -585,16 +585,19 @@ function printSuccessSummary(opts: {
   console.log(chalk.gray(`┌${hr}┐`));
   console.log(b + chalk.green.bold(' ✓ Project Created') + ' '.repeat(W - 18) + b);
   console.log(chalk.gray(`├${hr}┤`));
-  console.log(row(`Template     ${opts.templateId}`));
-  console.log(row(`Project      ${opts.projectName}`));
-  console.log(row(`Category     ${opts.category}`));
-  console.log(row(`Path         ${shortPath}`));
+  console.log(row(`Template:    ${opts.templateId}`));
+  console.log(row(`Project:     ${opts.projectName}`));
+  console.log(row(`Category:    ${opts.category}`));
+  console.log(row(`Path:        ${shortPath}`));
   console.log(chalk.gray(`├${hr}┤`));
   console.log(b + chalk.bold(' Next Steps') + ' '.repeat(W - 11) + b);
   console.log(row(''));
-  console.log(row(`1. cd ${opts.projectName}`));
-  console.log(row(`2. npm install`));
-  console.log(row(`3. npx hardhat test`));
+  const step1 = ` 1. cd ${opts.projectName}`;
+  const step2 = ` 2. npm install`;
+  const step3 = ` 3. npx hardhat test`;
+  console.log(b + ` ${chalk.yellow('1.')} cd ${opts.projectName}` + ' '.repeat(W - step1.length) + b);
+  console.log(b + ` ${chalk.yellow('2.')} npm install` + ' '.repeat(W - step2.length) + b);
+  console.log(b + ` ${chalk.yellow('3.')} npx hardhat test` + ' '.repeat(W - step3.length) + b);
   console.log(chalk.gray(`└${hr}┘`));
 
   if (opts.related.length > 0) {
