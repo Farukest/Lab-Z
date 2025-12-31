@@ -3,10 +3,12 @@
  *
  * Demonstrates:
  * - FHE.mul() - encrypted multiplication
- * - FHE.div() - encrypted division (integer)
- * - FHE.rem() - encrypted modulo (remainder)
+ * - FHE.div() - encrypted division (with PLAINTEXT divisor only)
+ * - FHE.rem() - encrypted modulo (with PLAINTEXT divisor only)
  * - Scalar operations with plaintext values
  * - Combined operations (divmod, percentage)
+ *
+ * IMPORTANT: FHEVM only supports division/modulo by PLAINTEXT values!
  */
 
 import { MultiplyOps, MultiplyOps__factory } from "../types";
@@ -55,7 +57,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .multiply(encryptedInput.handles[0], encryptedInput.handles[1])
+        .multiply(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -82,7 +84,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .multiply(encryptedInput.handles[0], encryptedInput.handles[1])
+        .multiply(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -108,7 +110,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .multiplyByScalar(encryptedInput.handles[0], scalar)
+        .multiplyByScalar(encryptedInput.handles[0], scalar, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -124,63 +126,7 @@ describe("MultiplyOps", function () {
     });
   });
 
-  describe("FHE.div() - Division", function () {
-    it("should divide two encrypted values", async function () {
-      const dividend = 100n;
-      const divisor = 7n;
-      const expected = dividend / divisor; // Integer division: 14
-
-      const encryptedInput = await fhevm
-        .createEncryptedInput(contractAddress, signers.alice.address)
-        .add64(dividend)
-        .add64(divisor)
-        .encrypt();
-
-      await (await contract
-        .connect(signers.alice)
-        .divide(encryptedInput.handles[0], encryptedInput.handles[1])
-      ).wait();
-
-      const encryptedResult = await contract.getResult();
-      const clearResult = await fhevm.userDecryptEuint(
-        FhevmType.euint64,
-        encryptedResult,
-        contractAddress,
-        signers.alice,
-      );
-
-      expect(clearResult).to.eq(expected);
-      console.log(`${dividend} / ${divisor} = ${clearResult} (integer division)`);
-    });
-
-    it("should floor the result", async function () {
-      const dividend = 10n;
-      const divisor = 3n;
-      // 10 / 3 = 3.33... but integer division gives 3
-
-      const encryptedInput = await fhevm
-        .createEncryptedInput(contractAddress, signers.alice.address)
-        .add64(dividend)
-        .add64(divisor)
-        .encrypt();
-
-      await (await contract
-        .connect(signers.alice)
-        .divide(encryptedInput.handles[0], encryptedInput.handles[1])
-      ).wait();
-
-      const encryptedResult = await contract.getResult();
-      const clearResult = await fhevm.userDecryptEuint(
-        FhevmType.euint64,
-        encryptedResult,
-        contractAddress,
-        signers.alice,
-      );
-
-      expect(clearResult).to.eq(3n);
-      console.log(`10 / 3 = 3 (floored from 3.33...)`);
-    });
-
+  describe("FHE.div() - Division (plaintext divisor only)", function () {
     it("should divide by plaintext scalar", async function () {
       const dividend = 1000n;
       const scalar = 100n; // Divide by 100
@@ -192,7 +138,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .divideByScalar(encryptedInput.handles[0], scalar)
+        .divideByScalar(encryptedInput.handles[0], scalar, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -206,65 +152,37 @@ describe("MultiplyOps", function () {
       expect(clearResult).to.eq(10n);
       console.log(`${dividend} / ${scalar}(scalar) = ${clearResult}`);
     });
+
+    it("should floor the result (integer division)", async function () {
+      const dividend = 10n;
+      const divisor = 3n;
+      // 10 / 3 = 3.33... but integer division gives 3
+
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(dividend)
+        .encrypt();
+
+      await (await contract
+        .connect(signers.alice)
+        .divideByScalar(encryptedInput.handles[0], divisor, encryptedInput.inputProof)
+      ).wait();
+
+      const encryptedResult = await contract.getResult();
+      const clearResult = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        encryptedResult,
+        contractAddress,
+        signers.alice,
+      );
+
+      expect(clearResult).to.eq(3n);
+      console.log(`10 / 3 = 3 (floored from 3.33...)`);
+    });
   });
 
-  describe("FHE.rem() - Modulo (Remainder)", function () {
-    it("should calculate remainder", async function () {
-      const dividend = 17n;
-      const divisor = 5n;
-      const expected = dividend % divisor; // 17 % 5 = 2
-
-      const encryptedInput = await fhevm
-        .createEncryptedInput(contractAddress, signers.alice.address)
-        .add64(dividend)
-        .add64(divisor)
-        .encrypt();
-
-      await (await contract
-        .connect(signers.alice)
-        .modulo(encryptedInput.handles[0], encryptedInput.handles[1])
-      ).wait();
-
-      const encryptedResult = await contract.getResult();
-      const clearResult = await fhevm.userDecryptEuint(
-        FhevmType.euint64,
-        encryptedResult,
-        contractAddress,
-        signers.alice,
-      );
-
-      expect(clearResult).to.eq(expected);
-      console.log(`${dividend} % ${divisor} = ${clearResult}`);
-    });
-
-    it("should return 0 when evenly divisible", async function () {
-      const dividend = 20n;
-      const divisor = 5n;
-
-      const encryptedInput = await fhevm
-        .createEncryptedInput(contractAddress, signers.alice.address)
-        .add64(dividend)
-        .add64(divisor)
-        .encrypt();
-
-      await (await contract
-        .connect(signers.alice)
-        .modulo(encryptedInput.handles[0], encryptedInput.handles[1])
-      ).wait();
-
-      const encryptedResult = await contract.getResult();
-      const clearResult = await fhevm.userDecryptEuint(
-        FhevmType.euint64,
-        encryptedResult,
-        contractAddress,
-        signers.alice,
-      );
-
-      expect(clearResult).to.eq(0n);
-      console.log(`${dividend} % ${divisor} = 0 (evenly divisible)`);
-    });
-
-    it("should modulo by plaintext scalar", async function () {
+  describe("FHE.rem() - Modulo (plaintext divisor only)", function () {
+    it("should calculate remainder with scalar", async function () {
       const dividend = 123n;
       const scalar = 10n;
 
@@ -275,7 +193,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .moduloByScalar(encryptedInput.handles[0], scalar)
+        .moduloByScalar(encryptedInput.handles[0], scalar, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -289,6 +207,32 @@ describe("MultiplyOps", function () {
       expect(clearResult).to.eq(3n);
       console.log(`${dividend} % ${scalar}(scalar) = ${clearResult}`);
     });
+
+    it("should return 0 when evenly divisible", async function () {
+      const dividend = 20n;
+      const divisor = 5n;
+
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(dividend)
+        .encrypt();
+
+      await (await contract
+        .connect(signers.alice)
+        .moduloByScalar(encryptedInput.handles[0], divisor, encryptedInput.inputProof)
+      ).wait();
+
+      const encryptedResult = await contract.getResult();
+      const clearResult = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        encryptedResult,
+        contractAddress,
+        signers.alice,
+      );
+
+      expect(clearResult).to.eq(0n);
+      console.log(`${dividend} % ${divisor} = 0 (evenly divisible)`);
+    });
   });
 
   describe("Combined Operations", function () {
@@ -300,12 +244,11 @@ describe("MultiplyOps", function () {
       const encryptedInput = await fhevm
         .createEncryptedInput(contractAddress, signers.alice.address)
         .add64(dividend)
-        .add64(divisor)
         .encrypt();
 
       await (await contract
         .connect(signers.alice)
-        .divMod(encryptedInput.handles[0], encryptedInput.handles[1])
+        .divMod(encryptedInput.handles[0], divisor, encryptedInput.inputProof)
       ).wait();
 
       const encryptedQuotient = await contract.getQuotient();
@@ -342,7 +285,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .calculatePercentage(encryptedInput.handles[0], percentage)
+        .calculatePercentage(encryptedInput.handles[0], percentage, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -371,7 +314,7 @@ describe("MultiplyOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .calculatePercentage(encryptedInput.handles[0], feePercent)
+        .calculatePercentage(encryptedInput.handles[0], feePercent, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -394,12 +337,11 @@ describe("MultiplyOps", function () {
       const encryptedInput = await fhevm
         .createEncryptedInput(contractAddress, signers.alice.address)
         .add64(totalPrice)
-        .add64(quantity)
         .encrypt();
 
       await (await contract
         .connect(signers.alice)
-        .divide(encryptedInput.handles[0], encryptedInput.handles[1])
+        .divideByScalar(encryptedInput.handles[0], quantity, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -419,9 +361,9 @@ describe("MultiplyOps", function () {
     it("summarizes multiplication operations", async function () {
       console.log("\n=== Multiplication Operations ===");
       console.log("FHE.mul(a, b): Multiply two encrypted values");
-      console.log("FHE.div(a, b): Integer division (floors result)");
-      console.log("FHE.rem(a, b): Modulo/remainder operation");
-      console.log("All operations work on ENCRYPTED values!");
+      console.log("FHE.div(a, scalar): Integer division by PLAINTEXT");
+      console.log("FHE.rem(a, scalar): Modulo by PLAINTEXT");
+      console.log("\nLIMITATION: Division and modulo ONLY work with plaintext divisors!");
       console.log("\nUse cases:");
       console.log("- Fee calculations");
       console.log("- Price computations");

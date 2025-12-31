@@ -53,7 +53,7 @@ describe("BooleanOps", function () {
       // Apply NOT operation
       await (await contract
         .connect(signers.alice)
-        .notValue(encryptedInput.handles[0])
+        .notValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Get and decrypt result
@@ -76,7 +76,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .notValue(encryptedInput.handles[0])
+        .notValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -99,7 +99,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBool(encryptedInput.handles[0])
+        .setBool(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Apply NOT to stored flag
@@ -126,7 +126,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .andBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .andBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -149,7 +149,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .andBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .andBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -172,7 +172,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .andBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .andBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -197,7 +197,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .orBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .orBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -220,7 +220,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .orBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .orBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -243,7 +243,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .orBools(encryptedInput.handles[0], encryptedInput.handles[1])
+        .orBools(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -299,7 +299,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .isGreater(encryptedInput.handles[0], encryptedInput.handles[1])
+        .isGreater(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -322,7 +322,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .isGreater(encryptedInput.handles[0], encryptedInput.handles[1])
+        .isGreater(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -345,7 +345,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .isEqual(encryptedInput.handles[0], encryptedInput.handles[1])
+        .isEqual(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();
@@ -368,7 +368,7 @@ describe("BooleanOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .isEqual(encryptedInput.handles[0], encryptedInput.handles[1])
+        .isEqual(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult();

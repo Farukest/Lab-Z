@@ -56,7 +56,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .bitwiseAnd(encryptedInput.handles[0], encryptedInput.handles[1])
+        .bitwiseAnd(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -83,7 +83,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .applyMask(encryptedInput.handles[0], Number(mask))
+        .applyMask(encryptedInput.handles[0], Number(mask), encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -114,7 +114,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .bitwiseOr(encryptedInput.handles[0], encryptedInput.handles[1])
+        .bitwiseOr(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -141,7 +141,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBits(encryptedInput.handles[0], Number(bitsToSet))
+        .setBits(encryptedInput.handles[0], Number(bitsToSet), encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -172,7 +172,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .bitwiseXor(encryptedInput.handles[0], encryptedInput.handles[1])
+        .bitwiseXor(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -199,7 +199,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .toggleBits(encryptedInput.handles[0], Number(bitsToToggle))
+        .toggleBits(encryptedInput.handles[0], Number(bitsToToggle), encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -226,7 +226,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .bitwiseXor(encryptedInput.handles[0], encryptedInput.handles[1])
+        .bitwiseXor(encryptedInput.handles[0], encryptedInput.handles[1], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -255,7 +255,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .shiftLeft(encryptedInput.handles[0], positions)
+        .shiftLeft(encryptedInput.handles[0], positions, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult64();
@@ -282,7 +282,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .multiplyByPowerOf2(encryptedInput.handles[0], power)
+        .multiplyByPowerOf2(encryptedInput.handles[0], power, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult64();
@@ -311,7 +311,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .shiftRight(encryptedInput.handles[0], positions)
+        .shiftRight(encryptedInput.handles[0], positions, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult64();
@@ -338,7 +338,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .divideByPowerOf2(encryptedInput.handles[0], power)
+        .divideByPowerOf2(encryptedInput.handles[0], power, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult64();
@@ -365,7 +365,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .shiftRight(encryptedInput.handles[0], positions)
+        .shiftRight(encryptedInput.handles[0], positions, encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult64();
@@ -399,7 +399,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .applyMask(encryptedInput.handles[0], Number(WRITE))
+        .applyMask(encryptedInput.handles[0], Number(WRITE), encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getResult8();
@@ -427,7 +427,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .multiplyByPowerOf2(encryptedInput.handles[0], 3)
+        .multiplyByPowerOf2(encryptedInput.handles[0], 3, encryptedInput.inputProof)
       ).wait();
 
       let encryptedResult = await contract.getResult64();
@@ -449,7 +449,7 @@ describe("BitwiseOps", function () {
 
       await (await contract
         .connect(signers.alice)
-        .divideByPowerOf2(step2Input.handles[0], 2)
+        .divideByPowerOf2(step2Input.handles[0], 2, step2Input.inputProof)
       ).wait();
 
       encryptedResult = await contract.getResult64();
