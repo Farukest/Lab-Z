@@ -280,7 +280,7 @@ function generateReadme(
   lines.push('npx hardhat test');
   lines.push('');
   lines.push('# Deploy to Zama devnet');
-  lines.push('npx hardhat run scripts/deploy.ts --network zama');
+  lines.push('npx hardhat run deploy/deploy.ts --network zama');
   lines.push('```');
   lines.push('');
   lines.push('## Project Structure');
@@ -291,7 +291,7 @@ function generateReadme(
   lines.push(`│   └── ${projectName}.sol    # Main contract`);
   lines.push('├── test/');
   lines.push(`│   └── ${projectName}.test.ts # Tests`);
-  lines.push('├── scripts/');
+  lines.push('├── deploy/');
   lines.push('│   └── deploy.ts             # Deploy script');
   lines.push('├── hardhat.config.ts');
   lines.push('└── package.json');

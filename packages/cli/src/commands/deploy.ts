@@ -199,14 +199,14 @@ export async function executeDeploy(
 
   try {
     // Check if deploy script exists
-    const deployScriptTs = path.join(projectDir, 'scripts', 'deploy.ts');
-    const deployScriptJs = path.join(projectDir, 'scripts', 'deploy.js');
+    const deployScriptTs = path.join(projectDir, 'deploy', 'deploy.ts');
+    const deployScriptJs = path.join(projectDir, 'deploy', 'deploy.js');
 
     let deployOutput: string;
 
     if (fs.existsSync(deployScriptTs) || fs.existsSync(deployScriptJs)) {
       // Use existing deploy script
-      deployOutput = execSync(`npx hardhat run scripts/deploy.ts --network ${network}`, {
+      deployOutput = execSync(`npx hardhat run deploy/deploy.ts --network ${network}`, {
         cwd: projectDir,
         encoding: 'utf-8',
         env: { ...process.env }
@@ -229,12 +229,12 @@ export async function executeDeploy(
       `;
 
       // Write temp deploy script
-      const tempScript = path.join(projectDir, 'scripts', '_temp_deploy.js');
+      const tempScript = path.join(projectDir, 'deploy', '_temp_deploy.js');
       fs.mkdirSync(path.dirname(tempScript), { recursive: true });
       fs.writeFileSync(tempScript, deployCode);
 
       try {
-        deployOutput = execSync(`npx hardhat run scripts/_temp_deploy.js --network ${network}`, {
+        deployOutput = execSync(`npx hardhat run deploy/_temp_deploy.js --network ${network}`, {
           cwd: projectDir,
           encoding: 'utf-8',
           env: { ...process.env }

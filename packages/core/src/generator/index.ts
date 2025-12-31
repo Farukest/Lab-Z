@@ -96,8 +96,8 @@ export class ProjectGenerator {
 
       // Generate deploy script
       const contractName = this.extractContractName(template.contractCode);
-      const scriptsDir = path.join(outputPath, 'scripts');
-      await fs.ensureDir(scriptsDir);
+      const deployDir = path.join(outputPath, 'deploy');
+      await fs.ensureDir(deployDir);
       const deployScript = `import { ethers } from "hardhat";
 
 async function main() {
@@ -112,7 +112,7 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 `;
-      await fs.writeFile(path.join(scriptsDir, 'deploy.ts'), deployScript);
+      await fs.writeFile(path.join(deployDir, 'deploy.ts'), deployScript);
 
       // Generate README
       const readmePath = path.join(outputPath, 'README.md');

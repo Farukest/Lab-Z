@@ -392,8 +392,15 @@ async function writeProject(
     copyDirSync(baseHardhatDir, outputDir);
   }
 
+  // Rename gitignore to .gitignore (npm publish excludes .gitignore)
+  const gitignoreSrc = path.join(outputDir, 'gitignore');
+  const gitignoreDest = path.join(outputDir, '.gitignore');
+  if (fs.existsSync(gitignoreSrc)) {
+    fs.renameSync(gitignoreSrc, gitignoreDest);
+  }
+
   // Create directories
-  const dirs = ['contracts', 'test', 'scripts'];
+  const dirs = ['contracts', 'test', 'deploy'];
   for (const dir of dirs) {
     const dirPath = path.join(outputDir, dir);
     if (!fs.existsSync(dirPath)) {

@@ -347,7 +347,7 @@ export function generatePackageJson(state: ProjectState): string {
     scripts: {
       compile: 'hardhat compile',
       test: 'hardhat test',
-      deploy: 'hardhat run scripts/deploy.ts'
+      deploy: 'hardhat run deploy/deploy.ts'
     },
     devDependencies: {
       '@fhevm/hardhat-plugin': '^0.1.0',
@@ -414,7 +414,7 @@ export function generateProject(state: ProjectState): Record<string, string> {
   return {
     [`contracts/${state.name}.sol`]: generateContract(state),
     [`test/${state.name}.test.ts`]: generateTest(state),
-    'scripts/deploy.ts': generateDeployScript(state),
+    'deploy/deploy.ts': generateDeployScript(state),
     'package.json': generatePackageJson(state),
     'hardhat.config.ts': generateHardhatConfig(),
     'tsconfig.json': JSON.stringify({
