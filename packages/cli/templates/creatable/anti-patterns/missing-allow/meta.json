@@ -1,7 +1,7 @@
 {
   "id": "anti-pattern-missing-allow",
   "name": "Anti-Pattern: Missing Allow",
-  "category": "anti-patterns",
+  "category": "antipatterns",
   "difficulty": "beginner",
   "tags": ["anti-pattern", "mistake", "allowThis", "allow", "permission", "ACL", "common error", "izin hatasi"],
   "description": "Common mistake: forgetting FHE.allowThis() and FHE.allow() after creating encrypted values",

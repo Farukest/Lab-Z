@@ -1,7 +1,7 @@
 {
   "id": "anti-pattern-view-encrypted",
   "name": "Anti-Pattern: View Encrypted",
-  "category": "anti-patterns",
+  "category": "antipatterns",
   "difficulty": "beginner",
   "tags": ["anti-pattern", "mistake", "view", "decrypt", "handle", "common error", "beginner trap", "yaygin hata"],
   "description": "Common mistake: expecting view functions to return plaintext instead of encrypted handles",
