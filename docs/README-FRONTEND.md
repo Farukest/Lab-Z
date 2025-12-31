@@ -312,7 +312,7 @@ project-name/
 │   └── ContractName.sol      # Main contract
 ├── test/
 │   └── ContractName.test.ts  # Test file
-├── scripts/
+├── deploy/
 │   └── deploy.ts             # Deploy script
 ├── package.json              # Dependencies
 ├── hardhat.config.ts         # Hardhat configuration
@@ -325,7 +325,7 @@ project-name/
 cd project-name
 npm install
 npx hardhat test
-npx hardhat run scripts/deploy.ts --network sepolia
+npx hardhat run deploy/deploy.ts --network sepolia
 ```
 
 <p align="center"><img src="https://capsule-render.vercel.app/api?type=rect&color=0:FFCC0020,50:FFCC0060,100:FFCC0020&height=4&section=header" width="100%"></p>

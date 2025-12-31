@@ -47,7 +47,7 @@ npx create-labz token my-token
 my-project/
 ├── contracts/        # FHEVM smart contract
 ├── test/             # TypeScript test suite
-├── scripts/          # Deployment scripts
+├── deploy/           # Deployment scripts
 ├── hardhat.config.ts
 ├── tsconfig.json
 ├── package.json
