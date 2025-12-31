@@ -231,7 +231,7 @@ labz create [template] [project-name] [options]
   -o, --output <dir>    # Output directory (default: current)
   -l, --list            # List available templates
   -y, --yes             # Skip prompts
-  -i, --interactive     # Interactive mode with category selection
+  -i, --interactive     # Interactive mode with template selection
   --git                 # Initialize git repository
   --install             # Run npm install after creation
   --open                # Open project in VS Code
@@ -241,7 +241,7 @@ labz create [template] [project-name] [options]
 ```bash
 labz create --list                              # Show all 44 templates
 labz create counter my-counter -y               # Quick create, skip prompts
-labz create -i                                  # Interactive category selection
+labz create -i                                  # Interactive template selection
 labz create auction my-auction --git --install  # Full setup with git + deps
 ```
 
