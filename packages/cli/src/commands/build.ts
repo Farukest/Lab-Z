@@ -425,6 +425,28 @@ async function writeProject(
     pkg.name = path.basename(outputDir);
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf-8');
   }
+
+  // Clean up .gitkeep files if folder has other files
+  cleanupGitkeep(outputDir);
+}
+
+/**
+ * Remove .gitkeep files from folders that have other files
+ */
+function cleanupGitkeep(dir: string): void {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      cleanupGitkeep(fullPath);
+      // Check if this folder has .gitkeep and other files
+      const files = fs.readdirSync(fullPath);
+      if (files.includes('.gitkeep') && files.length > 1) {
+        fs.unlinkSync(path.join(fullPath, '.gitkeep'));
+      }
+    }
+  }
 }
 
 /**
