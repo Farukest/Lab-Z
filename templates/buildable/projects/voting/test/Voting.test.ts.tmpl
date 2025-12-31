@@ -1,0 +1,135 @@
+import { expect } from "chai";
+import { ethers, fhevm } from "hardhat";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let contract: any;
+  let contractAddress: string;
+  let signers: { alice: HardhatEthersSigner; bob: HardhatEthersSigner; charlie: HardhatEthersSigner };
+
+  before(async function () {
+    const [alice, bob, charlie] = await ethers.getSigners();
+    signers = { alice, bob, charlie };
+  });
+
+  beforeEach(async function () {
+    const Factory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    contract = await Factory.deploy();
+    await contract.waitForDeployment();
+    contractAddress = await contract.getAddress();
+  });
+
+  describe("Proposal Creation", function () {
+    it("should create a proposal", async function () {
+      const tx = await contract.createProposal("Should we upgrade?", 3600); // 1 hour duration
+      await tx.wait();
+
+      const [description, endTime, exists, finalized] = await contract.getProposal(1);
+
+      expect(description).to.eq("Should we upgrade?");
+      expect(exists).to.be.true;
+      expect(finalized).to.be.false;
+    });
+
+    it("should increment proposal ID", async function () {
+      await contract.createProposal("Proposal 1", 3600);
+      expect(await contract.nextProposalId()).to.eq(2);
+    });
+  });
+
+  describe("Voting", function () {
+    beforeEach(async function () {
+      // Create a proposal for voting tests
+      await contract.createProposal("Test Proposal", 3600);
+    });
+
+    it("should allow alice to vote YES (vote = 1)", async function () {
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add32(1) // YES vote
+        .encrypt();
+
+      const tx = await contract.connect(signers.alice).vote(
+        1, // proposalId
+        encryptedInput.handles[0],
+        encryptedInput.inputProof
+      );
+      await tx.wait();
+
+      expect(await contract.hasVoted(1, signers.alice.address)).to.be.true;
+    });
+
+    it("should allow bob to vote NO (vote = 0)", async function () {
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.bob.address)
+        .add32(0) // NO vote
+        .encrypt();
+
+      const tx = await contract.connect(signers.bob).vote(
+        1,
+        encryptedInput.handles[0],
+        encryptedInput.inputProof
+      );
+      await tx.wait();
+
+      expect(await contract.hasVoted(1, signers.bob.address)).to.be.true;
+    });
+
+    it("should allow charlie to vote YES", async function () {
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.charlie.address)
+        .add32(5) // Any value > 0 is YES
+        .encrypt();
+
+      const tx = await contract.connect(signers.charlie).vote(
+        1,
+        encryptedInput.handles[0],
+        encryptedInput.inputProof
+      );
+      await tx.wait();
+
+      expect(await contract.hasVoted(1, signers.charlie.address)).to.be.true;
+    });
+
+    it("should prevent double voting", async function () {
+      // First vote
+      const input1 = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add32(1)
+        .encrypt();
+      await contract.connect(signers.alice).vote(1, input1.handles[0], input1.inputProof);
+
+      // Try to vote again
+      const input2 = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add32(1)
+        .encrypt();
+
+      await expect(
+        contract.connect(signers.alice).vote(1, input2.handles[0], input2.inputProof)
+      ).to.be.revertedWithCustomError(contract, "AlreadyVoted");
+    });
+  });
+
+  describe("Vote Counts", function () {
+    it("should return encrypted vote counts (private by design)", async function () {
+      // Create proposal and cast votes
+      await contract.createProposal("Test Proposal", 3600);
+
+      const input1 = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add32(1)
+        .encrypt();
+      await contract.connect(signers.alice).vote(1, input1.handles[0], input1.inputProof);
+
+      // Vote counts are intentionally private
+      const [yesVotes, noVotes] = await contract.getVoteCounts(1);
+
+      // Verify handles are returned (non-zero bytes32)
+      expect(yesVotes).to.not.eq(ethers.ZeroHash);
+      expect(noVotes).to.not.eq(ethers.ZeroHash);
+    });
+  });
+
+  {{TEST_EXTENSIONS}}
+});

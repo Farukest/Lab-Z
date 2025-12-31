@@ -1,0 +1,187 @@
+import { expect } from "chai";
+import { ethers, fhevm } from "hardhat";
+import { FhevmType } from "@fhevm/hardhat-plugin";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+describe("{{CONTRACT_NAME}}", function () {
+  let contract: any;
+  let contractAddress: string;
+  let signers: { alice: HardhatEthersSigner; bob: HardhatEthersSigner };
+
+  before(async function () {
+    const [alice, bob] = await ethers.getSigners();
+    signers = { alice, bob };
+  });
+
+  beforeEach(async function () {
+    const Factory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+    contract = await Factory.deploy("TestToken", "TTK");
+    await contract.waitForDeployment();
+    contractAddress = await contract.getAddress();
+  });
+
+  describe("Metadata", function () {
+    it("should return correct name", async function () {
+      expect(await contract.name()).to.eq("TestToken");
+    });
+
+    it("should return correct symbol", async function () {
+      expect(await contract.symbol()).to.eq("TTK");
+    });
+  });
+
+  describe("Mint", function () {
+    it("should mint tokens to alice", async function () {
+      const encryptedInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(1000)
+        .encrypt();
+
+      const tx = await contract.mint(
+        signers.alice.address,
+        encryptedInput.handles[0],
+        encryptedInput.inputProof
+      );
+      await tx.wait();
+
+      // Get alice's encrypted balance
+      const encryptedBalance = await contract.balanceOf(signers.alice.address);
+
+      // Decrypt and verify
+      const clearBalance = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        encryptedBalance,
+        contractAddress,
+        signers.alice
+      );
+
+      expect(clearBalance).to.eq(1000);
+    });
+
+    it("should mint more tokens and update balance", async function () {
+      // First mint
+      const input1 = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(1000)
+        .encrypt();
+
+      await contract.mint(
+        signers.alice.address,
+        input1.handles[0],
+        input1.inputProof
+      );
+
+      // Mint 500 more tokens
+      const input2 = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(500)
+        .encrypt();
+
+      await contract.mint(
+        signers.alice.address,
+        input2.handles[0],
+        input2.inputProof
+      );
+
+      // Get alice's encrypted balance (should be 1500)
+      const encryptedBalance = await contract.balanceOf(signers.alice.address);
+
+      const clearBalance = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        encryptedBalance,
+        contractAddress,
+        signers.alice
+      );
+
+      expect(clearBalance).to.eq(1500);
+    });
+  });
+
+  describe("Transfer", function () {
+    it("should transfer tokens from alice to bob", async function () {
+      // First mint tokens to alice
+      const mintInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(1000)
+        .encrypt();
+
+      await contract.mint(
+        signers.alice.address,
+        mintInput.handles[0],
+        mintInput.inputProof
+      );
+
+      // Alice transfers 300 tokens to bob
+      const transferInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.alice.address)
+        .add64(300)
+        .encrypt();
+
+      const tx = await contract.connect(signers.alice).transfer(
+        signers.bob.address,
+        transferInput.handles[0],
+        transferInput.inputProof
+      );
+      await tx.wait();
+
+      // Check alice's balance (should be 1000 - 300 = 700)
+      const aliceEncryptedBalance = await contract.balanceOf(signers.alice.address);
+      const aliceClearBalance = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        aliceEncryptedBalance,
+        contractAddress,
+        signers.alice
+      );
+      expect(aliceClearBalance).to.eq(700);
+
+      // Check bob's balance (should be 300)
+      const bobEncryptedBalance = await contract.balanceOf(signers.bob.address);
+      const bobClearBalance = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        bobEncryptedBalance,
+        contractAddress,
+        signers.bob
+      );
+      expect(bobClearBalance).to.eq(300);
+    });
+
+    it("should handle transfer exceeding balance (no transfer occurs)", async function () {
+      // Mint 300 tokens to bob
+      const mintInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.bob.address)
+        .add64(300)
+        .encrypt();
+
+      await contract.mint(
+        signers.bob.address,
+        mintInput.handles[0],
+        mintInput.inputProof
+      );
+
+      // Bob tries to transfer 500 tokens (only has 300)
+      const transferInput = await fhevm
+        .createEncryptedInput(contractAddress, signers.bob.address)
+        .add64(500)
+        .encrypt();
+
+      const tx = await contract.connect(signers.bob).transfer(
+        signers.alice.address,
+        transferInput.handles[0],
+        transferInput.inputProof
+      );
+      await tx.wait();
+
+      // Bob's balance should still be 300 (transfer didn't happen)
+      const bobEncryptedBalance = await contract.balanceOf(signers.bob.address);
+      const bobClearBalance = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        bobEncryptedBalance,
+        contractAddress,
+        signers.bob
+      );
+      expect(bobClearBalance).to.eq(300);
+    });
+  });
+
+  {{TEST_EXTENSIONS}}
+});

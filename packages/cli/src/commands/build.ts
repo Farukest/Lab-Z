@@ -307,7 +307,7 @@ export async function executeBuild(
 
   try {
     const result = merge(base, modules, {
-      projectName: finalProjectName,
+      projectName: path.basename(finalProjectName),
       typeParams: options.type ? { COUNTER_TYPE: options.type, EXTERNAL_TYPE: `external${options.type.charAt(0).toUpperCase()}${options.type.slice(1)}` } : undefined
     });
 
@@ -423,8 +423,13 @@ async function writeProject(
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
     pkg.name = path.basename(outputDir);
+    pkg.description = base.description || 'FHEVM Smart Contract';
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf-8');
   }
+
+  // Generate project-specific README
+  const readmeContent = generateBuildReadme(path.basename(outputDir), base, result);
+  fs.writeFileSync(path.join(outputDir, 'README.md'), readmeContent, 'utf-8');
 
   // Clean up .gitkeep files if folder has other files
   cleanupGitkeep(outputDir);
@@ -469,4 +474,90 @@ function copyDirSync(src: string, dest: string): void {
       fs.copyFileSync(srcPath, destPath);
     }
   }
+}
+
+/**
+ * Convert to PascalCase contract name (e.g., "prediction-market" -> "PredictionMarket")
+ */
+function toPascalCase(name: string): string {
+  return name
+    .split(/[-_]/)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+}
+
+/**
+ * Generate README content for build projects
+ */
+function generateBuildReadme(projectName: string, base: BaseTemplate, result: MergeResult): string {
+  const contractName = toPascalCase(result.stats.baseTemplate);
+  const modules = result.stats.modulesApplied || [];
+
+  const lines: string[] = [];
+
+  lines.push(`# ${projectName}`);
+  lines.push('');
+  lines.push(`${base.description}`);
+  lines.push('');
+  lines.push('## Overview');
+  lines.push('');
+  lines.push(`Base template: **${base.name}**`);
+  if (modules.length > 0) {
+    lines.push('');
+    lines.push('### Modules Applied');
+    lines.push('');
+    for (const mod of modules) {
+      lines.push(`- ${mod}`);
+    }
+  }
+  lines.push('');
+  lines.push('## Quick Start');
+  lines.push('');
+  lines.push('```bash');
+  lines.push('# Install dependencies');
+  lines.push('npm install');
+  lines.push('');
+  lines.push('# Compile contracts');
+  lines.push('npx hardhat compile');
+  lines.push('');
+  lines.push('# Run tests');
+  lines.push('npx hardhat test');
+  lines.push('');
+  lines.push('# Deploy (local)');
+  lines.push('npx hardhat run deploy/deploy.ts');
+  lines.push('```');
+  lines.push('');
+  lines.push('## Project Structure');
+  lines.push('');
+  lines.push('```');
+  lines.push(`${projectName}/`);
+  lines.push('  contracts/');
+  lines.push(`    ${contractName}.sol`);
+  lines.push('  test/');
+  lines.push(`    ${contractName}.test.ts`);
+  lines.push('  deploy/');
+  lines.push('    deploy.ts');
+  lines.push('  hardhat.config.ts');
+  lines.push('  package.json');
+  lines.push('```');
+  lines.push('');
+  lines.push('## FHE Operations');
+  lines.push('');
+  lines.push('This contract uses encrypted data types from FHEVM:');
+  lines.push('- `euint64`, `euint32`, `ebool` - Encrypted integers and booleans');
+  lines.push('- `FHE.add`, `FHE.sub`, `FHE.mul` - Encrypted arithmetic');
+  lines.push('- `FHE.lt`, `FHE.gt`, `FHE.eq` - Encrypted comparisons');
+  lines.push('- `FHE.select` - Encrypted conditional selection');
+  lines.push('');
+  lines.push('## Resources');
+  lines.push('');
+  lines.push('- [FHEVM Documentation](https://docs.zama.ai/fhevm)');
+  lines.push('- [Lab-Z CLI](https://github.com/Farukest/Lab-Z)');
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+  lines.push('Generated with [Lab-Z](https://github.com/Farukest/Lab-Z)');
+  lines.push('');
+
+  return lines.join('\n');
 }

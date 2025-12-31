@@ -1,32 +1,39 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
 
 async function main() {
-  const tokenName = "Confidential Token";
-  const tokenSymbol = "CFHE";
-
   console.log("Deploying {{CONTRACT_NAME}}...");
-  console.log("  Name:", tokenName);
-  console.log("  Symbol:", tokenSymbol);
 
-  const TokenFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
-  const token = await TokenFactory.deploy(tokenName, tokenSymbol);
+  const Factory = await hre.ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const contract = await Factory.deploy();
 
-  await token.waitForDeployment();
+  await contract.waitForDeployment();
 
-  const address = await token.getAddress();
-  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+  const address = await contract.getAddress();
+  console.log(`{{CONTRACT_NAME}} deployed to: ${address}`);
 
-  console.log("\nToken Operations:");
-  console.log("  - mint(to, encryptedAmount): Mint tokens (owner only)");
-  console.log("  - transfer(to, encryptedAmount): Transfer tokens");
-  console.log("  - balanceOf(account): Get encrypted balance handle");
-  console.log("\nPrivacy Guarantees:");
-  console.log("  - Balances are encrypted");
-  console.log("  - Transfer amounts are private");
-  console.log("  - Only balance owner can decrypt");
+  // Verify on explorer if not local
+  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+    console.log("Waiting for block confirmations...");
+    await contract.deploymentTransaction()?.wait(5);
+
+    console.log("Verifying contract...");
+    try {
+      await hre.run("verify:verify", {
+        address: address,
+        constructorArguments: [],
+      });
+      console.log("Contract verified!");
+    } catch (error) {
+      console.log("Verification failed:", error);
+    }
+  }
+
+  return address;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

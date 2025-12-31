@@ -80,8 +80,8 @@ contract {{CONTRACT_NAME}} is {{INHERITS}} {
         Proposal storage proposal = _proposals[proposalId];
         proposal.description = description;
         proposal.endTime = block.timestamp + durationSeconds;
-        proposal.yesVotes = FHE.asEuint64(0);
-        proposal.noVotes = FHE.asEuint64(0);
+        proposal.yesVotes = FHE.asEuint32(0);
+        proposal.noVotes = FHE.asEuint32(0);
         proposal.exists = true;
 
         // Set ACL for vote counts
@@ -118,13 +118,13 @@ contract {{CONTRACT_NAME}} is {{INHERITS}} {
         [[VOTE_TYPE]] eVote = FHE.fromExternal(encryptedVote, inputProof);
 
         // Encrypted vote: if vote > 0, it's a yes vote
-        ebool isYes = FHE.gt(eVote, FHE.asEuint64(0));
+        ebool isYes = FHE.gt(eVote, FHE.asEuint32(0));
 
         // Homomorphic conditional addition
         // yesVotes += isYes ? 1 : 0
         // noVotes += isYes ? 0 : 1
-        [[VOTE_TYPE]] one = FHE.asEuint64(1);
-        [[VOTE_TYPE]] zero = FHE.asEuint64(0);
+        [[VOTE_TYPE]] one = FHE.asEuint32(1);
+        [[VOTE_TYPE]] zero = FHE.asEuint32(0);
 
         proposal.yesVotes = FHE.add(proposal.yesVotes, FHE.select(isYes, one, zero));
         proposal.noVotes = FHE.add(proposal.noVotes, FHE.select(isYes, zero, one));
