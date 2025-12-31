@@ -10,11 +10,11 @@
  *
  * 2. Send to contract:
  *    - Pass handles[0] as the encrypted value
- *    - Proof is included automatically
+ *    - Pass inputProof as the proof
  *
  * 3. Contract receives:
  *    - Parameter type: externalEuint* or externalEbool
- *    - Convert with FHE.fromExternal()
+ *    - Convert with FHE.fromExternal(value, inputProof)
  *    - Set permissions with FHE.allowThis() and FHE.allow()
  */
 
@@ -66,10 +66,10 @@ describe("EncryptSingle", function () {
       console.log("Handle:", encryptedInput.handles[0]);
 
       // STEP 2: Send encrypted value to contract
-      // The contract receives it as externalEuint8
+      // The contract receives it as externalEuint8 + inputProof
       const tx = await contract
         .connect(signers.alice)
-        .storeUint8(encryptedInput.handles[0]);
+        .storeUint8(encryptedInput.handles[0], encryptedInput.inputProof);
       await tx.wait();
 
       console.log("Value stored on-chain (encrypted)");
@@ -98,7 +98,7 @@ describe("EncryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeUint8(encryptedInput.handles[0])
+        .storeUint8(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getStoredUint8();
@@ -126,7 +126,7 @@ describe("EncryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeUint64(encryptedInput.handles[0])
+        .storeUint64(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getStoredUint64();
@@ -153,7 +153,7 @@ describe("EncryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeBool(encryptedInput.handles[0])
+        .storeBool(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getStoredBool();
@@ -175,7 +175,7 @@ describe("EncryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeBool(encryptedInput.handles[0])
+        .storeBool(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const encryptedResult = await contract.getStoredBool();
@@ -225,7 +225,7 @@ describe("EncryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeUint8(encryptedInput.handles[0])
+        .storeUint8(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Alice can decrypt her own value
@@ -256,16 +256,16 @@ describe("EncryptSingle", function () {
       console.log("     .add64(secretValue)");
       console.log("     .encrypt();");
       console.log("");
-      console.log("2. Call contract with encrypted value:");
-      console.log("   await contract.myFunction(input.handles[0]);");
+      console.log("2. Call contract with encrypted value AND proof:");
+      console.log("   await contract.myFunction(input.handles[0], input.inputProof);");
       console.log("");
 
       console.log("CONTRACT-SIDE:");
-      console.log("1. Receive as external type:");
-      console.log("   function myFunction(externalEuint64 encVal)");
+      console.log("1. Receive as external type + inputProof:");
+      console.log("   function myFunction(externalEuint64 encVal, bytes calldata inputProof)");
       console.log("");
       console.log("2. Convert to internal type:");
-      console.log("   euint64 value = FHE.fromExternal(encVal);");
+      console.log("   euint64 value = FHE.fromExternal(encVal, inputProof);");
       console.log("");
       console.log("3. Set permissions:");
       console.log("   FHE.allowThis(value);  // Contract can use");
