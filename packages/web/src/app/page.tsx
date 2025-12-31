@@ -333,6 +333,72 @@ export default function HomePage() {
             template={selectedTemplate}
             onBack={() => setSelectedTemplate(null)}
           />
+        ) : loading ? (
+          /* Skeleton Loading */
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '16px'
+          }}>
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="card"
+                style={{
+                  padding: '20px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)'
+                }}
+              >
+                <div style={{
+                  height: '14px',
+                  width: '60%',
+                  background: 'var(--border)',
+                  borderRadius: '4px',
+                  marginBottom: '12px',
+                  animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+                <div style={{
+                  height: '12px',
+                  width: '100%',
+                  background: 'var(--border)',
+                  borderRadius: '4px',
+                  marginBottom: '8px',
+                  animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+                <div style={{
+                  height: '12px',
+                  width: '80%',
+                  background: 'var(--border)',
+                  borderRadius: '4px',
+                  marginBottom: '16px',
+                  animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{
+                    height: '20px',
+                    width: '50px',
+                    background: 'var(--border)',
+                    borderRadius: '4px',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                  }} />
+                  <div style={{
+                    height: '20px',
+                    width: '60px',
+                    background: 'var(--border)',
+                    borderRadius: '4px',
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                  }} />
+                </div>
+              </div>
+            ))}
+            <style>{`
+              @keyframes pulse {
+                0%, 100% { opacity: 0.4; }
+                50% { opacity: 0.8; }
+              }
+            `}</style>
+          </div>
         ) : (
           <>
             <TemplateGrid
