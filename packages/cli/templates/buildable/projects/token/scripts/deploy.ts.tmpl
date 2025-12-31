@@ -1,0 +1,32 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const tokenName = "Confidential Token";
+  const tokenSymbol = "CFHE";
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Name:", tokenName);
+  console.log("  Symbol:", tokenSymbol);
+
+  const TokenFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const token = await TokenFactory.deploy(tokenName, tokenSymbol);
+
+  await token.waitForDeployment();
+
+  const address = await token.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nToken Operations:");
+  console.log("  - mint(to, encryptedAmount): Mint tokens (owner only)");
+  console.log("  - transfer(to, encryptedAmount): Transfer tokens");
+  console.log("  - balanceOf(account): Get encrypted balance handle");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Balances are encrypted");
+  console.log("  - Transfer amounts are private");
+  console.log("  - Only balance owner can decrypt");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

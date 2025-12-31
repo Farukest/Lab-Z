@@ -1,0 +1,38 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const itemDescription = "Rare Digital Collectible";
+  const durationSeconds = 86400; // 1 day
+
+  console.log("Deploying {{CONTRACT_NAME}}...");
+  console.log("  Item:", itemDescription);
+  console.log("  Duration:", durationSeconds / 3600, "hours");
+
+  const AuctionFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const auction = await AuctionFactory.deploy(itemDescription, durationSeconds);
+
+  await auction.waitForDeployment();
+
+  const address = await auction.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nAuction Lifecycle:");
+  console.log("  1. Bid: bid(encryptedAmount, inputProof)");
+  console.log("     - Bids are encrypted and sealed");
+  console.log("     - No one can see competitors' bids");
+  console.log("  2. Wait: Auction runs until endTime");
+  console.log("  3. Request Reveal: requestWinnerReveal()");
+  console.log("     - Marks winner for decryption");
+  console.log("  4. Finalize: finalizeWinner(winnerAddress, winningBid, proof)");
+  console.log("     - Verifies decryption proof");
+  console.log("     - Announces winner");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Bids encrypted until reveal");
+  console.log("  - Losing bids never disclosed");
+  console.log("  - Fair competition guaranteed");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

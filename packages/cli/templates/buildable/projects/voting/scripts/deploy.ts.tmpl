@@ -1,0 +1,28 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  console.log("Deploying {{CONTRACT_NAME}}...");
+
+  const VotingFactory = await ethers.getContractFactory("{{CONTRACT_NAME}}");
+  const voting = await VotingFactory.deploy();
+
+  await voting.waitForDeployment();
+
+  const address = await voting.getAddress();
+  console.log("\n{{CONTRACT_NAME}} deployed to:", address);
+
+  console.log("\nVoting Operations:");
+  console.log("  - createProposal(title, description, duration): Create proposal");
+  console.log("  - vote(proposalId, encryptedVote): Cast encrypted vote");
+  console.log("  - requestTally(proposalId): Request vote count reveal");
+  console.log("  - finalizeTally(proposalId, yesVotes, noVotes, proof): Finalize");
+  console.log("\nPrivacy Guarantees:");
+  console.log("  - Individual votes are encrypted");
+  console.log("  - Only final tally is revealed");
+  console.log("  - No one knows how you voted");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
