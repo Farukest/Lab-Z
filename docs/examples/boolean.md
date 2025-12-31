@@ -272,14 +272,14 @@ Comparison operations like FHE.gt(), FHE.lt(), FHE.eq() return ebool. This shows
 ## Related Examples
 
 - [add](./add.md)
-- [compare](./compare.md)
+- [multiply](./multiply.md)
 - [bitwise](./bitwise.md)
 
 ## Next Steps
 
 After this example, check out:
 - [bitwise](./bitwise.md)
-- [compare](./compare.md)
+- [multiply](./multiply.md)
 
 ---
 

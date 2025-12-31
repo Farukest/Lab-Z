@@ -97,7 +97,7 @@ After creating a new encrypted value, we must set permissions. allowThis lets th
 ## Related Examples
 
 - [counter](./counter.md)
-- [compare](./compare.md)
+- [boolean](./boolean.md)
 
 ## Prerequisites
 
@@ -107,7 +107,7 @@ Before this example, you should understand:
 ## Next Steps
 
 After this example, check out:
-- [compare](./compare.md)
+- [boolean](./boolean.md)
 - [encryption-single](./encryption-single.md)
 
 ---

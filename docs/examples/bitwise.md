@@ -372,7 +372,7 @@ Before this example, you should understand:
 
 After this example, check out:
 - [encryption-single](./encryption-single.md)
-- [handles](./handles.md)
+- [handle-vs-value](./handle-vs-value.md)
 
 ---
 

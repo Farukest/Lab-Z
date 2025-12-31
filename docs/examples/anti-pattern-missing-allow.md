@@ -74,13 +74,13 @@ CORRECT: Both FHE.allowThis() and FHE.allow(value, msg.sender) called. Contract 
 
 ## Tags
 
-`anti-pattern` `mistake` `allowThis` `allow` `permission` `ACL` `common error` `izin hatasi`
+`anti-pattern` `mistake` `allowThis` `allow` `permission` `ACL` `common error`
 
 ## Related Examples
 
 - [decryption-user-single](./decryption-user-single.md)
 - [anti-pattern-view-encrypted](./anti-pattern-view-encrypted.md)
-- [acl-transient](./acl-transient.md)
+- [acl-allow](./acl-allow.md)
 
 ## Prerequisites
 
@@ -90,8 +90,8 @@ Before this example, you should understand:
 ## Next Steps
 
 After this example, check out:
-- [acl-transient](./acl-transient.md)
-- [handles](./handles.md)
+- [acl-allow](./acl-allow.md)
+- [handle-vs-value](./handle-vs-value.md)
 
 ---
 

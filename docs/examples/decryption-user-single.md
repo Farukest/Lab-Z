@@ -88,7 +88,7 @@ Before this example, you should understand:
 After this example, check out:
 - [decryption-user-multiple](./decryption-user-multiple.md)
 - [decryption-public-single](./decryption-public-single.md)
-- [acl-transient](./acl-transient.md)
+- [acl-allow](./acl-allow.md)
 
 ---
 

@@ -286,7 +286,7 @@ Calculate percentage: (value * percentage / 100). Common pattern for fees, disco
 ## Related Examples
 
 - [add](./add.md)
-- [compare](./compare.md)
+- [boolean](./boolean.md)
 
 ## Prerequisites
 
@@ -297,7 +297,7 @@ Before this example, you should understand:
 
 After this example, check out:
 - [bitwise](./bitwise.md)
-- [compare](./compare.md)
+- [boolean](./boolean.md)
 
 ---
 

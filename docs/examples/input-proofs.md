@@ -36,23 +36,23 @@ import { ZamaEthereumConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 /// @dev This is a PRACTICAL example of input proof usage
 ///
 /// ╔═══════════════════════════════════════════════════════════════════╗
-/// ║                    SENARYO: KAPALI ZARF İHALE                      ║
+/// ║                    SCENARIO: SEALED BID AUCTION                    ║
 /// ╠═══════════════════════════════════════════════════════════════════╣
 /// ║                                                                    ║
-/// ║   1. Alice 100₺ teklif verir (şifreli)                            ║
-/// ║   2. Bob 80₺ teklif verir (şifreli)                               ║
-/// ║   3. İhale biter, en yüksek teklif kazanır                        ║
+/// ║   1. Alice bids $100 (encrypted)                                  ║
+/// ║   2. Bob bids $80 (encrypted)                                     ║
+/// ║   3. Auction ends, highest bid wins                               ║
 /// ║                                                                    ║
-/// ║   SALDIRI (Input Proof olmasaydı):                                ║
+/// ║   ATTACK (without Input Proof):                                   ║
 /// ║   ─────────────────────────────────                               ║
-/// ║   Bob, Alice'in şifreli teklifini blockchain'den kopyalar         ║
-/// ║   "Bu benim teklifimdi" der                                       ║
-/// ║   Sistem kimin gerçek sahip olduğunu bilemez!                     ║
+/// ║   Bob copies Alice's encrypted bid from blockchain                ║
+/// ║   Claims "This was my bid"                                        ║
+/// ║   System can't tell who the real owner is!                        ║
 /// ║                                                                    ║
-/// ║   INPUT PROOF İLE:                                                ║
+/// ║   WITH INPUT PROOF:                                               ║
 /// ║   ─────────────────────────────────                               ║
-/// ║   Her teklif, "BU ŞİFRELEMEYİ BEN YAPTIM" kanıtı içerir          ║
-/// ║   Bob kopyalasa bile → REVERT (proof Alice'e ait)                 ║
+/// ║   Each bid includes proof: "I CREATED THIS ENCRYPTION"            ║
+/// ║   Even if Bob copies → REVERT (proof belongs to Alice)            ║
 /// ║                                                                    ║
 /// ╚═══════════════════════════════════════════════════════════════════╝
 contract ConfidentialAuction is ZamaEthereumConfig {
@@ -61,15 +61,15 @@ contract ConfidentialAuction is ZamaEthereumConfig {
     address public owner;
     bool public auctionEnded;
 
-    // Her kullanıcının şifreli teklifi
+    // Each user's encrypted bid
     mapping(address => euint64) private _bids;
     mapping(address => bool) public hasBid;
 
-    // En yüksek teklif (şifreli)
+    // Highest bid (encrypted)
     euint64 private _highestBid;
     address public highestBidder;
 
-    // Katılımcı listesi
+    // List of bidders
     address[] public bidders;
 
     // ============ Events ============
@@ -95,21 +95,21 @@ contract ConfidentialAuction is ZamaEthereumConfig {
 
     // ============ Core Functions ============
 
-    /// @notice Teklif ver - INPUT PROOF BURADA DEVREYE GİRİYOR
-    /// @param encryptedBid Şifreli teklif miktarı
-    /// @param inputProof ZK kanıtı: "Bu şifrelemeyi BEN yaptım"
+    /// @notice Place a bid - INPUT PROOF KICKS IN HERE
+    /// @param encryptedBid Encrypted bid amount
+    /// @param inputProof ZK proof: "I created this encryption"
     ///
     /// ╔═══════════════════════════════════════════════════════════════╗
-    /// ║  FHE.fromExternal() şunları kontrol eder:                     ║
+    /// ║  FHE.fromExternal() verifies:                                 ║
     /// ║                                                                ║
-    /// ║  1. Bu şifreleme msg.sender tarafından mı yapıldı?            ║
-    /// ║     → Hayır ise REVERT (başkasının teklifini kopyalayamazsın) ║
+    /// ║  1. Was this encryption created by msg.sender?                ║
+    /// ║     → If not, REVERT (can't copy someone else's bid)          ║
     /// ║                                                                ║
-    /// ║  2. Bu şifreleme BU KONTRAT için mi yapıldı?                  ║
-    /// ║     → Hayır ise REVERT (başka kontratın verisini kullanamazsın)║
+    /// ║  2. Was this encryption made for THIS contract?               ║
+    /// ║     → If not, REVERT (can't use another contract's data)      ║
     /// ║                                                                ║
-    /// ║  3. Şifreleme doğru mu yapılmış?                              ║
-    /// ║     → Hayır ise REVERT (bozuk veri gönderemezsin)             ║
+    /// ║  3. Is the encryption valid?                                  ║
+    /// ║     → If not, REVERT (can't send malformed data)              ║
     /// ╚═══════════════════════════════════════════════════════════════╝
     function bid(
         externalEuint64 encryptedBid,
@@ -118,23 +118,23 @@ contract ConfidentialAuction is ZamaEthereumConfig {
         if (auctionEnded) revert AuctionAlreadyEnded();
         if (hasBid[msg.sender]) revert AlreadyBid();
 
-        // ⚡ INPUT PROOF DOĞRULAMASI BURADA OLUYOR ⚡
-        // fromExternal() proof'u kontrol eder:
-        // - Geçersiz proof → REVERT
-        // - Başkasının proof'u → REVERT
-        // - Yanlış kontrat için proof → REVERT
+        // INPUT PROOF VERIFICATION HAPPENS HERE
+        // fromExternal() checks the proof:
+        // - Invalid proof → REVERT
+        // - Someone else's proof → REVERT
+        // - Wrong contract's proof → REVERT
         euint64 bidAmount = FHE.fromExternal(encryptedBid, inputProof);
 
-        // Teklifi kaydet
+        // Save the bid
         _bids[msg.sender] = bidAmount;
         hasBid[msg.sender] = true;
         bidders.push(msg.sender);
 
-        // ACL izinleri
+        // ACL permissions
         FHE.allowThis(_bids[msg.sender]);
         FHE.allow(_bids[msg.sender], msg.sender);
 
-        // En yüksek teklifi güncelle
+        // Update highest bid
         ebool isHigher = FHE.gt(bidAmount, _highestBid);
         _highestBid = FHE.select(isHigher, bidAmount, _highestBid);
         FHE.allowThis(_highestBid);
@@ -142,23 +142,23 @@ contract ConfidentialAuction is ZamaEthereumConfig {
         emit BidPlaced(msg.sender);
     }
 
-    /// @notice İhaleyi bitir ve kazananı belirle
+    /// @notice End the auction and determine the winner
     function endAuction() external {
         if (auctionEnded) revert AuctionAlreadyEnded();
         if (bidders.length == 0) revert NoBidders();
 
         auctionEnded = true;
 
-        // En yüksek teklifi veren kişiyi bul
-        // (Basitlik için ilk eşleşeni alıyoruz)
+        // Find the person with the highest bid
+        // (For simplicity, we take the first match)
         for (uint256 i = 0; i < bidders.length; i++) {
             ebool isWinner = FHE.eq(_bids[bidders[i]], _highestBid);
-            // Not: Gerçek uygulamada decrypt ile kontrol edilir
-            // Bu örnek için basit tutuyoruz
+            // Note: In production, this would be verified via decrypt
+            // Keeping it simple for this example
             FHE.allowThis(isWinner);
         }
 
-        // İlk bidder'ı geçici kazanan olarak ata (demo için)
+        // Assign first bidder as temporary winner (for demo)
         highestBidder = bidders[0];
 
         emit AuctionEnded(highestBidder);
@@ -166,17 +166,17 @@ contract ConfidentialAuction is ZamaEthereumConfig {
 
     // ============ View Functions ============
 
-    /// @notice Kullanıcının kendi teklifini görmesi (şifreli handle)
+    /// @notice Get user's own bid (encrypted handle)
     function getMyBid() external view returns (euint64) {
         return _bids[msg.sender];
     }
 
-    /// @notice En yüksek teklif (şifreli handle)
+    /// @notice Highest bid (encrypted handle)
     function getHighestBid() external view returns (euint64) {
         return _highestBid;
     }
 
-    /// @notice Toplam katılımcı sayısı
+    /// @notice Total number of bidders
     function getBidderCount() external view returns (uint256) {
         return bidders.length;
     }
@@ -231,7 +231,7 @@ Financial security example showing why proof verification is critical for deposi
 
 ## Tags
 
-`input proof` `security` `fromExternal` `verification` `ZK proof` `attack prevention` `replay` `guvenlik`
+`input proof` `security` `fromExternal` `verification` `ZK proof` `attack prevention` `replay`
 
 ## Related Examples
 
@@ -246,8 +246,8 @@ Before this example, you should understand:
 ## Next Steps
 
 After this example, check out:
-- [handles](./handles.md)
-- [anti-patterns-view-encrypted](./anti-patterns-view-encrypted.md)
+- [handle-vs-value](./handle-vs-value.md)
+- [anti-pattern-view-encrypted](./anti-pattern-view-encrypted.md)
 
 ---
 

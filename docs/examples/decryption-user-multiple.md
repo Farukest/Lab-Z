@@ -90,7 +90,7 @@ Before this example, you should understand:
 
 After this example, check out:
 - [decryption-public-multiple](./decryption-public-multiple.md)
-- [acl-transient](./acl-transient.md)
+- [acl-allow](./acl-allow.md)
 
 ---
 
