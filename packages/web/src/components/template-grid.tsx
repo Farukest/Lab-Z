@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Play, Terminal, Pin } from "lucide-react";
+import { Play, Code2, Pin, ExternalLink } from "lucide-react";
 import type { Template, Difficulty } from "@/lib/types";
 import { CLIConsole } from "./cli-console";
 import { InteractiveCLI } from "./interactive-cli";
@@ -52,6 +52,7 @@ function TemplateCardContent({
             <code style={{ fontSize: '14px', fontWeight: 600, color: 'var(--fg)' }}>
               {template.name}
             </code>
+            <ExternalLink size={11} style={{ color: 'var(--accent)' }} />
           </div>
           <span className={difficultyClass[template.difficulty]} style={{ fontSize: '12px' }}>
             {template.difficulty}
@@ -134,7 +135,7 @@ function TemplateCardContent({
                 e.currentTarget.style.borderColor = 'var(--border)';
               }}
             >
-              <Terminal size={12} />
+              <Code2 size={12} style={{ color: '#22c55e' }} />
             </button>
           )}
           {onPinClick && (
