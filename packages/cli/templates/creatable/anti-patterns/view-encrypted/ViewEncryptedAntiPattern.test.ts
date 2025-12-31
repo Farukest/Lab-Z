@@ -72,7 +72,7 @@ describe("ViewEncryptedAntiPattern", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(encryptedInput.handles[0])
+        .setBalance(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // ANTI-PATTERN: Just calling the view function
@@ -102,7 +102,7 @@ describe("ViewEncryptedAntiPattern", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(encryptedInput.handles[0])
+        .setBalance(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       console.log("\nCORRECT approach:");

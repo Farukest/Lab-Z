@@ -66,7 +66,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(encryptedInput.handles[0])
+        .setBalance(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       console.log("Balance stored on-chain (encrypted)");
@@ -98,7 +98,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(encryptedInput.handles[0])
+        .setBalance(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Alice can decrypt
@@ -130,7 +130,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setScoreWithViewer(encryptedInput.handles[0], signers.bob.address)
+        .setScoreWithViewer(encryptedInput.handles[0], signers.bob.address, encryptedInput.inputProof)
       ).wait();
 
       console.log("Alice set score with Bob as viewer");
@@ -175,7 +175,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(encryptedInput.handles[0])
+        .setBalance(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Later, Alice grants Bob access
@@ -214,7 +214,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(input1.handles[0])
+        .setBalance(input1.handles[0], input1.inputProof)
       ).wait();
 
       // Add to balance
@@ -225,7 +225,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .addToBalance(input2.handles[0])
+        .addToBalance(input2.handles[0], input2.inputProof)
       ).wait();
 
       // Decrypt new balance
@@ -253,7 +253,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setBalance(balanceInput.handles[0])
+        .setBalance(balanceInput.handles[0], balanceInput.inputProof)
       ).wait();
 
       // Compare with threshold
@@ -264,7 +264,7 @@ describe("UserDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .isBalanceAbove(thresholdInput.handles[0])
+        .isBalanceAbove(thresholdInput.handles[0], thresholdInput.inputProof)
       ).wait();
 
       // The function returns ebool, but we'd need to get it from event/storage
@@ -279,7 +279,7 @@ describe("UserDecryptSingle", function () {
 
       console.log("ON-CHAIN (Contract):");
       console.log("1. Store encrypted value:");
-      console.log("   euint64 value = FHE.fromExternal(encInput);");
+      console.log("   euint64 value = FHE.fromExternal(encInput, inputProof);");
       console.log("   FHE.allowThis(value);  // Contract can use");
       console.log("   FHE.allow(value, msg.sender);  // User can decrypt");
       console.log("");

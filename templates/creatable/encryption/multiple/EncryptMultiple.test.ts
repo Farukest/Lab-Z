@@ -6,15 +6,15 @@
  * Instead of:
  *   const input1 = await fhevm.createEncryptedInput().add64(a).encrypt();
  *   const input2 = await fhevm.createEncryptedInput().add64(b).encrypt();
- *   await contract.setA(input1.handles[0]);
- *   await contract.setB(input2.handles[0]);
+ *   await contract.setA(input1.handles[0], input1.inputProof);
+ *   await contract.setB(input2.handles[0], input2.inputProof);
  *
  * Do this:
  *   const input = await fhevm.createEncryptedInput()
  *     .add64(a)
  *     .add64(b)
  *     .encrypt();
- *   await contract.setBoth(input.handles[0], input.handles[1]);
+ *   await contract.setBoth(input.handles[0], input.handles[1], input.inputProof);
  *
  * Benefits:
  * - Single proof for all values
@@ -71,12 +71,13 @@ describe("EncryptMultiple", function () {
       console.log("- handles[0]:", encryptedInput.handles[0]);
       console.log("- handles[1]:", encryptedInput.handles[1]);
 
-      // Send both in single transaction
+      // Send both in single transaction with shared inputProof
       await (await contract
         .connect(signers.alice)
         .storeTwoValues(
           encryptedInput.handles[0],
-          encryptedInput.handles[1]
+          encryptedInput.handles[1],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -122,7 +123,8 @@ describe("EncryptMultiple", function () {
         .storeThreeValues(
           encryptedInput.handles[0],
           encryptedInput.handles[1],
-          encryptedInput.handles[2]
+          encryptedInput.handles[2],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -164,7 +166,8 @@ describe("EncryptMultiple", function () {
         .storeAccountData(
           encryptedInput.handles[0],
           encryptedInput.handles[1],
-          encryptedInput.handles[2]
+          encryptedInput.handles[2],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -218,7 +221,8 @@ describe("EncryptMultiple", function () {
         .storeCoordinates(
           encryptedInput.handles[0],
           encryptedInput.handles[1],
-          encryptedInput.handles[2]
+          encryptedInput.handles[2],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -254,7 +258,8 @@ describe("EncryptMultiple", function () {
         .storeCoordinates(
           encryptedInput.handles[0],
           encryptedInput.handles[1],
-          encryptedInput.handles[2]
+          encryptedInput.handles[2],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -288,7 +293,8 @@ describe("EncryptMultiple", function () {
         .storeAccountData(
           encryptedInput.handles[0],
           encryptedInput.handles[1],
-          encryptedInput.handles[2]
+          encryptedInput.handles[2],
+          encryptedInput.inputProof
         )
       ).wait();
 
@@ -315,7 +321,8 @@ describe("EncryptMultiple", function () {
       console.log("await contract.myFunc(");
       console.log("  input.handles[0],");
       console.log("  input.handles[1],");
-      console.log("  input.handles[2]");
+      console.log("  input.handles[2],");
+      console.log("  input.inputProof  // Single proof for all!");
       console.log(");");
       console.log("");
 

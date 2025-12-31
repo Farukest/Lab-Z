@@ -120,7 +120,7 @@ describe("InputProofsExplained", function () {
 
       await (await contract
         .connect(signers.alice)
-        .storeValue(encryptedInput.handles[0])
+        .storeValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       console.log("\nSuccess! Proof verified:");
@@ -190,7 +190,7 @@ describe("InputProofsExplained", function () {
 
       await (await contract
         .connect(signers.alice)
-        .deposit(depositInput.handles[0])
+        .deposit(depositInput.handles[0], depositInput.inputProof)
       ).wait();
 
       console.log("   Proof verified: Alice encrypted this deposit");
@@ -206,7 +206,7 @@ describe("InputProofsExplained", function () {
 
       await (await contract
         .connect(signers.alice)
-        .transfer(signers.bob.address, transferInput.handles[0])
+        .transfer(signers.bob.address, transferInput.handles[0], transferInput.inputProof)
       ).wait();
 
       console.log("   Proof verified: Alice authorized this transfer amount");

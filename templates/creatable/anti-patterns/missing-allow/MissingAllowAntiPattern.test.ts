@@ -128,7 +128,7 @@ describe("MissingAllowAntiPattern", function () {
       // Store correctly
       await (await contract
         .connect(signers.alice)
-        .setGoodValue(input.handles[0])
+        .setGoodValue(input.handles[0], input.inputProof)
       ).wait();
 
       console.log("Value stored with BOTH permissions:");
@@ -182,7 +182,7 @@ describe("MissingAllowAntiPattern", function () {
       // Use the CORRECT function that sets permissions on result
       await (await contract
         .connect(signers.alice)
-        .goodCompute(input.handles[0], input.handles[1])
+        .goodCompute(input.handles[0], input.handles[1], input.inputProof)
       ).wait();
 
       // User can decrypt the computed result

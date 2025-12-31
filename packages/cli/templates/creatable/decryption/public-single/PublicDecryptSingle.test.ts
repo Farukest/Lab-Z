@@ -67,7 +67,7 @@ describe("PublicDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setValue(encryptedInput.handles[0])
+        .setValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       const [valueSet, revealRequested, revealed] = await contract.getState();
@@ -91,7 +91,7 @@ describe("PublicDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setValue(encryptedInput.handles[0])
+        .setValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Request reveal
@@ -118,7 +118,7 @@ describe("PublicDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setValue(encryptedInput.handles[0])
+        .setValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       await (await contract.connect(signers.alice).requestReveal()).wait();
@@ -160,7 +160,7 @@ describe("PublicDecryptSingle", function () {
 
       await (await contract
         .connect(signers.alice)
-        .setValue(encryptedInput.handles[0])
+        .setValue(encryptedInput.handles[0], encryptedInput.inputProof)
       ).wait();
 
       // Try to finalize without requesting reveal
