@@ -18,7 +18,7 @@ import ora from 'ora';
 import * as path from 'path';
 import * as fs from 'fs';
 import { input, select, confirm, checkbox } from '@inquirer/prompts';
-import { formatSuccess, formatError, formatInfo, printBanner } from '../utils';
+import { formatSuccess, formatError, formatInfo, printBanner, getTemplatesDir } from '../utils';
 
 // Import composer functions
 import {
@@ -36,24 +36,6 @@ import {
   type Module,
   type MergeResult
 } from '@0xflydev/labz-core/composer';
-
-// Get templates directory
-function getTemplatesDir(): string {
-  // Try multiple locations
-  const possiblePaths = [
-    path.resolve(__dirname, '../../../../templates'),
-    path.resolve(__dirname, '../../../templates'),
-    path.resolve(process.cwd(), 'templates'),
-  ];
-
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      return p;
-    }
-  }
-
-  return possiblePaths[0]; // Default
-}
 
 export const buildCommand = new Command('build')
   .description('Create customized FHE contracts with composable modules')

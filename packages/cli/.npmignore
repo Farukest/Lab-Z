@@ -1,0 +1,11 @@
+# Source files
+src/
+tsconfig.json
+
+# Test artifacts - must match exactly
+templates/_test
+templates/_test/**
+
+# Development files
+*.log
+.DS_Store
