@@ -51,16 +51,20 @@ contract MissingAllowAntiPattern is ZamaEthereumConfig {
     /// @notice ANTI-PATTERN: Stores value without allowThis
     /// @dev Future contract operations on this value may fail!
     /// @param input Encrypted input value
-    function setBadValueNoAllowThis(externalEuint64 input) external {
-        // NOTE: In real code, you'd need inputProof, but this anti-pattern
-        // demonstrates what happens when you forget permissions
-        // For testing purposes, we're using a simplified version
-        _valueWithoutAllow = FHE.asEuint64(0); // Placeholder for demo
+    /// @param inputProof ZK proof for the encrypted input
+    function setBadValueNoAllowThis(
+        externalEuint64 input,
+        bytes calldata inputProof
+    ) external {
+        // Properly receive the encrypted input
+        euint64 value = FHE.fromExternal(input, inputProof);
 
-        // MISSING: FHE.allowThis(value);
+        _valueWithoutAllow = value;
+
+        // ANTI-PATTERN: Missing FHE.allowThis(value)!
         // Future operations like add, compare will fail!
 
-        // User also can't decrypt
+        // Also missing user permission
         // MISSING: FHE.allow(value, msg.sender);
 
         emit ValueSet("No allowThis - will break!");
@@ -89,16 +93,20 @@ contract MissingAllowAntiPattern is ZamaEthereumConfig {
     /// @notice ANTI-PATTERN: Stores value without user permission
     /// @dev User won't be able to decrypt their own value!
     /// @param input Encrypted input value
-    function setBadValueNoUserAllow(externalEuint64 input) external {
-        // Simplified for demo - in production use FHE.fromExternal with inputProof
-        euint64 value = FHE.asEuint64(0); // Placeholder
+    /// @param inputProof ZK proof for the encrypted input
+    function setBadValueNoUserAllow(
+        externalEuint64 input,
+        bytes calldata inputProof
+    ) external {
+        // Properly receive the encrypted input
+        euint64 value = FHE.fromExternal(input, inputProof);
 
         _valueWithoutAllow = value;
 
         // Has allowThis - contract can use it
         FHE.allowThis(value);
 
-        // MISSING: FHE.allow(value, msg.sender);
+        // ANTI-PATTERN: Missing FHE.allow(value, msg.sender)!
         // User cannot decrypt their own value!
 
         emit ValueSet("No user allow - can't decrypt!");

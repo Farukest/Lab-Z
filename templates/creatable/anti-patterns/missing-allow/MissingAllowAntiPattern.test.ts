@@ -76,7 +76,7 @@ describe("MissingAllowAntiPattern", function () {
       // Store without allowThis
       await (await contract
         .connect(signers.alice)
-        .setBadValueNoAllowThis(input.handles[0])
+        .setBadValueNoAllowThis(input.handles[0], input.inputProof)
       ).wait();
 
       console.log("Value stored WITHOUT FHE.allowThis()");
@@ -102,7 +102,7 @@ describe("MissingAllowAntiPattern", function () {
       // Store without user allow
       await (await contract
         .connect(signers.alice)
-        .setBadValueNoUserAllow(input.handles[0])
+        .setBadValueNoUserAllow(input.handles[0], input.inputProof)
       ).wait();
 
       console.log("Value stored with allowThis but WITHOUT FHE.allow(value, alice)");
@@ -221,8 +221,11 @@ describe("MissingAllowAntiPattern", function () {
 
       console.log("TEMPLATE:");
       console.log("─────────────────────────────────────────────────────────────────────");
-      console.log("function myFunction(externalEuint64 input) external {");
-      console.log("    euint64 value = FHE.fromExternal(input);");
+      console.log("function myFunction(");
+      console.log("    externalEuint64 input,");
+      console.log("    bytes calldata inputProof");
+      console.log(") external {");
+      console.log("    euint64 value = FHE.fromExternal(input, inputProof);");
       console.log("    ");
       console.log("    // Always set permissions after creating/computing");
       console.log("    FHE.allowThis(value);");
